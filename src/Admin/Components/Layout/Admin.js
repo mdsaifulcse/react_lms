@@ -3,11 +3,29 @@ import RightSidebar from "../Shared/RightSidebar";
 import LeftNavbar from "../Shared/LeftNavbar";
 import PageHeader from "../Shared/PageHeader";
 import { Outlet } from "react-router-dom";
+import { useQuery } from "react-query";
+import { useAuth } from "../../Contexts/AuthContext";
+import useToster from "../../hooks/useToster";
+import { useState } from "react";
 //import { Axios } from "axios";
 //import { useEffect } from "react";
 
 export default function Admin() {
-  //useEffect(() => {}, []);
+  // const { logOut } = useAuth();
+  // const { onError, onSuccess } = useToster();
+  // const [allowedToFetch, setAllowedToFetch] = useState(false);
+
+  // const { data, status, isLoading, isError, refetch, isFetching } = useQuery(
+  //   "admin-logout",
+  //   logOut,
+  //   {
+  //     enabled: false,
+  //     onSuccess: onSuccess,
+  //     onError: onError,
+  //   }
+  // );
+
+  // console.log(isLoading);
 
   return (
     <>

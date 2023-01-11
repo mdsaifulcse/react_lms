@@ -6,6 +6,7 @@ import Home from "./Admin/Components/Pages/Home";
 import Admin from "./Admin/Components/Layout/Admin";
 import AuthSignIn from "./Admin/Components/Layout/AuthSignIn";
 import UserList from "./Admin/Components/Pages/UserList";
+import AdminAuthGuard from "./AuthGuard/AdminAuthGuard";
 
 const AppRoute = () => {
   return (
@@ -14,8 +15,10 @@ const AppRoute = () => {
         <Routes>
           <Route path="/" element={<AuthSignIn />} />
           <Route element={<Admin />}>
-            <Route path="/dashboard" element={<Home />} />
-            <Route path="/user-list" element={<UserList />} />
+            <Route element={<AdminAuthGuard />}>
+              <Route path="/dashboard" element={<Home />} />
+              <Route path="/user-list" element={<UserList />} />
+            </Route>
           </Route>
         </Routes>
       </Router>

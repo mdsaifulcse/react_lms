@@ -1,7 +1,9 @@
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
+import useSession from "./useSession";
 
 export default function useToster() {
+  const { removeToken } = useSession();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -15,8 +17,8 @@ export default function useToster() {
         autoClose: 5000,
       });
     } else if (error.response.status === 401) {
-      console.log(error);
       message = error.response.data.message;
+      removeToken(error);
       toast.error(message, {
         position: "top-right",
         autoClose: 5000,

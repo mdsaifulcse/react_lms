@@ -1,5 +1,37 @@
+import { useQuery } from "react-query";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../Contexts/AuthContext";
+import useToster from "../../hooks/useToster";
+import { useState } from "react";
+import useSession from "../../hooks/useSession";
+import Loading from "../Ui-Component/Loading";
 export default function HeaderNav() {
+  const { logOut, currentUser } = useAuth();
+  const { removeToken, getUserDetails } = useSession();
+  const { onError, onSuccess } = useToster();
+  const [allowedToFetch, setAllowedToFetch] = useState(false);
+
+  const auth = currentUser;
+
+  const { data, status, isLoading, isError, refetch, isFetching } = useQuery(
+    "admin-logout",
+    logOut,
+    {
+      enabled: allowedToFetch,
+      onSuccess: removeToken,
+      onError: onError,
+    }
+  );
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  async function handleLogout() {
+    refetch();
+    // removeToken();
+  }
+
   return (
     <nav className="navbar header-navbar pcoded-header" header-theme="theme4">
       <div className="navbar-wrapper">
@@ -110,13 +142,19 @@ export default function HeaderNav() {
               <li className="user-profile header-notification">
                 <Link to="#!">
                   {/* <img src="assets/images/user.png" alt="User-Profile-Image"> */}
-                  <span>John Doe</span>
+                  <span>{auth.name} </span>
                   <i className="ti-angle-down"></i>
                 </Link>
                 <ul className="show-notification profile-notification">
                   <li>
                     <Link to="#!">
                       <i className="ti-settings"></i> Settings
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="#" onClick={handleLogout}>
+                      {/* <Link to="#" onClick={() => refetch()}> */}
+                      <i className="ti-logout"></i> Log out
                     </Link>
                   </li>
                 </ul>

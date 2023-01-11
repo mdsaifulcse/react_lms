@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import axios from "axios";
 import config from "../Helper/config";
 import { toast } from "react-toastify";
+import useSession from "../hooks/useSession";
 
 const AuthContext = React.createContext();
 export function useAuth() {
@@ -10,37 +11,39 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState();
+
   const baseUrl = config.baseUrl;
+  const { getToken, defaultHeadersForAdmin, getUserDetails } = useSession();
 
   const login = async ({ username, password }) => {
+    const headers = await defaultHeadersForAdmin();
+
     const response = await axios(`${baseUrl}admin/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       data: { username, password },
     });
     return response;
   };
 
   async function singUP(data) {}
-  async function logOut(username, password) {}
-  async function getToken(tokenName) {}
-  async function setToken(tokenName, token) {}
 
-  function removeSessions() {
-    localStorage.clear();
-    window.location.href = "/";
-  }
+  const logOut = async () => {
+    const headers = await defaultHeadersForAdmin();
+    const response = await axios(`${baseUrl}admin/logout`, {
+      method: "POST",
+      headers,
+    });
+    return response;
+  };
+
+  const currentUser = getUserDetails;
 
   const value = {
     currentUser,
     login,
     singUP,
     logOut,
-    getToken,
-    setToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
