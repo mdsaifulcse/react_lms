@@ -10,7 +10,6 @@ export default function useSession() {
     if (res.status === 200) {
       localStorage.setItem("lms-access-token", res.data.access_token);
       setCurrentUser(res.data.user);
-      console.log("000");
       setUserDetails(res);
       toast.success(res.data.message, {
         position: "top-right",
@@ -34,7 +33,7 @@ export default function useSession() {
 
   const removeToken = (res) => {
     localStorage.clear();
-    window.location.href = "/"; // Redirect to login for admin ---------
+    window.location.href = "/login/admin"; // Redirect to login for admin ---------
     toast.success(res.data.message, {
       position: "top-right",
       autoClose: 5000,

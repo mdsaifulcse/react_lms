@@ -3,21 +3,32 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Home from "./Admin/Components/Pages/Home";
-import Admin from "./Admin/Components/Layout/Admin";
+import AdminLayout from "./Admin/Components/Layout/AdminLayout";
 import AuthSignIn from "./Admin/Components/Layout/AuthSignIn";
 import UserList from "./Admin/Components/Pages/UserList";
 import AdminAuthGuard from "./AuthGuard/AdminAuthGuard";
+import AllAuthorsList from "./Admin/Components/Pages/Authors/AllAuthorsList";
 
 const AppRoute = () => {
   return (
     <>
       <Router>
         <Routes>
-          <Route path="/" element={<AuthSignIn />} />
-          <Route element={<Admin />}>
-            <Route element={<AdminAuthGuard />}>
-              <Route path="/dashboard" element={<Home />} />
-              <Route path="/user-list" element={<UserList />} />
+          <Route path="/">
+            <Route path="login/admin" element={<AuthSignIn />} />
+
+            <Route path="admin/" element={<AdminLayout />}>
+              <Route element={<AdminAuthGuard />}>
+                <Route path="dashboard" element={<Home />} />
+                <Route path="user-list" element={<UserList />} />
+
+                {/* Author */}
+                <Route path="authors/" element={<AllAuthorsList />}>
+                  <Route path="create" element={<AllAuthorsList />} />
+                  <Route path="edit" element={<AllAuthorsList />} />
+                  <Route path="show" element={<AllAuthorsList />} />
+                </Route>
+              </Route>
             </Route>
           </Route>
         </Routes>

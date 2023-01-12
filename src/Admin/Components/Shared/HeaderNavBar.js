@@ -42,7 +42,7 @@ export default function HeaderNav() {
           <Link className="mobile-search morphsearch-search" to="#">
             <i className="ti-search"></i>
           </Link>
-          <Link to="/dashboard">
+          <Link to="/admin/dashboard">
             <img
               className="img-fluid"
               src="assets/images/logo.png"

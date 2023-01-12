@@ -1,15 +1,11 @@
-import { Link, redirect, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { useMutation, queryClient } from "react-query";
-import { toast } from "react-toastify";
+import { useState } from "react";
+import { useMutation } from "react-query";
 import { useAuth } from "../../Contexts/AuthContext";
 import useToster from "../../hooks/useToster";
 import useSession from "../../hooks/useSession";
 import Loading from "../Ui-Component/Loading";
 
 export default function AuthSignIn() {
-  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -63,7 +59,7 @@ export default function AuthSignIn() {
     }
 
     await mutateAsync({ username, password });
-    return (window.location.href = "/dashboard");
+    return (window.location.href = "/admin/dashboard");
     //return navigate("/dashboard");
   }
 

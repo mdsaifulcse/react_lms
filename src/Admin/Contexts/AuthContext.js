@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const baseUrl = config.baseUrl;
-  const { getToken, defaultHeadersForAdmin, getUserDetails } = useSession();
+  const { defaultHeadersForAdmin, getUserDetails } = useSession();
 
   const login = async ({ username, password }) => {
     const headers = await defaultHeadersForAdmin();

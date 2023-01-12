@@ -57,20 +57,38 @@ export default function LeftNavbar() {
             </Link>
             <ul className="pcoded-submenu">
               <li className=" pcoded-hasmenu">
-                <Link to="#">
+                <Link to="#!">
                   <span className="pcoded-micon">
                     <i className="icon-pie-chart"></i>
                   </span>
-                  <span className="pcoded-mtext">Horizontal</span>
+                  <span className="pcoded-mtext">Author</span>
                   <span className="pcoded-mcaret"></span>
                 </Link>
                 <ul className="pcoded-submenu">
-                  <li className=" ">
-                    <NavLink to="/user-list">
+                  <li className="">
+                    <NavLink to="/admin/authors">
                       <span className="pcoded-micon">
                         <i className="icon-chart"></i>
                       </span>
-                      <span className="pcoded-mtext">User List</span>
+                      <span className="pcoded-mtext">List</span>
+                      <span className="pcoded-mcaret"></span>
+                    </NavLink>
+                  </li>
+                  <li className="">
+                    <NavLink to="/admin/authors/create">
+                      <span className="pcoded-micon">
+                        <i className="icon-chart"></i>
+                      </span>
+                      <span className="pcoded-mtext">Create</span>
+                      <span className="pcoded-mcaret"></span>
+                    </NavLink>
+                  </li>
+                  <li className="">
+                    <NavLink to="/admin/authors/show">
+                      <span className="pcoded-micon">
+                        <i className="icon-chart"></i>
+                      </span>
+                      <span className="pcoded-mtext">Show</span>
                       <span className="pcoded-mcaret"></span>
                     </NavLink>
                   </li>
