@@ -66,7 +66,7 @@ export default function LeftNavbar() {
                 </Link>
                 <ul className="pcoded-submenu">
                   <li className="">
-                    <NavLink to="/admin/authors">
+                    <NavLink to="/admin/authors/list">
                       <span className="pcoded-micon">
                         <i className="icon-chart"></i>
                       </span>

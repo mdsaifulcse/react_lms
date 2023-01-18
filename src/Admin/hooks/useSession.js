@@ -1,6 +1,5 @@
 import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
-import { json } from "react-router-dom";
+import { useState } from "react";
 
 export default function useSession() {
   const [currentUser, setCurrentUser] = useState();
@@ -42,21 +41,11 @@ export default function useSession() {
 
   const getToken = localStorage.getItem("lms-access-token");
 
-  const defaultHeadersForAdmin = () => {
-    const token = localStorage.getItem("lms-access-token");
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    };
-    return headers;
-  };
-
   return {
     authUser,
     getToken,
     setToken,
     removeToken,
-    defaultHeadersForAdmin,
     setUserDetails,
     getUserDetails,
   };

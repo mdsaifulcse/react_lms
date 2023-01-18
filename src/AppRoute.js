@@ -8,6 +8,7 @@ import AuthSignIn from "./Admin/Components/Layout/AuthSignIn";
 import UserList from "./Admin/Components/Pages/UserList";
 import AdminAuthGuard from "./AuthGuard/AdminAuthGuard";
 import AllAuthorsList from "./Admin/Components/Pages/Authors/AllAuthorsList";
+import CreateAuthor from "./Admin/Components/Pages/Authors/CreateAuthor";
 
 const AppRoute = () => {
   return (
@@ -23,8 +24,9 @@ const AppRoute = () => {
                 <Route path="user-list" element={<UserList />} />
 
                 {/* Author */}
-                <Route path="authors/" element={<AllAuthorsList />}>
-                  <Route path="create" element={<AllAuthorsList />} />
+                <Route path="authors/">
+                  <Route path="list" element={<AllAuthorsList />} />
+                  <Route path="create" element={<CreateAuthor />} />
                   <Route path="edit" element={<AllAuthorsList />} />
                   <Route path="show" element={<AllAuthorsList />} />
                 </Route>

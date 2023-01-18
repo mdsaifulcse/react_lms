@@ -1,8 +1,8 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import axios from "axios";
 import config from "../Helper/config";
-import { toast } from "react-toastify";
 import useSession from "../hooks/useSession";
+import useHttpHeader from "../hooks/useHttpHeader";
 
 const AuthContext = React.createContext();
 export function useAuth() {
@@ -10,10 +10,9 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
-  const [loading, setLoading] = useState(true);
-
   const baseUrl = config.baseUrl;
-  const { defaultHeadersForAdmin, getUserDetails } = useSession();
+  const { getUserDetails } = useSession();
+  const { defaultHeadersForAdmin } = useHttpHeader();
 
   const login = async ({ username, password }) => {
     const headers = await defaultHeadersForAdmin();

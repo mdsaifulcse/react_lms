@@ -1,11 +1,9 @@
 import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useSession from "./useSession";
 
 export default function useToster() {
   const { removeToken } = useSession();
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
 
   var message = "";
@@ -42,5 +40,5 @@ export default function useToster() {
     }
   };
 
-  return { loading, onSuccess, onError };
+  return { onSuccess, onError };
 }

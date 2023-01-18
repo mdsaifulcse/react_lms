@@ -1,14 +1,8 @@
 import AppRoute from "./AppRoute";
-import {
-  QueryClient,
-  QueryCache,
-  MutationCache,
-  QueryClientProvider,
-} from "react-query";
-import { ToastContainer, toast } from "react-toastify";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider } from "../src/Admin/Contexts/AuthContext";
-import { useState } from "react";
 
 function App() {
   const queryClient = new QueryClient();

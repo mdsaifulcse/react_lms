@@ -1,7 +1,5 @@
 import useSession from "../Admin/hooks/useSession";
-import { Outlet, useNavigate, Navigate } from "react-router-dom";
-import { getJSON } from "jquery";
-import { useState } from "react";
+import { Outlet, Navigate } from "react-router-dom";
 
 export default function AdminAuthGuard() {
   //const [token, setToken] = useState();

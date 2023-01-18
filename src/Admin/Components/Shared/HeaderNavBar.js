@@ -2,26 +2,20 @@ import { useQuery } from "react-query";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../Contexts/AuthContext";
 import useToster from "../../hooks/useToster";
-import { useState } from "react";
 import useSession from "../../hooks/useSession";
 import Loading from "../Ui-Component/Loading";
 export default function HeaderNav() {
   const { logOut, currentUser } = useAuth();
-  const { removeToken, getUserDetails } = useSession();
-  const { onError, onSuccess } = useToster();
-  const [allowedToFetch, setAllowedToFetch] = useState(false);
+  const { removeToken } = useSession();
+  const { onError } = useToster();
 
   const auth = currentUser;
 
-  const { data, status, isLoading, isError, refetch, isFetching } = useQuery(
-    "admin-logout",
-    logOut,
-    {
-      enabled: allowedToFetch,
-      onSuccess: removeToken,
-      onError: onError,
-    }
-  );
+  const { isLoading, refetch } = useQuery("admin-logout", logOut, {
+    enabled: false,
+    onSuccess: removeToken,
+    onError: onError,
+  });
 
   if (isLoading) {
     return <Loading />;
