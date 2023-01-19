@@ -5,6 +5,15 @@ export default function useAuthorApi() {
   const { defaultHeadersForAdmin } = httpHeaders();
   const baseUrl = config.baseUrl;
 
+  const allAuthorsRequest = async () => {
+    const headers = await defaultHeadersForAdmin();
+    const response = await axios(`${baseUrl}admin/authors`, {
+      method: "GET",
+      headers,
+    });
+    return response;
+  };
+
   const createAuthorRequest = async (data) => {
     const headers = await defaultHeadersForAdmin("multipart/form-data");
     const response = await axios(`${baseUrl}admin/authors`, {
@@ -15,9 +24,9 @@ export default function useAuthorApi() {
     return response;
   };
 
-  const allAuthorsRequest = async () => {
+  const showAuthorsRequest = async (authorId) => {
     const headers = await defaultHeadersForAdmin();
-    const response = await axios(`${baseUrl}admin/authors`, {
+    const response = await axios(`${baseUrl}admin/authors/${authorId}`, {
       method: "GET",
       headers,
     });
@@ -47,6 +56,7 @@ export default function useAuthorApi() {
     deleteAuthorsRequest,
     createAuthorRequest,
     allAuthorsRequest,
+    showAuthorsRequest,
     getAuthorMaxSequence,
   };
 }

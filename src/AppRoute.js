@@ -9,6 +9,7 @@ import UserList from "./Admin/Components/Pages/UserList";
 import AdminAuthGuard from "./AuthGuard/AdminAuthGuard";
 import AllAuthorsList from "./Admin/Components/Pages/Authors/AllAuthorsList";
 import CreateAuthor from "./Admin/Components/Pages/Authors/CreateAuthor";
+import EditAuthor from "./Admin/Components/Pages/Authors/EditAuthor";
 
 const AppRoute = () => {
   return (
@@ -27,7 +28,7 @@ const AppRoute = () => {
                 <Route path="authors/">
                   <Route path="list" element={<AllAuthorsList />} />
                   <Route path="create" element={<CreateAuthor />} />
-                  <Route path="edit" element={<AllAuthorsList />} />
+                  <Route path="edit/:authorId" element={<EditAuthor />} />
                   <Route path="show" element={<AllAuthorsList />} />
                 </Route>
               </Route>

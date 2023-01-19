@@ -111,7 +111,39 @@ export default function AllAuthorsList() {
                 </div>
                 <div className="card-block table-border-style">
                   <div className="table-responsive">
-                    {<MaterialReactTable columns={columns} data={data} />}
+                    {
+                      <MaterialReactTable
+                        columns={columns}
+                        data={data}
+                        enableRowActions
+                        enableColumnActions
+                        enableRowNumbers
+                        positionActionsColumn="last"
+                        enablePagination="false"
+                        manualPagination
+                        renderRowActions={(row, index) => (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                let author = row.row.original;
+                                deleteHandler(author.id, author.name);
+                              }}
+                              className="btn  btn-danger btn-sm"
+                            >
+                              <i className="icofont icofont-trash"></i>
+                            </button>
+                            <Link
+                              to={`/admin/authors/edit/${row.row.original.id}`}
+                              title="Edit Author"
+                              className="btn btn-warning btn-sm"
+                            >
+                              <i className="icofont icofont-edit"></i>
+                            </Link>
+                          </>
+                        )}
+                      />
+                    }
                     {/* <table className="table">
                       <thead>
                         <tr>
