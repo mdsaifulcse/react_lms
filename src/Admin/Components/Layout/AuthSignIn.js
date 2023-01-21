@@ -10,37 +10,13 @@ export default function AuthSignIn() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
-  // const fetchCategoy = () => {
-  //   return axios.get(apiUrl + "admin/test-data").then((res) => res.data);
-  // };
-
-  // const { data, isLoading, isError, refetch } = useQuery(
-  //   ["catData"],
-  //   fetchCategoy
-  // );
-
-  // const adminLogin = async (postData) => {
-  //   const response = await axios(`${apiUrl}admin/login`, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     data: postData,
-  //   });
-  //   //  console.log(response);
-  //   return response;
-  // };
-
   const { login } = useAuth();
   const { onError, onSuccess } = useToster();
   const { setToken } = useSession();
 
-  const { mutateAsync, isError, isLoading } = useMutation(login, {
+  const { mutateAsync, isLoading } = useMutation("login", login, {
     onSuccess: setToken,
     onError: onError,
-    // onSettled: () => {
-    //   queryClient.invalidateQueries("admin/login");
-    // },
   });
 
   if (isLoading) {
@@ -51,7 +27,7 @@ export default function AuthSignIn() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-
+    console.log("dd");
     if (username === "" || password === " ") {
       return setError("Username and password are required");
     } else {

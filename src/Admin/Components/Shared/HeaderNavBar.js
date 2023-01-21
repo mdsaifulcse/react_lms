@@ -136,7 +136,7 @@ export default function HeaderNav() {
               <li className="user-profile header-notification">
                 <Link to="#!">
                   {/* <img src="assets/images/user.png" alt="User-Profile-Image"> */}
-                  <span>{auth.name} </span>
+                  <span>{auth ? auth.name : ""} </span>
                   <i className="ti-angle-down"></i>
                 </Link>
                 <ul className="show-notification profile-notification">

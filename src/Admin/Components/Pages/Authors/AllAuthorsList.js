@@ -119,8 +119,7 @@ export default function AllAuthorsList() {
                         enableColumnActions
                         enableRowNumbers
                         positionActionsColumn="last"
-                        enablePagination="false"
-                        manualPagination
+                        enablePagination="true"
                         renderRowActions={(row, index) => (
                           <>
                             <button

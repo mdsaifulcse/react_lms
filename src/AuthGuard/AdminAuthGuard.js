@@ -8,5 +8,5 @@ export default function AdminAuthGuard() {
 
   const token = getToken;
 
-  return token ? <Outlet /> : <Navigate to="/" />;
+  return token ? <Outlet /> : <Navigate to="/login/admin" />;
 }

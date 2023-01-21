@@ -24,11 +24,24 @@ export default function useAuthorApi() {
     return response;
   };
 
-  const showAuthorsRequest = async (authorId) => {
+  const showAuthorsRequest = async ({ queryKey }) => {
+    const authorId = queryKey[1];
     const headers = await defaultHeadersForAdmin();
     const response = await axios(`${baseUrl}admin/authors/${authorId}`, {
       method: "GET",
       headers,
+    });
+    return response;
+  };
+
+  const updateAuthorRequest = async (data) => {
+    const authorId = 28;
+    console.log(authorId);
+    const headers = await defaultHeadersForAdmin("multipart/form-data");
+    const response = await axios(`${baseUrl}admin/authors/${authorId}`, {
+      method: "PUT",
+      headers,
+      data: data,
     });
     return response;
   };
@@ -57,6 +70,7 @@ export default function useAuthorApi() {
     createAuthorRequest,
     allAuthorsRequest,
     showAuthorsRequest,
+    updateAuthorRequest,
     getAuthorMaxSequence,
   };
 }

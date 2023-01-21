@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
   const login = async ({ username, password }) => {
     const headers = await defaultHeadersForAdmin();
 
-    const response = await axios(`${baseUrl}admin/login`, {
+    const response = await axios(`${baseUrl}login/admin`, {
       method: "POST",
       headers,
       data: { username, password },

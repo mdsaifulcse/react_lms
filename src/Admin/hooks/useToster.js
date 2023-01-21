@@ -6,8 +6,8 @@ export default function useToster() {
   const { removeToken } = useSession();
   const [successMessage, setSuccessMessage] = useState(null);
 
-  var message = "";
   const onError = (error) => {
+    var message = "";
     if (error.response.status === 400) {
       message = error.response.data.errors;
       toast.error(message, {
