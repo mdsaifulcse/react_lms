@@ -1,7 +1,6 @@
-import HeaderNav from "../Shared/HeaderNavBar";
-import RightSidebar from "../Shared/RightSidebar";
-import LeftNavbar from "../Shared/LeftNavbar";
-import PageHeader from "../Shared/PageHeader";
+import HeaderNav from "../shared/HeaderNavBar";
+import RightSidebar from "../shared/RightSidebar";
+import LeftNavbar from "../shared/LeftNavbar";
 import { Outlet } from "react-router-dom";
 //import { Axios } from "axios";
 //import { useEffect } from "react";

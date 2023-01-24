@@ -2,7 +2,7 @@ import AppRoute from "./AppRoute";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { AuthProvider } from "../src/Admin/Contexts/AuthContext";
+import { AuthProvider } from "../src/admin/contexts/AuthContext";
 
 function App() {
   const queryClient = new QueryClient();

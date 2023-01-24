@@ -1,6 +1,6 @@
 import axios from "axios";
 import httpHeaders from "../../../hooks/useHttpHeader";
-import config from "../../../Helper/config";
+import config from "../../../helper/config";
 export default function useAuthorApi() {
   const { defaultHeadersForAdmin } = httpHeaders();
   const baseUrl = config.baseUrl;
@@ -34,12 +34,11 @@ export default function useAuthorApi() {
     return response;
   };
 
-  const updateAuthorRequest = async (data) => {
-    const authorId = 28;
-    console.log(authorId);
+  const updateAuthorRequest = async (data, authorId) => {
     const headers = await defaultHeadersForAdmin("multipart/form-data");
     const response = await axios(`${baseUrl}admin/authors/${authorId}`, {
-      method: "PUT",
+      //${authorId}
+      method: "POST",
       headers,
       data: data,
     });

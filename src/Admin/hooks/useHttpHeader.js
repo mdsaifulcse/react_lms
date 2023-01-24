@@ -8,6 +8,7 @@ export default function useHttpHeader() {
       "Content-Type": contentType ? contentType : "application/json",
       Accept: "application/json",
       Authorization: "Bearer " + token,
+      _method: "PUT",
     };
     return headers;
   };

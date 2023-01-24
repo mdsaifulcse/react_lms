@@ -1,16 +1,13 @@
-import { Fragment, useState, useEffect } from "react";
-import PageHeader from "../../Shared/PageHeader";
+import { useState, useEffect } from "react";
+import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
-import { useQuery, useMutation } from "react-query";
+import { useQuery } from "react-query";
 import useAuthorApi from "./useAuthorApi";
-import defaultImage from "../../../Assets/Image/default_image.jpg";
-import Loading from "../../Ui-Component/Loading";
+import defaultImage from "../../../assets/image/default_image.jpg";
+import Loading from "../../ui-component/Loading";
 
 import { Link, useParams } from "react-router-dom";
 export default function EditAuthor() {
-  const { authorId } = useParams();
-  const { onError, onSuccess } = useToster();
-  const { showAuthorsRequest, updateAuthorRequest } = useAuthorApi();
   const initialFormData = {
     id: null,
     name: "",
@@ -24,29 +21,28 @@ export default function EditAuthor() {
     show_home: 0,
     status: 1,
     sequence: 0,
+    _method: "PUT",
   };
+  const { authorId } = useParams();
+  const { onError, onSuccess } = useToster();
+  const { showAuthorsRequest, updateAuthorRequest } = useAuthorApi();
+  const [allData, setAllData] = useState(initialFormData);
+  const [filePreview, setFilePreview] = useState(defaultImage);
+  const [authorPhoto, setAuthorPhoto] = useState(null);
+
   // get & set author data ----------
   const { data, isLoading: loadAuthor } = useQuery(
     ["showAuthorsRequest", parseInt(authorId)],
     showAuthorsRequest,
     {
-      onSuccess: onSuccess,
+      //onSuccess: onSuccess,
       onError: onError,
       enabled: true,
       refetchOnWindowFocus: false,
     }
   );
-  // Edit Api MutateAsync --------------
-  const { mutateAsync, isLoading: loadAuthorAfterUpdate } = useMutation(
-    "updateAuthorRequest",
-    updateAuthorRequest,
-    {
-      onSuccess: onSuccess,
-      onError: onError,
-      onMutate: {},
-    }
-  );
-  const updateInitialValue = (author) => {
+
+  const updateInitialValue = async (author) => {
     initialFormData.id = author.id;
     initialFormData.name = author.name ? author.name : "";
     initialFormData.email = author.email ? author.email : "";
@@ -54,11 +50,12 @@ export default function EditAuthor() {
     initialFormData.contact = author.contact ? author.contact : "";
     initialFormData.address1 = author.address1 ? author.address1 : "";
     initialFormData.address2 = author.address2 ? author.address2 : "";
-    initialFormData.bio = author.email ? author.email : "";
-    initialFormData.show_home = author.bio ? author.bio : "";
+    initialFormData.bio = author.bio ? author.bio : "";
+    initialFormData.show_home = author.show_home ? author.show_home : "";
     initialFormData.status = author.status ? author.status : "";
     initialFormData.sequence = author.sequence ? author.sequence : "";
-    setFilePreview(author.photo);
+    await setFilePreview(author.photo ? author.photo : defaultImage);
+    await setAllData(initialFormData);
   };
   useEffect(() => {
     let author = [];
@@ -67,15 +64,7 @@ export default function EditAuthor() {
       author = data.data.result;
       updateInitialValue(author);
     }
-    if (loadAuthorAfterUpdate) {
-      author = data.data.result;
-      updateInitialValue(author);
-    }
-  }, [loadAuthor, loadAuthorAfterUpdate]);
-
-  const [allData, setAllData] = useState(initialFormData);
-  const [filePreview, setFilePreview] = useState(defaultImage);
-  const [authorPhoto, setAuthorPhoto] = useState(null);
+  }, [loadAuthor]);
 
   // on field value change -----
   const handleChange = (e) => {
@@ -92,9 +81,11 @@ export default function EditAuthor() {
   // Form Submit Handle --------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(authorPhoto);
     const formData = new FormData();
-    formData.append("photo", authorPhoto);
+
+    if (authorPhoto) {
+      formData.append("photo", authorPhoto);
+    }
 
     formData.append("id", allData.id);
     formData.append("name", allData.name);
@@ -107,15 +98,20 @@ export default function EditAuthor() {
     formData.append("show_home", allData.show_home);
     formData.append("status", allData.status);
     formData.append("sequence", allData.sequence);
+    formData.append("_method", "PUT");
 
-    await mutateAsync(formData);
-    await setAllData(initialFormData);
-    //return navigate("/admin/authors/list", { replace: true });
+    const response = await updateAuthorRequest(formData, authorId);
+    if (response.status === 200) {
+      await onSuccess(response);
+      //await customOnSuccess("Update");
+    } else {
+      await onError(response);
+    }
   };
 
   return (
     <>
-      <PageHeader pageTitle={"Create Author"} actionPage={"Create Author"} />
+      <PageHeader pageTitle={"Create Author"} actionPage={"Edit Author"} />
 
       {loadAuthor ? (
         <Loading />
@@ -129,16 +125,19 @@ export default function EditAuthor() {
 
                   <span></span>
                   <div className="card-header-right">
-                    <i className="icofont icofont-refresh"></i>
+                    {/* <i className="icofont icofont-refresh"></i> */}
                     <Link to="/admin/authors/list" title="Author list">
-                      <i className="icofont icofont-list"></i>
+                      Author List <i className="icofont icofont-list"></i>
                     </Link>
                   </div>
                 </div>
                 <div className="card-block">
                   <div className="row justify-content-center">
                     <div className="col-md-8">
-                      <form onSubmit={handleSubmit}>
+                      <form
+                        onSubmit={handleSubmit}
+                        encType="multipart/form-data"
+                      >
                         <div className="form-group row">
                           <label className="col-sm-2 col-form-label">
                             Name

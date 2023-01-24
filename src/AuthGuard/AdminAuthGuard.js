@@ -1,4 +1,4 @@
-import useSession from "../Admin/hooks/useSession";
+import useSession from "../admin/hooks/useSession";
 import { Outlet, Navigate } from "react-router-dom";
 
 export default function AdminAuthGuard() {

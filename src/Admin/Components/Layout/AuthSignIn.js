@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useMutation } from "react-query";
-import { useAuth } from "../../Contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import useToster from "../../hooks/useToster";
 import useSession from "../../hooks/useSession";
-import Loading from "../Ui-Component/Loading";
+import Loading from "../ui-component/Loading";
 
 export default function AuthSignIn() {
   const [username, setUsername] = useState("");
@@ -11,7 +11,7 @@ export default function AuthSignIn() {
   const [error, setError] = useState(null);
 
   const { login } = useAuth();
-  const { onError, onSuccess } = useToster();
+  const { onError } = useToster();
   const { setToken } = useSession();
 
   const { mutateAsync, isLoading } = useMutation("login", login, {

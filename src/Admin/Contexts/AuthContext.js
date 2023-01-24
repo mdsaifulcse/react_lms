@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import axios from "axios";
-import config from "../Helper/config";
+import config from "../helper/config";
 import useSession from "../hooks/useSession";
 import useHttpHeader from "../hooks/useHttpHeader";
 

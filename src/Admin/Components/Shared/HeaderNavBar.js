@@ -1,9 +1,9 @@
 import { useQuery } from "react-query";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../Contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import useToster from "../../hooks/useToster";
 import useSession from "../../hooks/useSession";
-import Loading from "../Ui-Component/Loading";
+import Loading from "../ui-component/Loading";
 export default function HeaderNav() {
   const { logOut, currentUser } = useAuth();
   const { removeToken } = useSession();

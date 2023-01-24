@@ -1,12 +1,10 @@
 import { toast } from "react-toastify";
-import { useState } from "react";
 import useSession from "./useSession";
 
 export default function useToster() {
   const { removeToken } = useSession();
-  const [successMessage, setSuccessMessage] = useState(null);
 
-  const onError = (error) => {
+  const onError = async (error) => {
     var message = "";
     if (error.response.status === 400) {
       message = error.response.data.errors;
@@ -22,7 +20,7 @@ export default function useToster() {
         autoClose: 5000,
       });
     } else if (error.response.status === 404) {
-      message = error.response.data.message + " Api Not Found";
+      message = error.response.data.message + " Or Api Not Found";
       toast.error(message, {
         position: "top-right",
         autoClose: 5000,
@@ -30,15 +28,22 @@ export default function useToster() {
     }
   };
 
-  const onSuccess = (res) => {
+  const onSuccess = async (res) => {
     if (res.status === 200) {
-      setSuccessMessage(res.data.message);
-      toast.success(successMessage, {
+      // await setSuccessMessage(res.data.message);
+      toast.success(res.data.message, {
         position: "top-right",
         autoClose: 5000,
       });
     }
   };
 
-  return { onSuccess, onError };
+  const customOnSuccess = async (customMessage) => {
+    toast.success(customMessage, {
+      position: "top-right",
+      autoClose: 5000,
+    });
+  };
+
+  return { onSuccess, onError, customOnSuccess };
 }

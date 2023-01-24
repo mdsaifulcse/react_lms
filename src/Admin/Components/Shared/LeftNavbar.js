@@ -83,17 +83,97 @@ export default function LeftNavbar() {
                       <span className="pcoded-mcaret"></span>
                     </NavLink>
                   </li>
+                </ul>
+              </li>
+              <li className=" pcoded-hasmenu">
+                <Link to="#!">
+                  <span className="pcoded-micon">
+                    <i className="icon-pie-chart"></i>
+                  </span>
+                  <span className="pcoded-mtext">Publisher</span>
+                  <span className="pcoded-mcaret"></span>
+                </Link>
+                <ul className="pcoded-submenu">
                   <li className="">
-                    <NavLink to="/admin/authors/show">
+                    <NavLink to="/admin/publishers/list">
                       <span className="pcoded-micon">
                         <i className="icon-chart"></i>
                       </span>
-                      <span className="pcoded-mtext">Show</span>
+                      <span className="pcoded-mtext">List</span>
+                      <span className="pcoded-mcaret"></span>
+                    </NavLink>
+                  </li>
+                  <li className="">
+                    <NavLink to="/admin/publishers/create">
+                      <span className="pcoded-micon">
+                        <i className="icon-chart"></i>
+                      </span>
+                      <span className="pcoded-mtext">Create</span>
                       <span className="pcoded-mcaret"></span>
                     </NavLink>
                   </li>
                 </ul>
               </li>
+
+              <li className=" pcoded-hasmenu">
+                <Link to="#!">
+                  <span className="pcoded-micon">
+                    <i className="icon-pie-chart"></i>
+                  </span>
+                  <span className="pcoded-mtext">Country</span>
+                  <span className="pcoded-mcaret"></span>
+                </Link>
+                <ul className="pcoded-submenu">
+                  <li className="">
+                    <NavLink to="/admin/countries/list">
+                      <span className="pcoded-micon">
+                        <i className="icon-chart"></i>
+                      </span>
+                      <span className="pcoded-mtext">List</span>
+                      <span className="pcoded-mcaret"></span>
+                    </NavLink>
+                  </li>
+                  <li className="">
+                    <NavLink to="/admin/countries/create">
+                      <span className="pcoded-micon">
+                        <i className="icon-chart"></i>
+                      </span>
+                      <span className="pcoded-mtext">Create</span>
+                      <span className="pcoded-mcaret"></span>
+                    </NavLink>
+                  </li>
+                </ul>
+              </li>
+              <li className=" pcoded-hasmenu">
+                <Link to="#!">
+                  <span className="pcoded-micon">
+                    <i className="icon-pie-chart"></i>
+                  </span>
+                  <span className="pcoded-mtext">Language</span>
+                  <span className="pcoded-mcaret"></span>
+                </Link>
+                <ul className="pcoded-submenu">
+                  <li className="">
+                    <NavLink to="/admin/languages/list">
+                      <span className="pcoded-micon">
+                        <i className="icon-chart"></i>
+                      </span>
+                      <span className="pcoded-mtext">List</span>
+                      <span className="pcoded-mcaret"></span>
+                    </NavLink>
+                  </li>
+                  <li className="">
+                    <NavLink to="/admin/languages/create">
+                      <span className="pcoded-micon">
+                        <i className="icon-chart"></i>
+                      </span>
+                      <span className="pcoded-mtext">Create</span>
+                      <span className="pcoded-mcaret"></span>
+                    </NavLink>
+                  </li>
+                </ul>
+              </li>
+
               <li className=" ">
                 <Link to="dashboard">
                   <img

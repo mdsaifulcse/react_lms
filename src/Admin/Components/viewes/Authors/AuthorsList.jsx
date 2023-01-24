@@ -1,17 +1,19 @@
-import PageHeader from "../../Shared/PageHeader";
+import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
 import useAuthorApi from "./useAuthorApi";
-import Loading from "../../Ui-Component/Loading";
+import Loading from "../../ui-component/Loading";
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import MaterialReactTable from "material-react-table";
+import ShowAuthorModal from "./ShowAuthorModal";
 
 export default function AllAuthorsList() {
   const { onError, onSuccess } = useToster();
   const { allAuthorsRequest, deleteAuthorsRequest } = useAuthorApi();
-  //const [ authors, setAuthors ] = useState({});
+  const [author, setAuthor] = useState({});
+  const [modalShow, setModalShow] = useState(false);
 
   const {
     data: authors,
@@ -23,7 +25,7 @@ export default function AllAuthorsList() {
     refetchOnWindowFocus: false,
   });
 
-  async function handleRefetchAuthor() {
+  async function handleRefetchAllData() {
     refetch();
   }
 
@@ -51,7 +53,7 @@ export default function AllAuthorsList() {
         await mutateAsync(authorId);
         await refetch();
       } else {
-        console.log("123");
+        console.log("delete error");
       }
     });
   };
@@ -65,25 +67,45 @@ export default function AllAuthorsList() {
     () => [
       {
         accessorKey: "name", //simple recommended way to define a column
-        header: "Name",
-        muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
-        Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
+        header: <span className="table-header">Name</span>,
+        //muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
+        //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
       },
       {
         accessorKey: "email", //simple recommended way to define a column
-        header: "Email",
-        muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
-        Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
+        header: <span className="table-header">Email</span>,
+        // muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
+        //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
       },
       {
         accessorFn: (row) => row.mobile, //alternate way
         id: "mobile", //id required if you use accessorFn instead of accessorKey
         header: "Mobile",
-        Header: <i style={{ color: "red" }}>Mobile</i>, //optional custom markup
+        Header: <span className="table-header">Mobile</span>, //optional custom markup
+      },
+      {
+        accessorFn: (row) =>
+          row.status === 1 ? (
+            <>
+              <span className="badge badge-success">Active</span>
+            </>
+          ) : (
+            <>
+              <span className="badge badge-danger">Inactive</span>
+            </>
+          ), //alternate way
+        id: "status", //id required if you use accessorFn instead of accessorKey
+        header: "Status",
+        Header: <span className="table-header">Status</span>, //optional custom markup
       },
     ],
     []
   );
+
+  const showModalHandler = async (author) => {
+    await setAuthor(author);
+    await setModalShow(true);
+  };
 
   return (
     <>
@@ -92,7 +114,6 @@ export default function AllAuthorsList() {
       ) : (
         <>
           <PageHeader pageTitle={"Author"} actionPage={"Author"} />
-
           <div className="row">
             <div className="col-md-12">
               <div className="card">
@@ -101,11 +122,14 @@ export default function AllAuthorsList() {
                   <span></span>
                   <div className="card-header-right">
                     <i
-                      onClick={handleRefetchAuthor}
+                      onClick={handleRefetchAllData}
                       className="icofont icofont-refresh"
                     ></i>
-                    <Link to="/admin/authors/create" title="To Create Author">
-                      <i className="icofont icofont-plus"></i>
+                    <Link
+                      to="/admin/authors/create"
+                      title="To Create New Author"
+                    >
+                      New <i className="icofont icofont-plus"></i>
                     </Link>
                   </div>
                 </div>
@@ -126,64 +150,43 @@ export default function AllAuthorsList() {
                               onClick={(e) => {
                                 e.preventDefault();
                                 let author = row.row.original;
-                                deleteHandler(author.id, author.name);
+                                showModalHandler(author);
                               }}
-                              className="btn  btn-danger btn-sm"
+                              className="btn  btn-info btn-sm"
                             >
-                              <i className="icofont icofont-trash"></i>
-                            </button>
+                              <i className="icofont icofont-eye"></i>
+                            </button>{" "}
                             <Link
                               to={`/admin/authors/edit/${row.row.original.id}`}
                               title="Edit Author"
                               className="btn btn-warning btn-sm"
                             >
                               <i className="icofont icofont-edit"></i>
-                            </Link>
+                            </Link>{" "}
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                let author = row.row.original;
+                                deleteHandler(author.id, author.name);
+                              }}
+                              className="btn  btn-danger btn-sm"
+                            >
+                              <i className="icofont icofont-trash"></i>
+                            </button>
                           </>
                         )}
                       />
                     }
-                    {/* <table className="table">
-                      <thead>
-                        <tr>
-                          <th>SN.</th>
-                          <th>Name</th>
-                          <th>Email</th>
-                          <th>Mobile</th>
-                          <th>Status</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {data.map((author, i) => (
-                          <tr key={i}>
-                            <th scope="row">{i + 1}</th>
-                            <td>{author.name}</td>
-                            <td>{author.email ? author.email : "N/A"}</td>
-                            <td>{author.mobile ? author.mobile : "N/A"}</td>
-                            <td>
-                              {author.status === 1 ? "Active" : "Inactive"}
-                            </td>
-                            <td>
-                              <button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  deleteHandler(author.id, author.name);
-                                }}
-                                className="btn btn-sm btn-danger"
-                              >
-                                <i className="icofont icofont-trash"></i>
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table> */}
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          <ShowAuthorModal
+            data={author}
+            show={modalShow}
+            onHide={() => setModalShow(false)}
+          />
         </>
       )}
     </>

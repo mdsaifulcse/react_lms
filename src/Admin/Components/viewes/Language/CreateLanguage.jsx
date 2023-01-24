@@ -1,34 +1,27 @@
 import { Fragment, useState, useEffect } from "react";
-import PageHeader from "../../Shared/PageHeader";
+import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
-import useAuthorApi from "./useAuthorApi";
-import defaultImage from "../../../Assets/Image/default_image.jpg";
+import useLanguageApi from "./useLanguageApi";
+import defaultImage from "../../../assets/image/default_image.jpg";
 
 import { Link } from "react-router-dom";
-export default function CreateAuthor() {
+export default function CreateLanguage() {
   const { onError, onSuccess } = useToster();
-  const { getAuthorMaxSequence, createAuthorRequest } = useAuthorApi();
+  const { getLanguageMaxSequence, createLanguageRequest } = useLanguageApi();
   const initialFormData = {
     name: "",
-    email: "",
-    mobile: "",
-    photo: "",
-    contact: "",
-    address1: "",
-    address2: "",
-    bio: "",
-    show_home: 0,
     status: 1,
     sequence: 0,
   };
   const [allData, setAllData] = useState(initialFormData);
   const [filePreview, setFilePreview] = useState(defaultImage);
-  const [authorPhoto, setAuthorPhoto] = useState(null);
+  const [photo, setPhoto] = useState(null);
 
+  //  Get sequence number-----------------------------
   const { data: maxSequenceData, refetch } = useQuery(
-    "getAuthorMaxSequence",
-    getAuthorMaxSequence,
+    "getLanguageMaxSequence",
+    getLanguageMaxSequence,
     {
       //onSuccess: onSuccess,
       onError: onError,
@@ -56,14 +49,14 @@ export default function CreateAuthor() {
   };
 
   function handelImage(e) {
-    setAuthorPhoto(e.target.files[0]);
+    setPhoto(e.target.files[0]);
     setFilePreview(URL.createObjectURL(e.target.files[0]));
   }
 
   // Create Api MutateAsync --------------
   const { mutateAsync } = useMutation(
-    "createAuthorRequest",
-    createAuthorRequest,
+    "createLanguageRequest",
+    createLanguageRequest,
     {
       onSuccess: onSuccess,
       onError: onError,
@@ -73,42 +66,37 @@ export default function CreateAuthor() {
   // Form Submit Handle --------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(authorPhoto);
     const formData = new FormData();
-    formData.append("photo", authorPhoto);
+    if (photo) {
+      formData.append("photo", photo);
+    }
 
     formData.append("name", allData.name);
-    formData.append("email", allData.email);
-    formData.append("mobile", allData.mobile);
-    formData.append("contact", allData.contact);
-    formData.append("address1", allData.address1);
-    formData.append("address2", allData.address2);
-    formData.append("bio", allData.bio);
-    formData.append("show_home", allData.show_home);
     formData.append("status", allData.status);
     formData.append("sequence", allData.sequence);
 
     await mutateAsync(formData);
     setAllData(initialFormData);
+    setFilePreview(defaultImage);
     await refetch();
-    //return navigate("/admin/authors/list", { replace: true });
+    //return navigate("/admin/publishers/list", { replace: true });
   };
 
   return (
     <>
-      <PageHeader pageTitle={"Create Author"} actionPage={"Create Author"} />
+      <PageHeader pageTitle={"Create Language"} actionPage={" Language"} />
 
       <div className="row">
         <div className="col-md-12">
           <div className="card">
             <div className="card-header">
-              <h5> Create New Author Here </h5>
+              <h5> Create New Language Here </h5>
 
               <span></span>
               <div className="card-header-right">
-                <i className="icofont icofont-refresh"></i>
-                <Link to="/admin/authors/list" title="Author list">
-                  <i className="icofont icofont-list"></i>
+                {/* <i className="icofont icofont-refresh"></i> */}
+                <Link to="/admin/languages/list" title="Publisher list">
+                  Language List <i className="icofont icofont-list"></i>
                 </Link>
               </div>
             </div>
@@ -117,7 +105,9 @@ export default function CreateAuthor() {
                 <div className="col-md-8">
                   <form onSubmit={handleSubmit}>
                     <div className="form-group row">
-                      <label className="col-sm-2 col-form-label">Name</label>
+                      <label className="col-sm-2 col-form-label">
+                        Language Name
+                      </label>
                       <div className="col-sm-10">
                         <input
                           name="name"
@@ -125,106 +115,8 @@ export default function CreateAuthor() {
                           onChange={handleChange}
                           type="text"
                           className="form-control"
-                          placeholder="Type author name"
+                          placeholder="Type Language name"
                         />
-                      </div>
-                    </div>
-
-                    <div className="form-group row">
-                      <label className="col-sm-2 col-form-label">Email</label>
-                      <div className="col-sm-10">
-                        <input
-                          name="email"
-                          value={allData.email}
-                          onChange={handleChange}
-                          type="text"
-                          className="form-control"
-                          placeholder="Type author email"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-group row">
-                      <label className="col-sm-2 col-form-label">Mobile</label>
-                      <div className="col-sm-10">
-                        <input
-                          name="mobile"
-                          value={allData.mobile}
-                          onChange={handleChange}
-                          type="text"
-                          className="form-control"
-                          placeholder="Type author mobile"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-group row">
-                      <label className="col-sm-2 col-form-label">Contact</label>
-                      <div className="col-sm-10">
-                        <input
-                          name="contact"
-                          value={allData.contact}
-                          onChange={handleChange}
-                          type="text"
-                          className="form-control"
-                          placeholder="Type author contact"
-                        />
-                      </div>
-                    </div>
-
-                    {/* <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">Select Box</label>
-                  <div className="col-sm-10">
-                    <select name="select" className="form-control">
-                      <option value="opt1">Select One Value Only</option>
-                      <option value="opt2">Type 2</option>
-                      <option value="opt3">Type 3</option>
-                      <option value="opt4">Type 4</option>
-                      <option value="opt5">Type 5</option>
-                      <option value="opt6">Type 6</option>
-                      <option value="opt7">Type 7</option>
-                      <option value="opt8">Type 8</option>
-                    </select>
-                  </div>
-                </div> */}
-                    {/* <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">Round Input</label>
-                  <div className="col-sm-10">
-                    <input
-                      type="text"
-                      className="form-control form-control-round"
-                      placeholder=".form-control-round"
-                    />
-                  </div>
-                </div> */}
-
-                    <div className="form-group row">
-                      <label className="col-sm-2 col-form-label">Bio</label>
-                      <div className="col-sm-10">
-                        <textarea
-                          name="bio"
-                          value={allData.bio}
-                          onChange={handleChange}
-                          rows="5"
-                          cols="5"
-                          className="form-control"
-                          placeholder="Author Bio is here"
-                        ></textarea>
-                      </div>
-                    </div>
-
-                    <div className="form-group row">
-                      <label className="col-sm-2 col-form-label">Address</label>
-                      <div className="col-sm-10">
-                        <textarea
-                          name="address1"
-                          value={allData.address1}
-                          onChange={handleChange}
-                          rows="5"
-                          cols="5"
-                          className="form-control"
-                          placeholder="Author address is here"
-                        ></textarea>
                       </div>
                     </div>
 
@@ -245,20 +137,6 @@ export default function CreateAuthor() {
                       </div>
 
                       <div className="col-sm-3">
-                        <select
-                          name="show_home"
-                          onChange={handleChange}
-                          defaultValue={allData.show_home}
-                          className="form-control"
-                        >
-                          <option value="">Select One </option>
-                          <option value="1">Yes</option>
-                          <option value="0">No</option>
-                        </select>
-                        <label className=" col-form-label">Show at Home?</label>
-                      </div>
-
-                      <div className="col-sm-3">
                         <input
                           name="sequence"
                           value={allData.sequence}
@@ -270,39 +148,6 @@ export default function CreateAuthor() {
                           placeholder=""
                         />
                         <label className=" col-form-label">Sequence</label>
-                      </div>
-                    </div>
-
-                    <div className="form-group row">
-                      <label className="col-sm-2 col-form-label">
-                        Upload File
-                      </label>
-                      <div className="col-sm-5">
-                        <label htmlFor="imageUpladFile">
-                          <img
-                            className="py-2"
-                            src={filePreview}
-                            style={{
-                              width: "120px",
-                              border: "2px dashed #90b85c",
-                              cursor: "pointer",
-                            }}
-                            alt=""
-                          />
-                        </label>
-                      </div>
-
-                      <div className="col-sm-5">
-                        <input
-                          id="imageUpladFile"
-                          type="file"
-                          className="form-control"
-                          onChange={(e) => {
-                            handelImage(e);
-                          }}
-                          accept="image/*"
-                          style={{ display: "none" }}
-                        />
                       </div>
                     </div>
 
