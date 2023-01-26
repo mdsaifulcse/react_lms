@@ -35,14 +35,18 @@ export default function useLanguageApi() {
   };
 
   const updateLanguageRequest = async (data, id) => {
-    const headers = await defaultHeadersForAdmin("multipart/form-data");
-    const response = await axios(`${baseUrl}admin/languages/${id}`, {
-      //${authorId}
-      method: "POST",
-      headers,
-      data: data,
-    });
-    return response;
+    try {
+      const headers = await defaultHeadersForAdmin("multipart/form-data");
+      const response = await axios(`${baseUrl}admin/languages/${id}`, {
+        //${authorId}
+        method: "POST",
+        headers,
+        data: data,
+      });
+      return response;
+    } catch (error) {
+      return error;
+    }
   };
 
   const getLanguageMaxSequence = async () => {

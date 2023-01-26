@@ -23,6 +23,10 @@ import EditCountry from "./admin/components/viewes/Country/EditCountry";
 import LanguageList from "./admin/components/viewes/Language/LanguageList";
 import CreateLanguage from "./admin/components/viewes/Language/CreateLanguage";
 import EditLanguage from "./admin/components/viewes/Language/EditLanguage";
+//Category
+import CategoryList from "./admin/components/viewes/Category/CategoryList";
+//sub-categories
+import SubCategoryList from "./admin/components/viewes/SubCategory/SubCategoryList";
 
 const AppRoute = () => {
   return (
@@ -63,6 +67,14 @@ const AppRoute = () => {
                   <Route path="list" element={<LanguageList />} />
                   <Route path="create" element={<CreateLanguage />} />
                   <Route path="edit/:languageId" element={<EditLanguage />} />
+                </Route>
+                {/* Category */}
+                <Route path="categories/">
+                  <Route path="list" element={<CategoryList />} />
+                </Route>
+                {/*Sub Category */}
+                <Route path="sub-categories/">
+                  <Route path="list" element={<SubCategoryList />} />
                 </Route>
               </Route>
             </Route>

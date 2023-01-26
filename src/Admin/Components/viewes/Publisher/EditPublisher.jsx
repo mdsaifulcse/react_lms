@@ -52,7 +52,7 @@ export default function EditPublisher() {
     initialFormData.address2 = publisher.address2 ? publisher.address2 : "";
     initialFormData.bio = publisher.bio ? publisher.bio : "";
     initialFormData.show_home = publisher.show_home ? publisher.show_home : "";
-    initialFormData.status = publisher.status ? publisher.status : "";
+    initialFormData.status = publisher.status ? publisher.status : 0;
     initialFormData.sequence = publisher.sequence ? publisher.sequence : "";
     await setFilePreview(publisher.photo ? publisher.photo : defaultImage);
     await setAllData(initialFormData);
@@ -239,7 +239,7 @@ export default function EditPublisher() {
                             <select
                               name="status"
                               onChange={handleChange}
-                              defaultValue={allData.status}
+                              value={allData.status}
                               className="form-control"
                             >
                               <option value="">Select One</option>

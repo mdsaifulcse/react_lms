@@ -22,8 +22,8 @@ export default function EditLanguage() {
   const [filePreview, setFilePreview] = useState(defaultImage);
   const [photo, setPhoto] = useState(null);
 
-  // get & set Language data ----------
-  const { data, isLoading } = useQuery(
+  // get & set Language data -----------------
+  const { data, isLoading, isError, error } = useQuery(
     ["showLanguageRequest", parseInt(languageId)],
     showLanguageRequest,
     {
@@ -34,19 +34,24 @@ export default function EditLanguage() {
     }
   );
 
-  const updateInitialValue = async (Language) => {
-    initialFormData.id = Language.id;
-    initialFormData.name = Language.name ? Language.name : "";
-    initialFormData.status = Language.status ? Language.status : "";
-    initialFormData.sequence = Language.sequence ? Language.sequence : "";
-    await setFilePreview(Language.photo ? Language.photo : defaultImage);
+  const updateInitialValue = async (language) => {
+    initialFormData.id = language.id;
+    initialFormData.name = language.name ? language.name : "";
+    initialFormData.status = language.status ? language.status : 0;
+    initialFormData.sequence = language.sequence ? language.sequence : "";
+    await setFilePreview(language.photo ? language.photo : defaultImage);
     await setAllData(initialFormData);
   };
   useEffect(() => {
-    let Language = [];
+    let language = {};
     if (!isLoading) {
-      Language = data.data.result;
-      updateInitialValue(Language);
+      if (isError) {
+        onError(error); // Toster
+      } else {
+        language = data.data.result;
+      }
+
+      updateInitialValue(language);
     }
   }, [isLoading]);
 
@@ -79,6 +84,7 @@ export default function EditLanguage() {
     formData.append("_method", "PUT");
 
     const response = await updateLanguageRequest(formData, languageId);
+
     if (response.status === 200) {
       await onSuccess(response);
     } else {
@@ -112,10 +118,7 @@ export default function EditLanguage() {
                 <div className="card-block">
                   <div className="row justify-content-center">
                     <div className="col-md-8">
-                      <form
-                        onSubmit={handleSubmit}
-                        encType="multipart/form-data"
-                      >
+                      <form onSubmit={handleSubmit}>
                         <div className="form-group row">
                           <label className="col-sm-2 col-form-label">
                             Language Name
@@ -136,8 +139,8 @@ export default function EditLanguage() {
                           <div className="col-sm-3">
                             <select
                               name="status"
+                              value={allData.status}
                               onChange={handleChange}
-                              defaultValue={allData.status}
                               className="form-control"
                             >
                               <option value="">Select One</option>

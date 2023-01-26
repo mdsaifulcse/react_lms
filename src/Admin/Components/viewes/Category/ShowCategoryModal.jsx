@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import Modal from "react-bootstrap/Modal";
 import { Link } from "react-router-dom";
 
-export default function ShowLanguageModal({ data, show, onHide }) {
+export default function ShowCategoryModal({ data, show, onHide, headTitle }) {
   return (
     <>
       <Modal
@@ -13,7 +13,7 @@ export default function ShowLanguageModal({ data, show, onHide }) {
       >
         <Modal.Header>
           <Modal.Title id="contained-modal-title-vcenter">
-            Language Details
+            {headTitle}
           </Modal.Title>
           <span onClick={onHide} role="button" className="text-danger">
             X
@@ -24,8 +24,8 @@ export default function ShowLanguageModal({ data, show, onHide }) {
           <div className="card">
             <div className="card-header">
               {/* <h5 className="card-header-text">Language Info ({data.name})</h5> */}
-              <Link
-                to={`/admin/languages/edit/${data.id}`}
+              {/* <Link
+                to={`/admin/categories/edit/${data.id}`}
                 title="Edit Publisher"
               >
                 <button
@@ -35,7 +35,7 @@ export default function ShowLanguageModal({ data, show, onHide }) {
                 >
                   <i className="icofont icofont-edit"></i>
                 </button>
-              </Link>
+              </Link> */}
             </div>
             <div className="card-block">
               <div className="view-info">
@@ -43,7 +43,7 @@ export default function ShowLanguageModal({ data, show, onHide }) {
                   <div className="col-lg-12">
                     <div className="general-info">
                       <div className="row">
-                        <div className="col-lg-4 col-xl-4">
+                        {/* <div className="col-lg-4 col-xl-4">
                           <div className="card">
                             <div className="card-header contact-user">
                               {data.photo ? (
@@ -61,7 +61,7 @@ export default function ShowLanguageModal({ data, show, onHide }) {
                               <h4>{data.name}</h4>
                             </div>
                           </div>
-                        </div>
+                        </div> */}
                         {/* <!-- end of table col-lg-6 --> */}
                         <div className="col-lg-8 col-xl-8">
                           <table className="table">

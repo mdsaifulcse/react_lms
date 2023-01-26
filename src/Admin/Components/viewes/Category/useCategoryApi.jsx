@@ -1,22 +1,22 @@
 import axios from "axios";
 import httpHeaders from "../../../hooks/useHttpHeader";
 import config from "../../../helper/config";
-export default function useAuthorApi() {
+export default function useCategoryApi() {
   const { defaultHeadersForAdmin } = httpHeaders();
   const baseUrl = config.baseUrl;
 
-  const allAuthorsRequest = async () => {
+  const allCategoriesRequest = async () => {
     const headers = await defaultHeadersForAdmin();
-    const response = await axios(`${baseUrl}admin/authors`, {
+    const response = await axios(`${baseUrl}admin/categories`, {
       method: "GET",
       headers,
     });
     return response;
   };
 
-  const createAuthorRequest = async (data) => {
+  const createCategoryRequest = async (data) => {
     const headers = await defaultHeadersForAdmin("multipart/form-data");
-    const response = await axios(`${baseUrl}admin/authors`, {
+    const response = await axios(`${baseUrl}admin/categories`, {
       method: "POST",
       headers,
       data: data,
@@ -24,20 +24,20 @@ export default function useAuthorApi() {
     return response;
   };
 
-  const showAuthorsRequest = async ({ queryKey }) => {
-    const authorId = queryKey[1];
+  const showCategoryRequest = async ({ queryKey }) => {
+    const id = queryKey[1];
     const headers = await defaultHeadersForAdmin();
-    const response = await axios(`${baseUrl}admin/authors/${authorId}`, {
+    const response = await axios(`${baseUrl}admin/categories/${id}`, {
       method: "GET",
       headers,
     });
     return response;
   };
 
-  const updateAuthorRequest = async (data, authorId) => {
+  const updateCategoryRequest = async (data, id) => {
     try {
       const headers = await defaultHeadersForAdmin("multipart/form-data");
-      const response = await axios(`${baseUrl}admin/authors/${authorId}`, {
+      const response = await axios(`${baseUrl}admin/categories/${id}`, {
         //${authorId}
         method: "POST",
         headers,
@@ -49,19 +49,18 @@ export default function useAuthorApi() {
     }
   };
 
-  const getAuthorMaxSequence = async () => {
+  const getCategoryMaxSequence = async () => {
     const headers = await defaultHeadersForAdmin();
-    const response = await axios(`${baseUrl}admin/author-max-sequence`, {
+    const response = await axios(`${baseUrl}admin/category-max-sequence`, {
       method: "GET",
       headers,
     });
     return response;
   };
 
-  const deleteAuthorsRequest = async (authorId) => {
-    console.log(authorId);
+  const deleteCategoryRequest = async (id) => {
     const headers = await defaultHeadersForAdmin();
-    const response = await axios(`${baseUrl}admin/authors/${authorId}`, {
+    const response = await axios(`${baseUrl}admin/categories/${id}`, {
       method: "DELETE",
       headers,
     });
@@ -69,11 +68,11 @@ export default function useAuthorApi() {
   };
 
   return {
-    deleteAuthorsRequest,
-    createAuthorRequest,
-    allAuthorsRequest,
-    showAuthorsRequest,
-    updateAuthorRequest,
-    getAuthorMaxSequence,
+    allCategoriesRequest,
+    createCategoryRequest,
+    showCategoryRequest,
+    updateCategoryRequest,
+    getCategoryMaxSequence,
+    deleteCategoryRequest,
   };
 }

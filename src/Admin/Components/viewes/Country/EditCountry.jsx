@@ -37,8 +37,8 @@ export default function EditCountry() {
   const updateInitialValue = async (country) => {
     initialFormData.id = country.id;
     initialFormData.name = country.name ? country.name : "";
-    initialFormData.status = country.status ? country.status : "";
-    initialFormData.sequence = country.sequence ? country.sequence : "";
+    initialFormData.status = country.status ? country.status : 0;
+    initialFormData.sequence = country.sequence ? country.sequence : 0;
     await setFilePreview(country.photo ? country.photo : defaultImage);
     await setAllData(initialFormData);
   };
@@ -137,7 +137,7 @@ export default function EditCountry() {
                             <select
                               name="status"
                               onChange={handleChange}
-                              defaultValue={allData.status}
+                              value={allData.status}
                               className="form-control"
                             >
                               <option value="">Select One</option>

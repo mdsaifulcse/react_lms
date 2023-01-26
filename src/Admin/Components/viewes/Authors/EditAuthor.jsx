@@ -52,13 +52,13 @@ export default function EditAuthor() {
     initialFormData.address2 = author.address2 ? author.address2 : "";
     initialFormData.bio = author.bio ? author.bio : "";
     initialFormData.show_home = author.show_home ? author.show_home : "";
-    initialFormData.status = author.status ? author.status : "";
+    initialFormData.status = author.status ? author.status : 0;
     initialFormData.sequence = author.sequence ? author.sequence : "";
     await setFilePreview(author.photo ? author.photo : defaultImage);
     await setAllData(initialFormData);
   };
   useEffect(() => {
-    let author = [];
+    let author = {};
     if (!loadAuthor) {
       //loadAuthorAfterUpdate
       author = data.data.result;
@@ -78,7 +78,7 @@ export default function EditAuthor() {
     setFilePreview(URL.createObjectURL(e.target.files[0]));
   }
 
-  // Form Submit Handle --------------
+  //Edit Form Submit Handle --------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -239,7 +239,7 @@ export default function EditAuthor() {
                             <select
                               name="status"
                               onChange={handleChange}
-                              defaultValue={allData.status}
+                              value={allData.status}
                               className="form-control"
                             >
                               <option value="">Select One</option>

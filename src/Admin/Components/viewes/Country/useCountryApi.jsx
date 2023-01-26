@@ -35,14 +35,18 @@ export default function useCountrieApi() {
   };
 
   const updateCountryRequest = async (data, id) => {
-    const headers = await defaultHeadersForAdmin("multipart/form-data");
-    const response = await axios(`${baseUrl}admin/countries/${id}`, {
-      //${authorId}
-      method: "POST",
-      headers,
-      data: data,
-    });
-    return response;
+    try {
+      const headers = await defaultHeadersForAdmin("multipart/form-data");
+      const response = await axios(`${baseUrl}admin/countries/${id}`, {
+        //${authorId}
+        method: "POST",
+        headers,
+        data: data,
+      });
+      return response;
+    } catch (error) {
+      return error;
+    }
   };
 
   const getCountryMaxSequence = async () => {
