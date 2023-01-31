@@ -3,10 +3,11 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
-import useCategoryApi from "../Category/useCategoryApi";
+import useThirdSubCategoryApi from "./useThirdSubCategoryApi";
+import defaultImage from "../../../assets/image/default_image.jpg";
 
 export default function CreateEditModal({
-  data: categoryData,
+  data: subCategoryData,
   show,
   onHide,
   headTitle,
@@ -14,68 +15,115 @@ export default function CreateEditModal({
 }) {
   const { onError, onSuccess } = useToster();
   const {
-    getCategoryMaxSequence,
-    createCategoryRequest,
-    updateCategoryRequest,
-  } = useCategoryApi();
+    activeCategoriesRequest,
+    getThirdSubCategoryMaxSequence,
+    createThirdSubCategoryRequest,
+    updateThirdSubCategoryRequest,
+    activeSubCategoriesByCategoryRequest,
+  } = useThirdSubCategoryApi();
 
   const initialFormData = {
     id: "",
+    category_id: "",
+    sub_category_id: "",
     name: "",
     status: 1,
     show_home: 0,
     sequence: 0,
   };
-  const [allData, setAllData] = useState(initialFormData);
 
-  //  Get sequence number-----------------------------
-  const { data: maxSequenceData, refetch } = useQuery(
-    "getCategoryMaxSequence",
-    getCategoryMaxSequence,
+  // Initial State ----------------------------------------
+  const [allData, setAllData] = useState(initialFormData);
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+
+  //  Get categories Data-----------------------------
+  const { data: categoriesData } = useQuery(
+    "activeCategoriesRequest",
+    activeCategoriesRequest,
     {
-      //onSuccess: onSuccess,
+      onSuccess: async (response) => {
+        if (response.status === 200) {
+          await setCategories(response.data.result);
+        }
+      },
       onError: onError,
-      refetchOnWindowChange: true,
+      refetchOnWindowChange: false,
+    }
+  );
+  //  Get Sub-categories Data by categoryId-----------------------------
+  const { data: subCategoriesData } = useQuery(
+    ["activeSubCategoriesByCategoryRequest", allData.category_id],
+    activeSubCategoriesByCategoryRequest,
+    {
+      onSuccess: async (response) => {
+        if (response.status === 200) {
+          await setSubCategories(response.data.result);
+        }
+      },
+      onError: onError,
+      refetchOnWindowChange: false,
+      enabled: true,
     }
   );
 
-  const updateInitialValue = async (categoryData) => {
-    initialFormData.id = categoryData.id ? categoryData.id : "";
-    initialFormData.name = categoryData.name ? categoryData.name : "";
-    initialFormData.status = categoryData.status ? categoryData.status : 0;
-    initialFormData.show_home = categoryData.show_home
-      ? categoryData.show_home
+  //  Get sequence number-----------------------------
+  const { data: maxSequenceData, refetch } = useQuery(
+    "getThirdSubCategoryMaxSequence",
+    getThirdSubCategoryMaxSequence,
+    {
+      //onSuccess: onSuccess,
+      onError: onError,
+      refetchOnWindowChange: false,
+    }
+  );
+
+  const updateInitialValue = async (subCategoryData) => {
+    const initialFormData = {};
+    initialFormData.id = subCategoryData.id ? subCategoryData.id : "";
+    initialFormData.category_id = subCategoryData.category_id
+      ? subCategoryData.category_id
+      : "";
+    initialFormData.sub_category_id = subCategoryData.sub_category_id
+      ? subCategoryData.sub_category_id
+      : "";
+    initialFormData.name = subCategoryData.name ? subCategoryData.name : "";
+    initialFormData.status = subCategoryData.status
+      ? subCategoryData.status
       : 0;
-    initialFormData.sequence = categoryData.sequence
-      ? categoryData.sequence
+    initialFormData.show_home = subCategoryData.show_home
+      ? subCategoryData.show_home
       : 0;
+    initialFormData.sequence = subCategoryData.sequence
+      ? subCategoryData.sequence
+      : 1;
     await setAllData({ ...allData, ...initialFormData });
   };
 
   useEffect(() => {
     // set data for edit ---------------------
-    if (Object.keys(categoryData).length > 0) {
-      updateInitialValue(categoryData);
+    if (Object.keys(subCategoryData).length > 0) {
+      updateInitialValue(subCategoryData);
     } else {
       // For create ----
-      const categoryData = {};
-      categoryData.status = 1;
-      categoryData.sequence = maxSequenceData?.data?.result?.sequence;
-      updateInitialValue(categoryData);
+      const subCategoryData = {};
+      subCategoryData.status = 1;
+      subCategoryData.sequence = maxSequenceData?.data?.result?.sequence;
+      updateInitialValue(subCategoryData);
     }
-  }, [categoryData]);
+  }, [subCategoryData]);
 
-  const handleChange = async (e, initialFormData) => {
+  const handleChange = async (e) => {
     if (e) {
       // on user change -----
-      setAllData({ ...allData, [e.target.name]: e.target.value });
+      await setAllData({ ...allData, [e.target.name]: e.target.value });
     }
   };
 
   // Create Api MutateAsync --------------
   const { mutateAsync } = useMutation(
-    "createCategoryRequest",
-    createCategoryRequest,
+    "createThirdSubCategoryRequest",
+    createThirdSubCategoryRequest,
     {
       onSuccess: onSuccess,
       onError: onError,
@@ -88,6 +136,8 @@ export default function CreateEditModal({
     const formData = new FormData();
 
     formData.append("id", allData.id);
+    formData.append("category_id", allData.category_id);
+    formData.append("sub_category_id", allData.sub_category_id);
     formData.append("name", allData.name);
     formData.append("show_home", allData.show_home);
     formData.append("status", allData.status);
@@ -95,7 +145,10 @@ export default function CreateEditModal({
     // Edit ----------------------------
     if (allData.id) {
       formData.append("_method", "PUT");
-      const response = await updateCategoryRequest(formData, allData.id);
+      const response = await updateThirdSubCategoryRequest(
+        formData,
+        allData.id
+      );
       if (response.status === 200) {
         await onSuccess(response);
       } else {
@@ -146,53 +199,19 @@ export default function CreateEditModal({
                           <form onSubmit={handleSubmit}>
                             <div className="form-group row">
                               <label className="col-sm-3 col-form-label">
-                                Category Name
+                                Third Sub Category Name
                               </label>
-                              <div className="col-sm-9">
+                              <div className="col-sm-6">
                                 <input
                                   name="name"
                                   type="text"
                                   value={allData.name}
                                   onChange={handleChange}
                                   className="form-control"
-                                  placeholder="Type Category name"
+                                  placeholder="Type Third Sub Category Name"
+                                  required
                                 />
                               </div>
-                            </div>
-
-                            <div className="form-group row">
-                              <label className="col-sm-3 col-form-label"></label>
-                              <div className="col-sm-3">
-                                <select
-                                  name="status"
-                                  onChange={handleChange}
-                                  value={allData.status}
-                                  className="form-control"
-                                >
-                                  <option value="">Select One</option>
-                                  <option value="1">Active</option>
-                                  <option value="0">Inactive</option>
-                                </select>
-                                <label className=" col-form-label">
-                                  Status
-                                </label>
-                              </div>
-                              <div className="col-sm-3">
-                                <select
-                                  name="show_home"
-                                  onChange={handleChange}
-                                  defaultValue={allData.show_home}
-                                  className="form-control"
-                                >
-                                  <option value="">Select One </option>
-                                  <option value="1">Yes</option>
-                                  <option value="0">No</option>
-                                </select>
-                                <label className=" col-form-label">
-                                  Show at Home?
-                                </label>
-                              </div>
-
                               <div className="col-sm-3">
                                 <input
                                   name="sequence"
@@ -202,10 +221,75 @@ export default function CreateEditModal({
                                   min={0}
                                   max={999999}
                                   className="form-control"
-                                  placeholder=""
+                                  placeholder="Sequence"
+                                  required
                                 />
-                                <label className=" col-form-label">
+                                {/* <label className=" col-form-label">
                                   Sequence
+                                </label> */}
+                              </div>
+                            </div>
+
+                            <div className="form-group row">
+                              <label className="col-sm-3 col-form-label"></label>
+
+                              <div className="col-sm-3">
+                                <select
+                                  name="category_id"
+                                  onChange={handleChange}
+                                  value={allData.category_id}
+                                  className="form-control"
+                                  required
+                                >
+                                  <option key="0" value="">
+                                    Select Category
+                                  </option>
+                                  {categories?.map((category, i) => (
+                                    <option key={i + 1} value={category?.id}>
+                                      {category?.name}
+                                    </option>
+                                  ))}
+                                </select>
+                                <label className=" col-form-label">
+                                  Category
+                                </label>
+                              </div>
+                              <div className="col-sm-3">
+                                <select
+                                  name="sub_category_id"
+                                  onChange={handleChange}
+                                  value={allData.sub_category_id}
+                                  className="form-control"
+                                  required
+                                >
+                                  <option key="0" value="">
+                                    Select Sub Category
+                                  </option>
+                                  {subCategories?.map((subCategory, i) => (
+                                    <option key={i + 1} value={subCategory?.id}>
+                                      {subCategory?.name}
+                                    </option>
+                                  ))}
+                                </select>
+                                <label className=" col-form-label">
+                                  Sub Category
+                                </label>
+                              </div>
+                              <div className="col-sm-3">
+                                <select
+                                  name="status"
+                                  onChange={handleChange}
+                                  value={allData.status}
+                                  className="form-control"
+                                  required
+                                >
+                                  <option value="">Select One </option>
+
+                                  <option value="1">Active</option>
+                                  <option value="0">Inactive</option>
+                                </select>
+                                <label className=" col-form-label">
+                                  Status
                                 </label>
                               </div>
                             </div>

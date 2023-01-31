@@ -27,6 +27,11 @@ import EditLanguage from "./admin/components/viewes/Language/EditLanguage";
 import CategoryList from "./admin/components/viewes/Category/CategoryList";
 //sub-categories
 import SubCategoryList from "./admin/components/viewes/SubCategory/SubCategoryList";
+//Third-categories
+import ThirdSubCategoryList from "./admin/components/viewes/ThirdSubCategory/ThirdSubCategoryList";
+//Items
+import ItemsList from "./admin/components/viewes/Items/ItemsList";
+import CreateItem from "./admin/components/viewes/Items/CreateItem";
 
 const AppRoute = () => {
   return (
@@ -75,6 +80,16 @@ const AppRoute = () => {
                 {/*Sub Category */}
                 <Route path="sub-categories/">
                   <Route path="list" element={<SubCategoryList />} />
+                </Route>
+
+                {/*Third Category */}
+                <Route path="third-sub-categories/">
+                  <Route path="list" element={<ThirdSubCategoryList />} />
+                </Route>
+                {/*Item */}
+                <Route path="items/">
+                  <Route path="list" element={<ItemsList />} />
+                  <Route path="create" element={<CreateItem />} />
                 </Route>
               </Route>
             </Route>

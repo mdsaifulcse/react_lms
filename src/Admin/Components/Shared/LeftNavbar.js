@@ -50,6 +50,27 @@ export default function LeftNavbar() {
                 <i className="ti-layout"></i>
               </span>
               <span className="pcoded-mtext" data-i18n="nav.page_layout.main">
+                Items
+              </span>
+              <span className="pcoded-badge label label-warning">NEW</span>
+              <span className="pcoded-mcaret"></span>
+            </Link>
+            <ul className="pcoded-submenu">
+              <li className="">
+                <Link to="/admin/items/list"> List</Link>
+              </li>
+              <li className="">
+                <Link to="/admin/items/create"> Create</Link>
+              </li>
+            </ul>
+          </li>
+          {/* Page layouts */}
+          <li className="pcoded-hasmenu">
+            <Link to="#">
+              <span className="pcoded-micon">
+                <i className="ti-layout"></i>
+              </span>
+              <span className="pcoded-mtext" data-i18n="nav.page_layout.main">
                 Page layouts
               </span>
               <span className="pcoded-badge label label-warning">NEW</span>
@@ -168,6 +189,66 @@ export default function LeftNavbar() {
                         <i className="icon-chart"></i>
                       </span>
                       <span className="pcoded-mtext">Create</span>
+                      <span className="pcoded-mcaret"></span>
+                    </NavLink>
+                  </li>
+                </ul>
+              </li>
+              <li className=" pcoded-hasmenu">
+                <Link to="#!">
+                  <span className="pcoded-micon">
+                    <i className="icon-pie-chart"></i>
+                  </span>
+                  <span className="pcoded-mtext">Category</span>
+                  <span className="pcoded-mcaret"></span>
+                </Link>
+                <ul className="pcoded-submenu">
+                  <li className="">
+                    <NavLink to="/admin/categories/list">
+                      <span className="pcoded-micon">
+                        <i className="icon-chart"></i>
+                      </span>
+                      <span className="pcoded-mtext">List</span>
+                      <span className="pcoded-mcaret"></span>
+                    </NavLink>
+                  </li>
+                </ul>
+              </li>
+              <li className=" pcoded-hasmenu">
+                <Link to="#!">
+                  <span className="pcoded-micon">
+                    <i className="icon-pie-chart"></i>
+                  </span>
+                  <span className="pcoded-mtext">Sub Category</span>
+                  <span className="pcoded-mcaret"></span>
+                </Link>
+                <ul className="pcoded-submenu">
+                  <li className="">
+                    <NavLink to="/admin/sub-categories/list">
+                      <span className="pcoded-micon">
+                        <i className="icon-chart"></i>
+                      </span>
+                      <span className="pcoded-mtext">List</span>
+                      <span className="pcoded-mcaret"></span>
+                    </NavLink>
+                  </li>
+                </ul>
+              </li>
+              <li className=" pcoded-hasmenu">
+                <Link to="#!">
+                  <span className="pcoded-micon">
+                    <i className="icon-pie-chart"></i>
+                  </span>
+                  <span className="pcoded-mtext">Third Sub Category</span>
+                  <span className="pcoded-mcaret"></span>
+                </Link>
+                <ul className="pcoded-submenu">
+                  <li className="">
+                    <NavLink to="/admin/third-sub-categories/list">
+                      <span className="pcoded-micon">
+                        <i className="icon-chart"></i>
+                      </span>
+                      <span className="pcoded-mtext">List</span>
                       <span className="pcoded-mcaret"></span>
                     </NavLink>
                   </li>

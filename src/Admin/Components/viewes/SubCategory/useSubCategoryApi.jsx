@@ -13,6 +13,14 @@ export default function useSubCategoryApi() {
     });
     return response;
   };
+  const activeCategoriesRequest = async () => {
+    const headers = await defaultHeadersForAdmin();
+    const response = await axios(`${baseUrl}admin/category-list`, {
+      method: "GET",
+      headers,
+    });
+    return response;
+  };
 
   const createSubCategoryRequest = async (data) => {
     const headers = await defaultHeadersForAdmin("multipart/form-data");
@@ -68,6 +76,7 @@ export default function useSubCategoryApi() {
   };
 
   return {
+    activeCategoriesRequest,
     allSubCategoriesRequest,
     createSubCategoryRequest,
     showSubCategoryRequest,

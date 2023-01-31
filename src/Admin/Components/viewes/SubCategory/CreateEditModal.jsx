@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
-import useSubCategoryApi from "../SubCategory/useSubCategoryApi";
+import useSubCategoryApi from "./useSubCategoryApi";
 import defaultImage from "../../../assets/image/default_image.jpg";
 
 export default function CreateEditModal({
-  data: categoryData,
+  data: subCategoryData,
   show,
   onHide,
   headTitle,
@@ -15,6 +15,7 @@ export default function CreateEditModal({
 }) {
   const { onError, onSuccess } = useToster();
   const {
+    activeCategoriesRequest,
     getSubCategoryMaxSequence,
     createSubCategoryRequest,
     updateSubCategoryRequest,
@@ -22,13 +23,31 @@ export default function CreateEditModal({
 
   const initialFormData = {
     id: "",
+    category_id: "",
     name: "",
     status: 1,
     show_home: 0,
     sequence: 0,
   };
-  const [allData, setAllData] = useState(initialFormData);
 
+  // Initial State ----------------------------------------
+  const [allData, setAllData] = useState(initialFormData);
+  const [categories, setCategories] = useState([]);
+
+  //  Get categories Data-----------------------------
+  const { data: categoriesData } = useQuery(
+    "activeCategoriesRequest",
+    activeCategoriesRequest,
+    {
+      onSuccess: async (response) => {
+        if (response.status === 200) {
+          await setCategories(response.data.result);
+        }
+      },
+      onError: onError,
+      refetchOnWindowChange: true,
+    }
+  );
   //  Get sequence number-----------------------------
   const { data: maxSequenceData, refetch } = useQuery(
     "getSubCategoryMaxSequence",
@@ -40,37 +59,38 @@ export default function CreateEditModal({
     }
   );
 
-  const updateInitialValue = async (categoryData) => {
-    initialFormData.id = categoryData.id ? categoryData.id : "";
-    initialFormData.name = categoryData.name ? categoryData.name : "";
-    initialFormData.status = categoryData.status ? categoryData.status : 0;
-    initialFormData.show_home = categoryData.show_home
-      ? categoryData.show_home
+  const updateInitialValue = async (subCategoryData) => {
+    initialFormData.id = subCategoryData.id ? subCategoryData.id : "";
+    initialFormData.category_id = subCategoryData.category_id
+      ? subCategoryData.category_id
+      : "";
+    initialFormData.name = subCategoryData.name ? subCategoryData.name : "";
+    initialFormData.status = subCategoryData.status
+      ? subCategoryData.status
       : 0;
-    initialFormData.sequence = categoryData.sequence
-      ? categoryData.sequence
-      : maxSequenceData?.data?.result?.sequence;
-    //await setAllData(initialFormData);
-    await handleChange("", initialFormData);
+    initialFormData.show_home = subCategoryData.show_home
+      ? subCategoryData.show_home
+      : 0;
+    initialFormData.sequence = subCategoryData.sequence
+      ? subCategoryData.sequence
+      : 1;
+    await setAllData({ ...allData, ...initialFormData });
   };
 
   useEffect(() => {
     // set data for edit ---------------------
-    if (Object.keys(categoryData).length > 0) {
-      updateInitialValue(categoryData);
+    if (Object.keys(subCategoryData).length > 0) {
+      updateInitialValue(subCategoryData);
     } else {
       // For create ----
-      const categoryData = {};
-      updateInitialValue(categoryData);
+      const subCategoryData = {};
+      subCategoryData.status = 1;
+      subCategoryData.sequence = maxSequenceData?.data?.result?.sequence;
+      updateInitialValue(subCategoryData);
     }
-  }, [categoryData, maxSequenceData]);
+  }, [subCategoryData]);
 
-  const handleChange = async (e, initialFormData) => {
-    if (initialFormData) {
-      // when api response -------
-      await setAllData(initialFormData);
-    }
-
+  const handleChange = async (e) => {
     if (e) {
       // on user change -----
       setAllData({ ...allData, [e.target.name]: e.target.value });
@@ -93,6 +113,7 @@ export default function CreateEditModal({
     const formData = new FormData();
 
     formData.append("id", allData.id);
+    formData.append("category_id", allData.category_id);
     formData.append("name", allData.name);
     formData.append("show_home", allData.show_home);
     formData.append("status", allData.status);
@@ -161,20 +182,45 @@ export default function CreateEditModal({
                                   onChange={handleChange}
                                   className="form-control"
                                   placeholder="Type Sub Category name"
+                                  required
                                 />
                               </div>
                             </div>
 
                             <div className="form-group row">
                               <label className="col-sm-3 col-form-label"></label>
+
+                              <div className="col-sm-3">
+                                <select
+                                  name="category_id"
+                                  onChange={handleChange}
+                                  value={allData.category_id}
+                                  className="form-control"
+                                  required
+                                >
+                                  <option key="0" value="">
+                                    Select Category
+                                  </option>
+                                  {categories?.map((category, i) => (
+                                    <option key={i + 1} value={category?.id}>
+                                      {category?.name}
+                                    </option>
+                                  ))}
+                                </select>
+                                <label className=" col-form-label">
+                                  Category
+                                </label>
+                              </div>
                               <div className="col-sm-3">
                                 <select
                                   name="status"
                                   onChange={handleChange}
                                   value={allData.status}
                                   className="form-control"
+                                  required
                                 >
-                                  <option value="">Select One</option>
+                                  <option value="">Select One </option>
+
                                   <option value="1">Active</option>
                                   <option value="0">Inactive</option>
                                 </select>
@@ -182,21 +228,6 @@ export default function CreateEditModal({
                                   Status
                                 </label>
                               </div>
-                              {/* <div className="col-sm-3">
-                                <select
-                                  name="show_home"
-                                  onChange={handleChange}
-                                  defaultValue={allData.show_home}
-                                  className="form-control"
-                                >
-                                  <option value="">Select One </option>
-                                  <option value="1">Yes</option>
-                                  <option value="0">No</option>
-                                </select>
-                                <label className=" col-form-label">
-                                  Show at Home?
-                                </label>
-                              </div> */}
 
                               <div className="col-sm-3">
                                 <input
@@ -208,6 +239,7 @@ export default function CreateEditModal({
                                   max={999999}
                                   className="form-control"
                                   placeholder=""
+                                  required
                                 />
                                 <label className=" col-form-label">
                                   Sequence
