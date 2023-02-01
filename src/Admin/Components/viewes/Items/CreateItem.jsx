@@ -1,31 +1,141 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
 import useItemApi from "./useItemApi";
 import defaultImage from "../../../assets/image/default_image.jpg";
 import classes from "./Style/Item.module.css";
-
 import { Link } from "react-router-dom";
+import Select from "react-select";
+
 export default function CreateItem() {
+  const select2Ref = useRef();
   const { onError, onSuccess } = useToster();
-  const { getItemMaxSequence, createItemRequest } = useItemApi();
+  const {
+    getItemMaxSequence,
+    createItemRequest,
+    activeCategoriesRequest,
+    activeSubCategoriesByCategoryRequest,
+    activeAuthorListRequest,
+    activeCountryListRequest,
+    activeLanguageListRequest,
+    activePublisherListRequest,
+  } = useItemApi();
   const initialFormData = {
     title: "",
-    email: "",
-    mobile: "",
+    isbn: "",
+    edition: "",
     photo: defaultImage,
-    contact: "",
-    address1: "",
-    address2: "",
-    bio: "",
+    number_of_page: "",
+    summary: "",
+    video_url: "",
+    brochure: "",
+    item_authors: [],
+    publisher_id: "",
+    language_id: "",
+    country_id: "",
+    category_id: "",
+    subcategory_id: "",
+    third_category_id: "",
     show_home: 0,
     status: 1,
-    sequence: 0,
+    publish_status: 0,
+    sequence: 1,
   };
   const [allData, setAllData] = useState(initialFormData);
   const [filePreview, setFilePreview] = useState(defaultImage);
-  const [authorPhoto, setAuthorPhoto] = useState(null);
+  const [authors, setAuthors] = useState([]);
+  const [publishers, setPublishers] = useState([]);
+  const [languages, setLanguages] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [itemPhoto, setItemPhoto] = useState(null);
+  const [authorsId, setAuthorsId] = useState([]);
+
+  function makeSelectOptions(options) {
+    let returnArrayObject = [];
+    options.map((option, i) => {
+      let singleObject = { value: option.id, label: option.name };
+      // returnObject.value = option.id;
+      // returnObject.label = option.name;
+      returnArrayObject[i] = singleObject;
+    });
+
+    return returnArrayObject;
+  }
+  //  Get Authors Data-----------------------------
+  useQuery("activeAuthorListRequest", activeAuthorListRequest, {
+    onSuccess: async (response) => {
+      if (response.status === 200) {
+        let authorOptions = makeSelectOptions(response.data.result);
+        //console.log(authorOptions);
+        await setAuthors(response.data.result);
+        //await setAuthors(authorOptions);
+      }
+    },
+    onError: onError,
+    refetchOnWindowChange: false,
+  });
+  //  Get Publishers Data-----------------------------
+  useQuery("activePublisherListRequest", activePublisherListRequest, {
+    onSuccess: async (response) => {
+      if (response.status === 200) {
+        await setPublishers(response.data.result);
+      }
+    },
+    onError: onError,
+    refetchOnWindowChange: false,
+  });
+  //  Get Country Data-----------------------------
+  useQuery("activeCountryListRequest", activeCountryListRequest, {
+    onSuccess: async (response) => {
+      if (response.status === 200) {
+        await setCountries(response.data.result);
+      }
+    },
+    onError: onError,
+    refetchOnWindowChange: false,
+  });
+  //  Get Languages Data-----------------------------
+  useQuery("activeLanguageListRequest", activeLanguageListRequest, {
+    onSuccess: async (response) => {
+      if (response.status === 200) {
+        await setLanguages(response.data.result);
+      }
+    },
+    onError: onError,
+    refetchOnWindowChange: false,
+  });
+  //  Get categories Data-----------------------------
+  const { data: categoriesData } = useQuery(
+    "activeCategoriesRequest",
+    activeCategoriesRequest,
+    {
+      onSuccess: async (response) => {
+        if (response.status === 200) {
+          await setCategories(response.data.result);
+        }
+      },
+      onError: onError,
+      refetchOnWindowChange: false,
+    }
+  );
+  //  Get Sub-categories Data by categoryId-----------------------------
+  const { data: subCategoriesData } = useQuery(
+    ["activeSubCategoriesByCategoryRequest", allData.category_id],
+    activeSubCategoriesByCategoryRequest,
+    {
+      onSuccess: async (response) => {
+        if (response.status === 200) {
+          await setSubCategories(response.data.result);
+        }
+      },
+      onError: onError,
+      refetchOnWindowChange: false,
+      enabled: true,
+    }
+  );
 
   const { data: maxSequenceData, refetch } = useQuery(
     "getItemMaxSequence",
@@ -37,29 +147,41 @@ export default function CreateItem() {
     }
   );
 
-  useEffect(() => {
-    handleChange("", maxSequenceData?.data?.result?.sequence);
-  }, [maxSequenceData]);
+  // useEffect(() => {
+  //   handleChange("", maxSequenceData?.data?.result?.sequence);
+  // }, [maxSequenceData]);
 
   const handleChange = (e, maxSequenceData) => {
-    if (maxSequenceData) {
-      // when api response -----
-      setAllData({
-        ...allData,
-        sequence: maxSequenceData,
-      });
-    }
+    //if (maxSequenceData) {
+    //   // when api response -----
+    //   setAllData({
+    //     ...allData,
+    //     sequence: maxSequenceData,
+    //   });
+    // }
 
     if (e) {
+      console.log(e);
       // on user change -----
       setAllData({ ...allData, [e.target.name]: e.target.value });
     }
   };
 
   function handelImage(e) {
-    setAuthorPhoto(e.target.files[0]);
+    setItemPhoto(e.target.files[0]);
     setFilePreview(URL.createObjectURL(e.target.files[0]));
   }
+
+  const onInputChange = async (data, select2Ref) => {
+    let selectedIds = [];
+    data.map((item, i) => {
+      selectedIds.push(item.id);
+    });
+    setAllData({
+      ...allData,
+      [select2Ref.name]: selectedIds,
+    });
+  };
 
   // Create Api MutateAsync --------------
   const { mutateAsync } = useMutation("createItemRequest", createItemRequest, {
@@ -70,9 +192,10 @@ export default function CreateItem() {
   // Form Submit Handle --------------
   const handleSubmit = async (e) => {
     e.preventDefault();
+    return console.log(allData);
     const formData = new FormData();
-    if (authorPhoto) {
-      formData.append("photo", authorPhoto);
+    if (itemPhoto) {
+      formData.append("photo", itemPhoto);
     }
 
     formData.append("title", allData.title);
@@ -114,10 +237,10 @@ export default function CreateItem() {
             <div className="card-block">
               <form onSubmit={handleSubmit}>
                 <div className="row justify-content-center">
-                  {/* Left side  */}
+                  {/* ------------------eft side-----------------------  */}
                   <div className={`col-md-9 ${classes.inputSec} }`}>
                     <div className=" row">
-                      <div className="col-sm-9">
+                      <div className="col-sm-12">
                         <label className=" col-form-label">Title</label>
                         <input
                           name="title"
@@ -128,141 +251,88 @@ export default function CreateItem() {
                           placeholder="Type Item Title"
                         />
                       </div>
-                      <div className="col-sm-3">
+                    </div>
+
+                    <div className="form-group row">
+                      <div className="col-sm-4">
                         <label className="col-form-label">ISBN</label>
                         <input
-                          name="email"
-                          value={allData.email}
+                          name="isbn"
+                          value={allData.isbn}
                           onChange={handleChange}
                           type="text"
                           className="form-control"
-                          placeholder="Type item email"
+                          placeholder="Type isbn"
                         />
                       </div>
-                    </div>
-
-                    <div className="form-group row">
-                      <div className="col-sm-10">
-                        <label className="col-form-label">ISBN</label>
+                      <div className="col-sm-4">
+                        <label className="col-form-label">Edition</label>
                         <input
-                          name="email"
-                          value={allData.email}
+                          name="edition"
+                          value={allData.edition}
                           onChange={handleChange}
                           type="text"
                           className="form-control"
-                          placeholder="Type item email"
+                          placeholder="item edition"
                         />
                       </div>
-                    </div>
-
-                    <div className="form-group row">
-                      <label className="col-sm-2 col-form-label">Mobile</label>
-                      <div className="col-sm-10">
+                      <div className="col-sm-4">
+                        <label className="col-form-label">Number of Page</label>
                         <input
-                          name="mobile"
-                          value={allData.mobile}
+                          name="number_of_page"
+                          value={allData.number_of_page}
                           onChange={handleChange}
                           type="text"
                           className="form-control"
-                          placeholder="Type item mobile"
+                          placeholder="Type number of page"
                         />
                       </div>
                     </div>
 
                     <div className="form-group row">
-                      <label className="col-sm-2 col-form-label">Contact</label>
-                      <div className="col-sm-10">
-                        <input
-                          name="contact"
-                          value={allData.contact}
-                          onChange={handleChange}
-                          type="text"
-                          className="form-control"
-                          placeholder="Type Item contact"
-                        />
-                      </div>
-                    </div>
+                      <div className="col-sm-12">
+                        <label className=" col-form-label">Summery</label>
 
-                    <div className="form-group row">
-                      <label className="col-sm-2 col-form-label">Bio</label>
-                      <div className="col-sm-10">
                         <textarea
-                          name="bio"
-                          value={allData.bio}
+                          name="summary"
+                          value={allData.summary}
                           onChange={handleChange}
-                          rows="5"
+                          rows="8"
                           cols="5"
                           className="form-control"
-                          placeholder="Item Bio is here"
+                          placeholder="Item Summery"
                         ></textarea>
                       </div>
                     </div>
 
                     <div className="form-group row">
-                      <label className="col-sm-2 col-form-label">Address</label>
-                      <div className="col-sm-10">
-                        <textarea
-                          name="address1"
-                          value={allData.address1}
-                          onChange={handleChange}
-                          rows="5"
-                          cols="5"
-                          className="form-control"
-                          placeholder="Item address is here"
-                        ></textarea>
-                      </div>
-                    </div>
-
-                    <div className="form-group row">
-                      <label className="col-sm-2 col-form-label"></label>
-                      <div className="col-sm-3">
-                        <select
-                          name="status"
-                          onChange={handleChange}
-                          defaultValue={allData.status}
-                          className="form-control"
-                        >
-                          <option value="">Select One</option>
-                          <option value="1">Active</option>
-                          <option value="0">Inactive</option>
-                        </select>
-                        <label className=" col-form-label">Status</label>
-                      </div>
-
-                      <div className="col-sm-3">
-                        <select
-                          name="show_home"
-                          onChange={handleChange}
-                          defaultValue={allData.show_home}
-                          className="form-control"
-                        >
-                          <option value="">Select One </option>
-                          <option value="1">Yes</option>
-                          <option value="0">No</option>
-                        </select>
-                        <label className=" col-form-label">Show at Home?</label>
-                      </div>
-
-                      <div className="col-sm-3">
+                      <div className="col-sm-4">
+                        <label className="col-form-label">Video Url</label>
                         <input
-                          name="sequence"
-                          value={allData.sequence}
+                          name="video_url"
+                          value={allData.video_url}
                           onChange={handleChange}
-                          type="number"
-                          min={0}
-                          max={999999}
+                          type="text"
                           className="form-control"
-                          placeholder=""
+                          placeholder="Video Url: Youtube link"
                         />
-                        <label className=" col-form-label">Sequence</label>
                       </div>
-                    </div>
+                      <div className="col-sm-4">
+                        <label className="col-form-label">
+                          Brochure (PDF Only)
+                        </label>
+                        <input
+                          name="brochure"
+                          value={allData.brochure}
+                          onChange={handleChange}
+                          type="file"
+                          accept="application/pdf"
+                          className="form-control"
+                          placeholder="Type number of page"
+                        />
+                      </div>
 
-                    <div className="form-group row">
-                      <label className="col-sm-2 col-form-label">
-                        Upload File
-                      </label>
-                      <div className="col-sm-5">
+                      <div className="col-sm-3">
                         <label htmlFor="imageUpladFile">
                           <img
                             className="py-2"
@@ -275,9 +345,6 @@ export default function CreateItem() {
                             alt=""
                           />
                         </label>
-                      </div>
-
-                      <div className="col-sm-5">
                         <input
                           id="imageUpladFile"
                           type="file"
@@ -290,9 +357,7 @@ export default function CreateItem() {
                         />
                       </div>
                     </div>
-
-                    <div className="form-group row">
-                      <label className="col-md-2 col-form-label"></label>
+                    <div className="row justify-content-center">
                       <label className="col-md-2 col-form-label">
                         <button
                           type="submit"
@@ -303,9 +368,185 @@ export default function CreateItem() {
                       </label>
                     </div>
                   </div>
-
+                  {/* ------------------Right side-------------------- */}
                   <div className={`col-md-3 ${classes.dropdownSec}`}>
-                    <h1>Good</h1>
+                    <div className="">
+                      <label className=" col-form-label">Authors</label>
+                      <Select
+                        ref={select2Ref}
+                        className="basic-single"
+                        classNamePrefix="select Authors"
+                        isLoading={false}
+                        isClearable={true}
+                        isSearchable={true}
+                        name="item_authors"
+                        defaultValue={allData.item_authors}
+                        onChange={onInputChange}
+                        isMulti={true}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
+                        options={authors}
+                      />
+                      {/* <select
+                        name="item_authors"
+                        onChange={handleChange}
+                        defaultValue={allData.item_authors}
+                        className="form-control"
+                        multiple={true}
+                      >
+                        <option key="0" value="">
+                          Select Category
+                        </option>
+                        {authors?.map((author, i) => (
+                          <option key={i + 1} value={author?.id}>
+                            {author?.name}
+                          </option>
+                        ))}
+                      </select> */}
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Publisher</label>
+                      <select
+                        name="publisher_id"
+                        onChange={handleChange}
+                        defaultValue={allData.publisher_id}
+                        className="form-control"
+                      >
+                        <option key="0" value="">
+                          Select Publisher
+                        </option>
+                        {publishers?.map((publisher, i) => (
+                          <option key={i + 1} value={publisher?.id}>
+                            {publisher?.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Language</label>
+                      <select
+                        name="language_id"
+                        onChange={handleChange}
+                        defaultValue={allData.language_id}
+                        className="form-control"
+                      >
+                        <option key="0" value="">
+                          Select Language
+                        </option>
+                        {languages?.map((language, i) => (
+                          <option key={i + 1} value={language?.id}>
+                            {language?.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Country</label>
+                      <select
+                        name="country_id"
+                        onChange={handleChange}
+                        defaultValue={allData.country_id}
+                        className="form-control"
+                      >
+                        <option key="0" value="">
+                          Select Country
+                        </option>
+                        {countries?.map((country, i) => (
+                          <option key={i + 1} value={country?.id}>
+                            {country?.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="">
+                      <label className=" col-form-label">Category</label>
+                      <select
+                        name="category_id"
+                        onChange={handleChange}
+                        defaultValue={allData.category_id}
+                        className="form-control"
+                      >
+                        <option key="0" value="">
+                          Select Category
+                        </option>
+                        {categories?.map((category, i) => (
+                          <option key={i + 1} value={category?.id}>
+                            {category?.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Sub Category</label>
+                      <select
+                        name="sub_category_id"
+                        onChange={handleChange}
+                        value={allData.sub_category_id}
+                        className="form-control"
+                      >
+                        <option key="0" value="">
+                          Select Sub Category
+                        </option>
+                        {subCategories?.map((subCategory, i) => (
+                          <option key={i + 1} value={subCategory?.id}>
+                            {subCategory?.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Item Status</label>
+                      <select
+                        name="status"
+                        onChange={handleChange}
+                        defaultValue={allData.status}
+                        className="form-control"
+                      >
+                        <option value="">Select One</option>
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                      </select>
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Publish Status</label>
+                      <select
+                        name="publish_status"
+                        onChange={handleChange}
+                        defaultValue={allData.publish_status}
+                        className="form-control"
+                      >
+                        <option value="">Select One</option>
+                        <option value="1">Publish</option>
+                        <option value="0">Unpublish</option>
+                      </select>
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Show at Home?</label>
+                      <select
+                        name="show_home"
+                        onChange={handleChange}
+                        defaultValue={allData.show_home}
+                        className="form-control"
+                      >
+                        <option value="">Select One </option>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                      </select>
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Sequence</label>
+                      <input
+                        name="sequence"
+                        value={allData.sequence}
+                        onChange={handleChange}
+                        type="number"
+                        min={0}
+                        max={999999}
+                        className="form-control"
+                        placeholder=""
+                      />
+                    </div>
                   </div>
                 </div>
               </form>
