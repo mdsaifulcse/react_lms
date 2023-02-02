@@ -1,7 +1,11 @@
 import axios from "axios";
 import httpHeaders from "../../../hooks/useHttpHeader";
 import config from "../../../helper/config";
+import { useQuery, useMutation } from "react-query";
+import useToster from "../../../hooks/useToster";
+
 export default function useItemApi() {
+  const { onError, onSuccess } = useToster();
   const { defaultHeadersForAdmin } = httpHeaders();
   const baseUrl = config.baseUrl;
 
@@ -52,6 +56,15 @@ export default function useItemApi() {
     });
     return response;
   };
+
+  const useActiveAuthorListRequest = () => {
+    return useQuery("activeAuthorListRequest", activeAuthorListRequest, {
+      //onSuccess: async (response) => {},
+      onError: onError,
+      refetchOnWindowChange: false,
+    });
+  };
+
   const activePublisherListRequest = async () => {
     const headers = await defaultHeadersForAdmin();
     const response = await axios(`${baseUrl}admin/active-publisher-list`, {

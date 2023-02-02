@@ -16,6 +16,7 @@ export default function CreateItem() {
     createItemRequest,
     activeCategoriesRequest,
     activeSubCategoriesByCategoryRequest,
+    activeThirdSubCategoriesBySubCategoryRequest,
     activeAuthorListRequest,
     activeCountryListRequest,
     activeLanguageListRequest,
@@ -35,7 +36,7 @@ export default function CreateItem() {
     language_id: "",
     country_id: "",
     category_id: "",
-    subcategory_id: "",
+    sub_category_id: "",
     third_category_id: "",
     show_home: 0,
     status: 1,
@@ -50,10 +51,11 @@ export default function CreateItem() {
   const [countries, setCountries] = useState([]);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
-  const [itemPhoto, setItemPhoto] = useState(null);
-  const [authorsId, setAuthorsId] = useState([]);
+  const [thirdSubCategories, setThirdSubCategories] = useState([]);
+  const [itemPhotos, setItemPhotos] = useState(null);
+  const [brochureFile, setItemBrochureFile] = useState(null);
 
-  function makeSelectOptions(options) {
+  function makeSelectedOptions(options) {
     let returnArrayObject = [];
     options.map((option, i) => {
       let singleObject = { value: option.id, label: option.name };
@@ -64,19 +66,21 @@ export default function CreateItem() {
 
     return returnArrayObject;
   }
-  //  Get Authors Data-----------------------------
+
+  //Get Authors Data-----------------------------
   useQuery("activeAuthorListRequest", activeAuthorListRequest, {
     onSuccess: async (response) => {
       if (response.status === 200) {
-        let authorOptions = makeSelectOptions(response.data.result);
-        //console.log(authorOptions);
         await setAuthors(response.data.result);
+        //let authorOptions = makeSelectedOptions(response.data.result);
+        //console.log(authorOptions);
         //await setAuthors(authorOptions);
       }
     },
     onError: onError,
     refetchOnWindowChange: false,
   });
+
   //  Get Publishers Data-----------------------------
   useQuery("activePublisherListRequest", activePublisherListRequest, {
     onSuccess: async (response) => {
@@ -108,21 +112,17 @@ export default function CreateItem() {
     refetchOnWindowChange: false,
   });
   //  Get categories Data-----------------------------
-  const { data: categoriesData } = useQuery(
-    "activeCategoriesRequest",
-    activeCategoriesRequest,
-    {
-      onSuccess: async (response) => {
-        if (response.status === 200) {
-          await setCategories(response.data.result);
-        }
-      },
-      onError: onError,
-      refetchOnWindowChange: false,
-    }
-  );
-  //  Get Sub-categories Data by categoryId-----------------------------
-  const { data: subCategoriesData } = useQuery(
+  useQuery("activeCategoriesRequest", activeCategoriesRequest, {
+    onSuccess: async (response) => {
+      if (response.status === 200) {
+        await setCategories(response.data.result);
+      }
+    },
+    onError: onError,
+    refetchOnWindowChange: false,
+  });
+  //  Get sub-categories Data by categoryId-----------------------------
+  useQuery(
     ["activeSubCategoriesByCategoryRequest", allData.category_id],
     activeSubCategoriesByCategoryRequest,
     {
@@ -137,11 +137,34 @@ export default function CreateItem() {
     }
   );
 
-  const { data: maxSequenceData, refetch } = useQuery(
+  //  Get Third-sub-categories Data by categoryId-----------------------------
+  const { isLoading: thirdSubCateoryLoading } = useQuery(
+    ["activeThirdSubCategoriesBySubCategoryRequest", allData.sub_category_id],
+    activeThirdSubCategoriesBySubCategoryRequest,
+    {
+      onSuccess: async (response) => {
+        if (response.status === 200) {
+          await setThirdSubCategories(response.data.result);
+        }
+      },
+      onError: onError,
+      refetchOnWindowChange: false,
+      enabled: true,
+    }
+  );
+
+  const { data: maxSequenceData, maxSequenceDataRefetch } = useQuery(
     "getItemMaxSequence",
     getItemMaxSequence,
     {
-      //onSuccess: onSuccess,
+      onSuccess: async (response) => {
+        if (response.status === 200) {
+          await setAllData({
+            ...allData,
+            sequence: response.data.result.sequence,
+          });
+        }
+      },
       onError: onError,
       refetchOnWindowFocus: false,
     }
@@ -161,26 +184,51 @@ export default function CreateItem() {
     // }
 
     if (e) {
-      console.log(e);
       // on user change -----
       setAllData({ ...allData, [e.target.name]: e.target.value });
     }
   };
 
   function handelImage(e) {
-    setItemPhoto(e.target.files[0]);
+    setItemPhotos(e.target.files[0]);
     setFilePreview(URL.createObjectURL(e.target.files[0]));
   }
 
-  const onInputChange = async (data, select2Ref) => {
-    let selectedIds = [];
-    data.map((item, i) => {
-      selectedIds.push(item.id);
-    });
-    setAllData({
-      ...allData,
-      [select2Ref.name]: selectedIds,
-    });
+  function handelFile(e) {
+    setItemBrochureFile(e.target.files[0]);
+  }
+
+  const onInputChange = async (selectedOptions, select2Ref) => {
+    if (Array.isArray(selectedOptions)) {
+      // For array Object------
+      let selectedIds = [];
+      selectedOptions.map((item, i) => {
+        selectedIds.push(item.id);
+      });
+
+      setAllData({
+        ...allData,
+        [select2Ref.name]: selectedIds,
+      });
+    } else {
+      // For single object ------
+      if (select2Ref.name === "category_id") {
+        // For reset subCategory & ThirdSubCategory ----
+        setAllData({
+          ...allData,
+          [select2Ref.name]: selectedOptions.id,
+          sub_category_id: "",
+          third_category_id: "",
+        });
+        await setSubCategories([]);
+        await setThirdSubCategories([]);
+      } else {
+        setAllData({
+          ...allData,
+          [select2Ref.name]: selectedOptions.id,
+        });
+      }
+    }
   };
 
   // Create Api MutateAsync --------------
@@ -192,27 +240,42 @@ export default function CreateItem() {
   // Form Submit Handle --------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-    return console.log(allData);
     const formData = new FormData();
-    if (itemPhoto) {
-      formData.append("photo", itemPhoto);
+    if (itemPhotos) {
+      // add Image File to FormData
+      formData.append("image[]", itemPhotos);
     }
+    if (brochureFile) {
+      // add brochureFile to FormData
+      formData.append("brochure", brochureFile);
+    }
+    // add Author id to FormData
+    await allData.item_authors.map((itemAuthor, i) => {
+      formData.append(`author_id[]`, itemAuthor);
+    });
 
     formData.append("title", allData.title);
-    formData.append("email", allData.email);
-    formData.append("mobile", allData.mobile);
-    formData.append("contact", allData.contact);
-    formData.append("address1", allData.address1);
-    formData.append("address2", allData.address2);
-    formData.append("bio", allData.bio);
+    formData.append("isbn", allData.isbn);
+    formData.append("edition", allData.edition);
+    formData.append("number_of_page", allData.number_of_page);
+    formData.append("summary", allData.summary);
+    formData.append("video_url", allData.video_url);
+
+    formData.append("publisher_id", allData.publisher_id);
+    formData.append("language_id", allData.language_id);
+    formData.append("country_id", allData.country_id);
+    formData.append("category_id", allData.category_id);
+    formData.append("sub_category_id", allData.sub_category_id);
+    formData.append("third_category_id", allData.third_category_id);
     formData.append("show_home", allData.show_home);
+    formData.append("publish_status", allData.publish_status);
     formData.append("status", allData.status);
     formData.append("sequence", allData.sequence);
 
     await mutateAsync(formData);
     setAllData(initialFormData);
     setFilePreview(defaultImage);
-    await refetch();
+    await maxSequenceDataRefetch();
     //return navigate("/admin/items/list", { replace: true });
   };
 
@@ -249,6 +312,7 @@ export default function CreateItem() {
                           type="text"
                           className="form-control"
                           placeholder="Type Item Title"
+                          required
                         />
                       </div>
                     </div>
@@ -282,7 +346,7 @@ export default function CreateItem() {
                           name="number_of_page"
                           value={allData.number_of_page}
                           onChange={handleChange}
-                          type="text"
+                          type="number"
                           className="form-control"
                           placeholder="Type number of page"
                         />
@@ -291,7 +355,7 @@ export default function CreateItem() {
 
                     <div className="form-group row">
                       <div className="col-sm-12">
-                        <label className=" col-form-label">Summery</label>
+                        <label className=" col-form-label">Summary</label>
 
                         <textarea
                           name="summary"
@@ -374,39 +438,29 @@ export default function CreateItem() {
                       <label className=" col-form-label">Authors</label>
                       <Select
                         ref={select2Ref}
-                        className="basic-single"
                         classNamePrefix="select Authors"
-                        isLoading={false}
-                        isClearable={true}
-                        isSearchable={true}
-                        name="item_authors"
-                        defaultValue={allData.item_authors}
                         onChange={onInputChange}
                         isMulti={true}
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
+                        name="item_authors"
+                        defaultValue={allData.item_authors}
                         options={authors}
                       />
-                      {/* <select
-                        name="item_authors"
-                        onChange={handleChange}
-                        defaultValue={allData.item_authors}
-                        className="form-control"
-                        multiple={true}
-                      >
-                        <option key="0" value="">
-                          Select Category
-                        </option>
-                        {authors?.map((author, i) => (
-                          <option key={i + 1} value={author?.id}>
-                            {author?.name}
-                          </option>
-                        ))}
-                      </select> */}
                     </div>
                     <div className="">
                       <label className=" col-form-label">Publisher</label>
-                      <select
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="Select Publisher"
+                        onChange={onInputChange}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
+                        defaultValue={allData.publisher_id}
+                        name="publisher_id"
+                        options={publishers}
+                      />
+                      {/* <select
                         name="publisher_id"
                         onChange={handleChange}
                         defaultValue={allData.publisher_id}
@@ -420,81 +474,78 @@ export default function CreateItem() {
                             {publisher?.name}
                           </option>
                         ))}
-                      </select>
+                      </select> */}
                     </div>
                     <div className="">
                       <label className=" col-form-label">Language</label>
-                      <select
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="Select Language"
+                        onChange={onInputChange}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
+                        defaultValue={allData.publisher_id}
                         name="language_id"
-                        onChange={handleChange}
-                        defaultValue={allData.language_id}
-                        className="form-control"
-                      >
-                        <option key="0" value="">
-                          Select Language
-                        </option>
-                        {languages?.map((language, i) => (
-                          <option key={i + 1} value={language?.id}>
-                            {language?.name}
-                          </option>
-                        ))}
-                      </select>
+                        options={languages}
+                      />
                     </div>
                     <div className="">
                       <label className=" col-form-label">Country</label>
-                      <select
-                        name="country_id"
-                        onChange={handleChange}
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="Select Country"
+                        onChange={onInputChange}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
                         defaultValue={allData.country_id}
-                        className="form-control"
-                      >
-                        <option key="0" value="">
-                          Select Country
-                        </option>
-                        {countries?.map((country, i) => (
-                          <option key={i + 1} value={country?.id}>
-                            {country?.name}
-                          </option>
-                        ))}
-                      </select>
+                        name="country_id"
+                        options={countries}
+                      />
                     </div>
-
                     <div className="">
                       <label className=" col-form-label">Category</label>
-                      <select
-                        name="category_id"
-                        onChange={handleChange}
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="Select Category"
+                        backspaceRemovesValue={true}
+                        onChange={onInputChange}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
                         defaultValue={allData.category_id}
-                        className="form-control"
-                      >
-                        <option key="0" value="">
-                          Select Category
-                        </option>
-                        {categories?.map((category, i) => (
-                          <option key={i + 1} value={category?.id}>
-                            {category?.name}
-                          </option>
-                        ))}
-                      </select>
+                        name="category_id"
+                        options={categories}
+                      />
                     </div>
                     <div className="">
                       <label className=" col-form-label">Sub Category</label>
-                      <select
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="Sub Category"
+                        onChange={onInputChange}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
+                        defaultValue={allData.sub_category_id}
                         name="sub_category_id"
-                        onChange={handleChange}
-                        value={allData.sub_category_id}
-                        className="form-control"
-                      >
-                        <option key="0" value="">
-                          Select Sub Category
-                        </option>
-                        {subCategories?.map((subCategory, i) => (
-                          <option key={i + 1} value={subCategory?.id}>
-                            {subCategory?.name}
-                          </option>
-                        ))}
-                      </select>
+                        options={subCategories}
+                        required
+                      />
                     </div>
+                    <div className="">
+                      <label className=" col-form-label">
+                        Third Sub Category
+                      </label>
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="Select Sub Category"
+                        onChange={onInputChange}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
+                        defaultValue={allData.third_category_id}
+                        name="third_category_id"
+                        options={thirdSubCategories}
+                      />
+                    </div>
+
                     <div className="">
                       <label className=" col-form-label">Item Status</label>
                       <select
