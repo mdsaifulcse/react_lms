@@ -3,7 +3,14 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { Link } from "react-router-dom";
 
-export default function ShowItemModal({ data, show, onHide }) {
+export default function ShowItemModal({
+  data,
+  show,
+  onHide,
+  modalTitle,
+  cardHeader,
+}) {
+  console.log(data);
   return (
     <>
       <Modal
@@ -14,7 +21,7 @@ export default function ShowItemModal({ data, show, onHide }) {
       >
         <Modal.Header>
           <Modal.Title id="contained-modal-title-vcenter">
-            Authro Details
+            {modalTitle}
           </Modal.Title>
           <span onClick={onHide} role="button" className="text-danger">
             X
@@ -23,8 +30,10 @@ export default function ShowItemModal({ data, show, onHide }) {
         <Modal.Body>
           <div className="card">
             <div className="card-header">
-              <h5 className="card-header-text">Author Info ({data.name})</h5>
-              <Link to={`/admin/authors/edit/${data.id}`} title="Edit Author">
+              <h5 className="card-header-text">
+                {cardHeader} ({data.title})
+              </h5>
+              <Link to={`/admin/items/edit/${data.id}`} title="Edit Item">
                 <button
                   id="edit-btn"
                   type="button"
@@ -57,29 +66,80 @@ export default function ShowItemModal({ data, show, onHide }) {
                           <table className="table">
                             <tbody>
                               <tr>
-                                <th scope="row">Name</th>
-                                <td>{data.name}</td>
+                                <th scope="row">Title</th>
+                                <td>{data.title}</td>
                               </tr>
                               <tr>
-                                <th scope="row">Email</th>
-                                <td>{data.email}</td>
+                                <th scope="row">Isbn</th>
+                                <td>{data.isbn}</td>
                               </tr>
                               <tr>
-                                <th scope="row">Mobile Number</th>
-                                <td>{data.mobile}</td>
+                                <th scope="row">Edition</th>
+                                <td>{data.edition}</td>
                               </tr>
                               <tr>
-                                <th scope="row">Contact</th>
-                                <td>{data.contact}</td>
+                                <th scope="row">Number of Page</th>
+                                <td>{data.number_of_page}</td>
+                              </tr>
+
+                              <tr>
+                                <th scope="row">Authors</th>
+                                <td>
+                                  {data.relItemAuthorsName
+                                    ? data.relItemAuthorsName.map(
+                                        (authorData, i) => (
+                                          <span
+                                            key={i}
+                                            className="badge badge-success"
+                                          >
+                                            {authorData.name}
+                                          </span>
+                                        )
+                                      )
+                                    : ""}
+                                </td>
                               </tr>
                               <tr>
-                                <th scope="row">Bio</th>
-                                <td>{data.bio}</td>
+                                <th scope="row">Publisher</th>
+                                <td>{data.publisher}</td>
                               </tr>
                               <tr>
-                                <th scope="row">Address</th>
-                                <td>{data.address1}</td>
+                                <th scope="row">Language</th>
+                                <td>{data.language}</td>
                               </tr>
+                              <tr>
+                                <th scope="row">Country</th>
+                                <td>{data.country}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Category</th>
+                                <td>{data.category}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">SubCategory</th>
+                                <td>{data.sub_category}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Third SubCategory</th>
+                                <td>{data.third_sub_category}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Summary</th>
+                                <td>{data.summary}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Video Url</th>
+                                <td>{data.video}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Brochure</th>
+                                <td>
+                                  <Link to={data.brochure}>
+                                    <i className="ti-files"></i> PDF
+                                  </Link>
+                                </td>
+                              </tr>
+
                               <tr>
                                 <th scope="row">Status</th>
                                 <td>
@@ -97,8 +157,32 @@ export default function ShowItemModal({ data, show, onHide }) {
                                 </td>
                               </tr>
                               <tr>
-                                <th scope="row">Show at Home?</th>
-                                <td>{data.show_home === 1 ? "Yes" : "No"}</td>
+                                <th scope="row">Status</th>
+                                <td>
+                                  {data.publish_status === 1 ? (
+                                    <>
+                                      <span className="text-primary">
+                                        PUblished
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span className="text-danger">
+                                      Unpublished
+                                    </span>
+                                  )}
+                                </td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Status</th>
+                                <td>
+                                  {data.show_home === 1 ? (
+                                    <>
+                                      <span className="text-primary">Yes</span>
+                                    </>
+                                  ) : (
+                                    <span className="text-danger">No</span>
+                                  )}
+                                </td>
                               </tr>
                             </tbody>
                           </table>

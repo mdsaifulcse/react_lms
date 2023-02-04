@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
@@ -7,8 +7,14 @@ import defaultImage from "../../../assets/image/default_image.jpg";
 import classes from "./Style/Item.module.css";
 import { Link } from "react-router-dom";
 import Select from "react-select";
+import JoditEditor from "jodit-react";
 
 export default function CreateItem() {
+  const itemEditor = useRef(null);
+  const config = {
+    readonly: false, // all options from https://xdsoft.net/jodit/doc/,
+    placeholder: "Item summery here",
+  };
   const select2Ref = useRef();
   const { onError, onSuccess } = useToster();
   const {
@@ -54,6 +60,7 @@ export default function CreateItem() {
   const [thirdSubCategories, setThirdSubCategories] = useState([]);
   const [itemPhotos, setItemPhotos] = useState(null);
   const [brochureFile, setItemBrochureFile] = useState(null);
+  const [inputValue, setInputValue] = useState(true);
 
   function makeSelectedOptions(options) {
     let returnArrayObject = [];
@@ -122,7 +129,7 @@ export default function CreateItem() {
     refetchOnWindowChange: false,
   });
   //  Get sub-categories Data by categoryId-----------------------------
-  useQuery(
+  const { refetch: subCategoryRefech } = useQuery(
     ["activeSubCategoriesByCategoryRequest", allData.category_id],
     activeSubCategoriesByCategoryRequest,
     {
@@ -133,12 +140,12 @@ export default function CreateItem() {
       },
       onError: onError,
       refetchOnWindowChange: false,
-      enabled: true,
+      enabled: false,
     }
   );
 
   //  Get Third-sub-categories Data by categoryId-----------------------------
-  const { isLoading: thirdSubCateoryLoading } = useQuery(
+  const { refetch: thirdSubCategoryRefech } = useQuery(
     ["activeThirdSubCategoriesBySubCategoryRequest", allData.sub_category_id],
     activeThirdSubCategoriesBySubCategoryRequest,
     {
@@ -149,11 +156,11 @@ export default function CreateItem() {
       },
       onError: onError,
       refetchOnWindowChange: false,
-      enabled: true,
+      enabled: false,
     }
   );
 
-  const { data: maxSequenceData, maxSequenceDataRefetch } = useQuery(
+  const { data: maxSequenceData, refetch: maxSequenceDataRefetch } = useQuery(
     "getItemMaxSequence",
     getItemMaxSequence,
     {
@@ -197,6 +204,9 @@ export default function CreateItem() {
   function handelFile(e) {
     setItemBrochureFile(e.target.files[0]);
   }
+  function handleTextEditorChange(textEditorData) {
+    setAllData({ ...allData, ["summary"]: textEditorData });
+  }
 
   const onInputChange = async (selectedOptions, select2Ref) => {
     if (Array.isArray(selectedOptions)) {
@@ -211,9 +221,14 @@ export default function CreateItem() {
         [select2Ref.name]: selectedIds,
       });
     } else {
-      // For single object ------
+      // For single object -----------------------------------
+
+      // For load thirdSubCategory by subCategory ------------
+      if (select2Ref.name === "sub_category_id") {
+        await thirdSubCategoryRefech();
+      }
       if (select2Ref.name === "category_id") {
-        // For reset subCategory & ThirdSubCategory ----
+        // For Reset subCategory & ThirdSubCategory ----
         setAllData({
           ...allData,
           [select2Ref.name]: selectedOptions.id,
@@ -222,6 +237,7 @@ export default function CreateItem() {
         });
         await setSubCategories([]);
         await setThirdSubCategories([]);
+        await subCategoryRefech();
       } else {
         setAllData({
           ...allData,
@@ -300,7 +316,7 @@ export default function CreateItem() {
             <div className="card-block">
               <form onSubmit={handleSubmit}>
                 <div className="row justify-content-center">
-                  {/* ------------------eft side-----------------------  */}
+                  {/* ------------------left side-----------------------  */}
                   <div className={`col-md-9 ${classes.inputSec} }`}>
                     <div className=" row">
                       <div className="col-sm-12">
@@ -356,8 +372,16 @@ export default function CreateItem() {
                     <div className="form-group row">
                       <div className="col-sm-12">
                         <label className=" col-form-label">Summary</label>
+                        <JoditEditor
+                          ref={itemEditor}
+                          name="summary"
+                          value={allData.summary}
+                          onBlur={handleTextEditorChange}
+                          config={config}
+                          tabIndex={30} // tabIndex of textarea
+                        />
 
-                        <textarea
+                        {/* <textarea
                           name="summary"
                           value={allData.summary}
                           onChange={handleChange}
@@ -365,7 +389,7 @@ export default function CreateItem() {
                           cols="5"
                           className="form-control"
                           placeholder="Item Summery"
-                        ></textarea>
+                        ></textarea> */}
                       </div>
                     </div>
 
@@ -388,7 +412,7 @@ export default function CreateItem() {
                         <input
                           name="brochure"
                           value={allData.brochure}
-                          onChange={handleChange}
+                          onChange={handelFile}
                           type="file"
                           accept="application/pdf"
                           className="form-control"
@@ -514,6 +538,7 @@ export default function CreateItem() {
                         defaultValue={allData.category_id}
                         name="category_id"
                         options={categories}
+                        required
                       />
                     </div>
                     <div className="">

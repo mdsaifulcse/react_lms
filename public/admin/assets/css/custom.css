@@ -1,3 +1,6 @@
 .table-header {
   color: #3498db;
 }
+.jodit-status-bar__item jodit-status-bar__item-right {
+  display: none !important;
+}

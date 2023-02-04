@@ -32,6 +32,7 @@ import ThirdSubCategoryList from "./admin/components/viewes/ThirdSubCategory/Thi
 //Items
 import ItemsList from "./admin/components/viewes/Items/ItemsList";
 import CreateItem from "./admin/components/viewes/Items/CreateItem";
+import EditItem from "./admin/components/viewes/Items/EditItem";
 
 const AppRoute = () => {
   return (
@@ -90,6 +91,7 @@ const AppRoute = () => {
                 <Route path="items/">
                   <Route path="list" element={<ItemsList />} />
                   <Route path="create" element={<CreateItem />} />
+                  <Route path="edit/:itemId" element={<EditItem />} />
                 </Route>
               </Route>
             </Route>

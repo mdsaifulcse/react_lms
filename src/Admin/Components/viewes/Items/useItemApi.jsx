@@ -30,6 +30,19 @@ export default function useItemApi() {
     return response;
   };
 
+  const activeThirdSubCategoriesBySubCategoryRequest = async ({ queryKey }) => {
+    const subCategoryId = queryKey[1];
+    const headers = await defaultHeadersForAdmin();
+    const response = await axios(
+      `${baseUrl}admin/active-third-sub-category-list/${subCategoryId}`,
+      {
+        method: "GET",
+        headers,
+      }
+    );
+    return response;
+  };
+
   const activeCountryListRequest = async () => {
     const headers = await defaultHeadersForAdmin();
     const response = await axios(`${baseUrl}admin/active-country-list`, {
@@ -71,19 +84,6 @@ export default function useItemApi() {
       method: "GET",
       headers,
     });
-    return response;
-  };
-
-  const activeThirdSubCategoriesBySubCategoryRequest = async ({ queryKey }) => {
-    const subCategoryId = queryKey[1];
-    const headers = await defaultHeadersForAdmin();
-    const response = await axios(
-      `${baseUrl}admin/active-third-sub-category-list/${subCategoryId}`,
-      {
-        method: "GET",
-        headers,
-      }
-    );
     return response;
   };
 

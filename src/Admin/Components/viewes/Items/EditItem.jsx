@@ -1,39 +1,169 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
-import { useQuery } from "react-query";
-import useAuthorApi from "./useAuthorApi";
+import { useQuery, useMutation } from "react-query";
+import useItemApi from "./useItemApi";
 import defaultImage from "../../../assets/image/default_image.jpg";
-import Loading from "../../ui-component/Loading";
-
+import classes from "./Style/Item.module.css";
 import { Link, useParams } from "react-router-dom";
+import Select from "react-select";
+import JoditEditor from "jodit-react";
+
 export default function EditItem() {
+  const { itemId } = useParams();
+  const itemEditor = useRef(null);
+  const config = {
+    readonly: false, // all options from https://xdsoft.net/jodit/doc/,
+    placeholder: "Item summery here",
+  };
+  const select2Ref = useRef();
+  const { onError, onSuccess } = useToster();
+  const {
+    showItemRequest,
+    updateItemRequest,
+    activeCategoriesRequest,
+    activeSubCategoriesByCategoryRequest,
+    activeThirdSubCategoriesBySubCategoryRequest,
+    activeAuthorListRequest,
+    activeCountryListRequest,
+    activeLanguageListRequest,
+    activePublisherListRequest,
+  } = useItemApi();
   const initialFormData = {
-    id: null,
-    name: "",
-    email: "",
-    mobile: "",
-    photo: "",
-    contact: "",
-    address1: "",
-    address2: "",
-    bio: "",
+    id: "",
+    title: "",
+    isbn: "",
+    edition: "",
+    photo: defaultImage,
+    number_of_page: "",
+    summary: "",
+    video_url: "",
+    brochure: "",
+    item_authors: [],
+    publisher_id: "",
+    language_id: "",
+    country_id: "",
+    category_id: "",
+    sub_category_id: "",
+    third_category_id: "",
     show_home: 0,
     status: 1,
-    sequence: 0,
-    _method: "PUT",
+    publish_status: 0,
+    sequence: 1,
   };
-  const { authorId } = useParams();
-  const { onError, onSuccess } = useToster();
-  const { showAuthorsRequest, updateAuthorRequest } = useAuthorApi();
   const [allData, setAllData] = useState(initialFormData);
   const [filePreview, setFilePreview] = useState(defaultImage);
-  const [authorPhoto, setAuthorPhoto] = useState(null);
+  const [authors, setAuthors] = useState([]);
+  const [publishers, setPublishers] = useState([]);
+  const [languages, setLanguages] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [thirdSubCategories, setThirdSubCategories] = useState([]);
+  const [itemPhotos, setItemPhotos] = useState(null);
+  const [brochureFile, setItemBrochureFile] = useState(null);
 
+  function makeSelectedOptions(options) {
+    let returnArrayObject = [];
+    options.map((option, i) => {
+      let singleObject = { value: option.id, label: option.name };
+      // returnObject.value = option.id;
+      // returnObject.label = option.name;
+      returnArrayObject[i] = singleObject;
+    });
+
+    return returnArrayObject;
+  }
+
+  //Get Authors Data-----------------------------
+  useQuery("activeAuthorListRequest", activeAuthorListRequest, {
+    onSuccess: async (response) => {
+      if (response.status === 200) {
+        await setAuthors(response.data.result);
+        //let authorOptions = makeSelectedOptions(response.data.result);
+        //console.log(authorOptions);
+        //await setAuthors(authorOptions);
+      }
+    },
+    onError: onError,
+    refetchOnWindowChange: false,
+  });
+
+  //  Get Publishers Data-----------------------------
+  useQuery("activePublisherListRequest", activePublisherListRequest, {
+    onSuccess: async (response) => {
+      if (response.status === 200) {
+        await setPublishers(response.data.result);
+      }
+    },
+    onError: onError,
+    refetchOnWindowChange: false,
+  });
+  //  Get Country Data-----------------------------
+  useQuery("activeCountryListRequest", activeCountryListRequest, {
+    onSuccess: async (response) => {
+      if (response.status === 200) {
+        await setCountries(response.data.result);
+      }
+    },
+    onError: onError,
+    refetchOnWindowChange: false,
+  });
+  //  Get Languages Data-----------------------------
+  useQuery("activeLanguageListRequest", activeLanguageListRequest, {
+    onSuccess: async (response) => {
+      if (response.status === 200) {
+        await setLanguages(response.data.result);
+      }
+    },
+    onError: onError,
+    refetchOnWindowChange: false,
+  });
+  //  Get categories Data-----------------------------
+  useQuery("activeCategoriesRequest", activeCategoriesRequest, {
+    onSuccess: async (response) => {
+      if (response.status === 200) {
+        await setCategories(response.data.result);
+      }
+    },
+    onError: onError,
+    refetchOnWindowChange: false,
+  });
+  //  Get sub-categories Data by categoryId-----------------------------
+  const { refetch: subCategoryRefech } = useQuery(
+    ["activeSubCategoriesByCategoryRequest", allData.category_id],
+    activeSubCategoriesByCategoryRequest,
+    {
+      onSuccess: async (response) => {
+        if (response.status === 200) {
+          await setSubCategories(response.data.result);
+        }
+      },
+      onError: onError,
+      refetchOnWindowChange: false,
+      enabled: false,
+    }
+  );
+
+  //  Get Third-sub-categories Data by categoryId-----------------------------
+  const { refetch: thirdSubCategoryRefech } = useQuery(
+    ["activeThirdSubCategoriesBySubCategoryRequest", allData.sub_category_id],
+    activeThirdSubCategoriesBySubCategoryRequest,
+    {
+      onSuccess: async (response) => {
+        if (response.status === 200) {
+          await setThirdSubCategories(response.data.result);
+        }
+      },
+      onError: onError,
+      refetchOnWindowChange: false,
+      enabled: false,
+    }
+  );
   // get & set author data ----------
-  const { data, isLoading: loadAuthor } = useQuery(
-    ["showAuthorsRequest", parseInt(authorId)],
-    showAuthorsRequest,
+  const { data, isLoading: loadItem } = useQuery(
+    ["showItemRequest", parseInt(itemId)],
+    showItemRequest,
     {
       //onSuccess: onSuccess,
       onError: onError,
@@ -42,297 +172,481 @@ export default function EditItem() {
     }
   );
 
-  const updateInitialValue = async (author) => {
-    initialFormData.id = author.id;
-    initialFormData.name = author.name ? author.name : "";
-    initialFormData.email = author.email ? author.email : "";
-    initialFormData.mobile = author.mobile ? author.mobile : "";
-    initialFormData.contact = author.contact ? author.contact : "";
-    initialFormData.address1 = author.address1 ? author.address1 : "";
-    initialFormData.address2 = author.address2 ? author.address2 : "";
-    initialFormData.bio = author.bio ? author.bio : "";
-    initialFormData.show_home = author.show_home ? author.show_home : "";
-    initialFormData.status = author.status ? author.status : 0;
-    initialFormData.sequence = author.sequence ? author.sequence : "";
-    await setFilePreview(author.photo ? author.photo : defaultImage);
+  const updateInitialValue = async (item) => {
+    initialFormData.id = item.id;
+    initialFormData.title = item.title;
+    initialFormData.isbn = item.isbn;
+    initialFormData.edition = item.edition;
+    initialFormData.photo = defaultImage;
+    initialFormData.number_of_page = item.number_of_page;
+    initialFormData.summary = ""; //item.summary;
+    initialFormData.video_url = item.video_url;
+    //initialFormData.brochure = item.brochure;
+    initialFormData.item_authors = [];
+    initialFormData.publisher_id = item.publisher_id;
+    initialFormData.language_id = item.language_id;
+    initialFormData.country_id = item.country_id;
+    initialFormData.category_id = item.category_id;
+    initialFormData.sub_category_id = item.sub_category_id;
+    initialFormData.third_category_id = item.third_category_id;
+    initialFormData.show_home = item.show_home;
+    initialFormData.status = item.status;
+    initialFormData.publish_status = item.publisher_id;
+    initialFormData.sequence = item.sequence;
+
+    await setFilePreview(item.photo ? item.photo : defaultImage);
+    console.log(initialFormData);
     await setAllData(initialFormData);
   };
   useEffect(() => {
-    let author = {};
-    if (!loadAuthor) {
-      //loadAuthorAfterUpdate
-      author = data.data.result;
-      updateInitialValue(author);
+    let item = {};
+    if (!loadItem) {
+      //loadItemAfterUpdate
+      item = data.data.result;
+      updateInitialValue(item);
     }
-  }, [loadAuthor]);
+  }, [loadItem]);
 
-  // on field value change -----
-  const handleChange = (e) => {
-    // on user change -----
-    setAllData({ ...allData, [e.target.name]: e.target.value });
+  const handleChange = (e, maxSequenceData) => {
+    if (e) {
+      // on user change -----
+      setAllData({ ...allData, [e.target.name]: e.target.value });
+    }
   };
 
-  // on Image change -----
   function handelImage(e) {
-    setAuthorPhoto(e.target.files[0]);
+    setItemPhotos(e.target.files[0]);
     setFilePreview(URL.createObjectURL(e.target.files[0]));
   }
 
-  //Edit Form Submit Handle --------------
+  function handelFile(e) {
+    setItemBrochureFile(e.target.files[0]);
+  }
+  function handleTextEditorChange(textEditorData) {
+    setAllData({ ...allData, ["summary"]: textEditorData });
+  }
+
+  const onInputChange = async (selectedOptions, select2Ref) => {
+    if (Array.isArray(selectedOptions)) {
+      // For array Object------
+      let selectedIds = [];
+      selectedOptions.map((item, i) => {
+        selectedIds.push(item.id);
+      });
+
+      setAllData({
+        ...allData,
+        [select2Ref.name]: selectedIds,
+      });
+    } else {
+      // For single object -----------------------------------
+
+      // For load thirdSubCategory by subCategory ------------
+      if (select2Ref.name === "sub_category_id") {
+        await thirdSubCategoryRefech();
+      }
+      if (select2Ref.name === "category_id") {
+        // For Reset subCategory & ThirdSubCategory ----
+        setAllData({
+          ...allData,
+          [select2Ref.name]: selectedOptions.id,
+          sub_category_id: "",
+          third_category_id: "",
+        });
+        await setSubCategories([]);
+        await setThirdSubCategories([]);
+        await subCategoryRefech();
+      } else {
+        setAllData({
+          ...allData,
+          [select2Ref.name]: selectedOptions.id,
+        });
+      }
+    }
+  };
+
+  // Create Api MutateAsync --------------
+  const { mutateAsync } = useMutation("updateItemRequest", updateItemRequest, {
+    onSuccess: onSuccess,
+    onError: onError,
+  });
+
+  // Form Submit Handle --------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-
-    if (authorPhoto) {
-      formData.append("photo", authorPhoto);
+    if (itemPhotos) {
+      // add Image File to FormData
+      formData.append("image[]", itemPhotos);
     }
+    if (brochureFile) {
+      // add brochureFile to FormData
+      formData.append("brochure", brochureFile);
+    }
+    // add Author id to FormData
+    await allData.item_authors.map((itemAuthor, i) => {
+      formData.append(`author_id[]`, itemAuthor);
+    });
 
-    formData.append("id", allData.id);
-    formData.append("name", allData.name);
-    formData.append("email", allData.email);
-    formData.append("mobile", allData.mobile);
-    formData.append("contact", allData.contact);
-    formData.append("address1", allData.address1);
-    formData.append("address2", allData.address2);
-    formData.append("bio", allData.bio);
+    formData.append("title", allData.title);
+    formData.append("isbn", allData.isbn);
+    formData.append("edition", allData.edition);
+    formData.append("number_of_page", allData.number_of_page);
+    formData.append("summary", allData.summary);
+    formData.append("video_url", allData.video_url);
+
+    formData.append("publisher_id", allData.publisher_id);
+    formData.append("language_id", allData.language_id);
+    formData.append("country_id", allData.country_id);
+    formData.append("category_id", allData.category_id);
+    formData.append("sub_category_id", allData.sub_category_id);
+    formData.append("third_category_id", allData.third_category_id);
     formData.append("show_home", allData.show_home);
+    formData.append("publish_status", allData.publish_status);
     formData.append("status", allData.status);
     formData.append("sequence", allData.sequence);
-    formData.append("_method", "PUT");
 
-    const response = await updateAuthorRequest(formData, authorId);
-    if (response.status === 200) {
-      await onSuccess(response);
-      //await customOnSuccess("Update");
-    } else {
-      await onError(response);
-    }
+    await mutateAsync(formData);
+    setAllData(initialFormData);
+    setFilePreview(defaultImage);
+    //return navigate("/admin/items/list", { replace: true });
   };
 
   return (
     <>
-      <PageHeader pageTitle={"Create Author"} actionPage={"Edit Author"} />
+      <PageHeader pageTitle={"Edit Item info"} actionPage={"Edit Item"} />
 
-      {loadAuthor ? (
-        <Loading />
-      ) : (
-        <>
-          <div className="row">
-            <div className="col-md-12">
-              <div className="card">
-                <div className="card-header">
-                  <h5> Edit Author Info Here </h5>
+      <div className="row">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-header">
+              <h5> Edit New Item Here </h5>
 
-                  <span></span>
-                  <div className="card-header-right">
-                    {/* <i className="icofont icofont-refresh"></i> */}
-                    <Link to="/admin/authors/list" title="Author list">
-                      Author List <i className="icofont icofont-list"></i>
-                    </Link>
+              <span></span>
+              <div className="card-header-right">
+                {/* <i className="icofont icofont-refresh"></i> */}
+                <Link to="/admin/items/list" title="Item list">
+                  Item List <i className="icofont icofont-list"></i>
+                </Link>
+              </div>
+            </div>
+            <div className="card-block">
+              <form onSubmit={handleSubmit}>
+                <div className="row justify-content-center">
+                  {/* ------------------left side-----------------------  */}
+                  <div className={`col-md-9 ${classes.inputSec} }`}>
+                    <div className=" row">
+                      <div className="col-sm-12">
+                        <label className=" col-form-label">Title</label>
+                        <input
+                          name="title"
+                          value={allData.title}
+                          onChange={handleChange}
+                          type="text"
+                          className="form-control"
+                          placeholder="Type Item Title"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-group row">
+                      <div className="col-sm-4">
+                        <label className="col-form-label">ISBN</label>
+                        <input
+                          name="isbn"
+                          value={allData.isbn}
+                          onChange={handleChange}
+                          type="text"
+                          className="form-control"
+                          placeholder="Type isbn"
+                        />
+                      </div>
+                      <div className="col-sm-4">
+                        <label className="col-form-label">Edition</label>
+                        <input
+                          name="edition"
+                          value={allData.edition}
+                          onChange={handleChange}
+                          type="text"
+                          className="form-control"
+                          placeholder="item edition"
+                        />
+                      </div>
+                      <div className="col-sm-4">
+                        <label className="col-form-label">Number of Page</label>
+                        <input
+                          name="number_of_page"
+                          value={allData.number_of_page}
+                          onChange={handleChange}
+                          type="number"
+                          className="form-control"
+                          placeholder="Type number of page"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-group row">
+                      <div className="col-sm-12">
+                        <label className=" col-form-label">Summary</label>
+                        <JoditEditor
+                          ref={itemEditor}
+                          name="summary"
+                          value={allData.summary}
+                          onBlur={handleTextEditorChange}
+                          config={config}
+                          tabIndex={30} // tabIndex of textarea
+                        />
+
+                        {/* <textarea
+                          name="summary"
+                          value={allData.summary}
+                          onChange={handleChange}
+                          rows="8"
+                          cols="5"
+                          className="form-control"
+                          placeholder="Item Summery"
+                        ></textarea> */}
+                      </div>
+                    </div>
+
+                    <div className="form-group row">
+                      <div className="col-sm-4">
+                        <label className="col-form-label">Video Url</label>
+                        <input
+                          name="video_url"
+                          value={allData.video_url}
+                          onChange={handleChange}
+                          type="text"
+                          className="form-control"
+                          placeholder="Video Url: Youtube link"
+                        />
+                      </div>
+                      <div className="col-sm-4">
+                        <label className="col-form-label">
+                          Brochure (PDF Only)
+                        </label>
+                        <input
+                          name="brochure"
+                          value={allData.brochure}
+                          onChange={handelFile}
+                          type="file"
+                          accept="application/pdf"
+                          className="form-control"
+                          placeholder="Type number of page"
+                        />
+                      </div>
+
+                      <div className="col-sm-3">
+                        <label htmlFor="imageUpladFile">
+                          <img
+                            className="py-2"
+                            src={filePreview}
+                            style={{
+                              width: "120px",
+                              border: "2px dashed #90b85c",
+                              cursor: "pointer",
+                            }}
+                            alt=""
+                          />
+                        </label>
+                        <input
+                          id="imageUpladFile"
+                          type="file"
+                          className="form-control"
+                          onChange={(e) => {
+                            handelImage(e);
+                          }}
+                          accept="image/*"
+                          style={{ display: "none" }}
+                        />
+                      </div>
+                    </div>
+                    <div className="row justify-content-center">
+                      <label className="col-md-2 col-form-label">
+                        <button
+                          type="submit"
+                          className="btn btn-primary btn-md btn-block waves-effect text-center m-b-20"
+                        >
+                          Submit
+                        </button>
+                      </label>
+                    </div>
                   </div>
-                </div>
-                <div className="card-block">
-                  <div className="row justify-content-center">
-                    <div className="col-md-8">
-                      <form
-                        onSubmit={handleSubmit}
-                        encType="multipart/form-data"
+                  {/* ------------------Right side-------------------- */}
+                  <div className={`col-md-3 ${classes.dropdownSec}`}>
+                    <div className="">
+                      <label className=" col-form-label">Authors</label>
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="select Authors"
+                        onChange={onInputChange}
+                        isMulti={true}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
+                        name="item_authors"
+                        defaultValue={allData.item_authors}
+                        options={authors}
+                      />
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Publisher</label>
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="Select Publisher"
+                        onChange={onInputChange}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
+                        defaultValue={allData.publisher_id}
+                        name="publisher_id"
+                        options={publishers}
+                      />
+                      {/* <select
+                        name="publisher_id"
+                        onChange={handleChange}
+                        defaultValue={allData.publisher_id}
+                        className="form-control"
                       >
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
-                            Name
-                          </label>
-                          <div className="col-sm-10">
-                            <input
-                              name="name"
-                              value={allData.name}
-                              onChange={handleChange}
-                              type="text"
-                              className="form-control"
-                              placeholder="Type author name"
-                            />
-                          </div>
-                        </div>
+                        <option key="0" value="">
+                          Select Publisher
+                        </option>
+                        {publishers?.map((publisher, i) => (
+                          <option key={i + 1} value={publisher?.id}>
+                            {publisher?.name}
+                          </option>
+                        ))}
+                      </select> */}
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Language</label>
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="Select Language"
+                        onChange={onInputChange}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
+                        defaultValue={allData.publisher_id}
+                        name="language_id"
+                        options={languages}
+                      />
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Country</label>
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="Select Country"
+                        onChange={onInputChange}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
+                        defaultValue={allData.country_id}
+                        name="country_id"
+                        options={countries}
+                      />
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Category</label>
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="Select Category"
+                        backspaceRemovesValue={true}
+                        onChange={onInputChange}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
+                        defaultValue={allData.category_id}
+                        name="category_id"
+                        options={categories}
+                        required
+                      />
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Sub Category</label>
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="Sub Category"
+                        onChange={onInputChange}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
+                        defaultValue={allData.sub_category_id}
+                        name="sub_category_id"
+                        options={subCategories}
+                        required
+                      />
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">
+                        Third Sub Category
+                      </label>
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="Select Sub Category"
+                        onChange={onInputChange}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
+                        defaultValue={allData.third_category_id}
+                        name="third_category_id"
+                        options={thirdSubCategories}
+                      />
+                    </div>
 
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
-                            Email
-                          </label>
-                          <div className="col-sm-10">
-                            <input
-                              name="email"
-                              value={allData.email}
-                              onChange={handleChange}
-                              type="text"
-                              className="form-control"
-                              placeholder="Type author email"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
-                            Mobile
-                          </label>
-                          <div className="col-sm-10">
-                            <input
-                              name="mobile"
-                              value={allData.mobile}
-                              onChange={handleChange}
-                              type="text"
-                              className="form-control"
-                              placeholder="Type author mobile"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
-                            Contact
-                          </label>
-                          <div className="col-sm-10">
-                            <input
-                              name="contact"
-                              value={allData.contact}
-                              onChange={handleChange}
-                              type="text"
-                              className="form-control"
-                              placeholder="Type author contact"
-                            />
-                          </div>
-                        </div>
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">Bio</label>
-                          <div className="col-sm-10">
-                            <textarea
-                              name="bio"
-                              value={allData.bio}
-                              onChange={handleChange}
-                              rows="5"
-                              cols="5"
-                              className="form-control"
-                              placeholder="Author Bio is here"
-                            ></textarea>
-                          </div>
-                        </div>
-
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
-                            Address
-                          </label>
-                          <div className="col-sm-10">
-                            <textarea
-                              name="address1"
-                              value={allData.address1}
-                              onChange={handleChange}
-                              rows="5"
-                              cols="5"
-                              className="form-control"
-                              placeholder="Author address is here"
-                            ></textarea>
-                          </div>
-                        </div>
-
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label"></label>
-                          <div className="col-sm-3">
-                            <select
-                              name="status"
-                              onChange={handleChange}
-                              value={allData.status}
-                              className="form-control"
-                            >
-                              <option value="">Select One</option>
-                              <option value="1">Active</option>
-                              <option value="0">Inactive</option>
-                            </select>
-                            <label className=" col-form-label">Status</label>
-                          </div>
-
-                          <div className="col-sm-3">
-                            <select
-                              name="show_home"
-                              onChange={handleChange}
-                              defaultValue={allData.show_home}
-                              className="form-control"
-                            >
-                              <option value="">Select One </option>
-                              <option value="1">Yes</option>
-                              <option value="0">No</option>
-                            </select>
-                            <label className=" col-form-label">
-                              Show at Home?
-                            </label>
-                          </div>
-
-                          <div className="col-sm-3">
-                            <input
-                              name="sequence"
-                              value={allData.sequence}
-                              onChange={handleChange}
-                              type="number"
-                              min={0}
-                              max={999999}
-                              className="form-control"
-                              placeholder=""
-                            />
-                            <label className=" col-form-label">Sequence</label>
-                          </div>
-                        </div>
-
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
-                            Upload File
-                          </label>
-                          <div className="col-sm-5">
-                            <label htmlFor="imageUpladFile">
-                              <img
-                                className="py-2"
-                                src={filePreview}
-                                style={{
-                                  width: "120px",
-                                  border: "2px dashed #90b85c",
-                                  cursor: "pointer",
-                                }}
-                                alt=""
-                              />
-                            </label>
-                          </div>
-
-                          <div className="col-sm-5">
-                            <input
-                              id="imageUpladFile"
-                              type="file"
-                              className="form-control"
-                              onChange={(e) => {
-                                handelImage(e);
-                              }}
-                              accept="image/*"
-                              style={{ display: "none" }}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="form-group row">
-                          <label className="col-md-2 col-form-label"></label>
-                          <label className="col-md-2 col-form-label">
-                            <button
-                              type="submit"
-                              className="btn btn-primary btn-md btn-block waves-effect text-center m-b-20"
-                            >
-                              Submit
-                            </button>
-                          </label>
-                        </div>
-                      </form>
+                    <div className="">
+                      <label className=" col-form-label">Item Status</label>
+                      <select
+                        name="status"
+                        onChange={handleChange}
+                        defaultValue={allData.status}
+                        className="form-control"
+                      >
+                        <option value="">Select One</option>
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                      </select>
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Publish Status</label>
+                      <select
+                        name="publish_status"
+                        onChange={handleChange}
+                        defaultValue={allData.publish_status}
+                        className="form-control"
+                      >
+                        <option value="">Select One</option>
+                        <option value="1">Publish</option>
+                        <option value="0">Unpublish</option>
+                      </select>
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Show at Home?</label>
+                      <select
+                        name="show_home"
+                        onChange={handleChange}
+                        defaultValue={allData.show_home}
+                        className="form-control"
+                      >
+                        <option value="">Select One </option>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                      </select>
+                    </div>
+                    <div className="">
+                      <label className=" col-form-label">Sequence</label>
+                      <input
+                        name="sequence"
+                        value={allData.sequence}
+                        onChange={handleChange}
+                        type="number"
+                        min={0}
+                        max={999999}
+                        className="form-control"
+                        placeholder=""
+                      />
                     </div>
                   </div>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
-        </>
-      )}
+        </div>
+      </div>
     </>
   );
 }

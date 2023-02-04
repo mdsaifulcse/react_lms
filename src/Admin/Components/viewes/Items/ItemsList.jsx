@@ -197,6 +197,8 @@ export default function ItemsList() {
             data={item}
             show={modalShow}
             onHide={() => setModalShow(false)}
+            modalTitle="Item Details"
+            cardHeader="Item Info"
           />
         </>
       )}
