@@ -30,7 +30,7 @@ export default function EditAuthor() {
   const [filePreview, setFilePreview] = useState(defaultImage);
   const [authorPhoto, setAuthorPhoto] = useState(null);
 
-  // get & set author data ----------
+  // get & set author data ------------------------
   const { data, isLoading: loadAuthor } = useQuery(
     ["showAuthorsRequest", parseInt(authorId)],
     showAuthorsRequest,

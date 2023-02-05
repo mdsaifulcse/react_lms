@@ -141,7 +141,7 @@ export default function EditItem() {
       },
       onError: onError,
       refetchOnWindowChange: false,
-      enabled: false,
+      enabled: true,
     }
   );
 
@@ -157,20 +157,20 @@ export default function EditItem() {
       },
       onError: onError,
       refetchOnWindowChange: false,
-      enabled: false,
-    }
-  );
-  // get & set author data ----------
-  const { data, isLoading: loadItem } = useQuery(
-    ["showItemRequest", parseInt(itemId)],
-    showItemRequest,
-    {
-      //onSuccess: onSuccess,
-      onError: onError,
       enabled: true,
-      refetchOnWindowFocus: false,
     }
   );
+  // get & set Edit Item data ----------
+  const {
+    data,
+    isLoading: loadItem,
+    isError,
+  } = useQuery(["showItemRequest", parseInt(itemId)], showItemRequest, {
+    //onSuccess: onSuccess,
+    onError: onError,
+    enabled: true,
+    refetchOnWindowFocus: false,
+  });
 
   const updateInitialValue = async (item) => {
     initialFormData.id = item.id;
@@ -179,28 +179,36 @@ export default function EditItem() {
     initialFormData.edition = item.edition;
     initialFormData.photo = defaultImage;
     initialFormData.number_of_page = item.number_of_page;
-    initialFormData.summary = ""; //item.summary;
+    initialFormData.summary = item.summary;
     initialFormData.video_url = item.video_url;
     //initialFormData.brochure = item.brochure;
-    initialFormData.item_authors = [];
+    initialFormData.item_authors = item.relItemAuthorsName;
     initialFormData.publisher_id = item.publisher_id;
+    initialFormData.publisher = item.publisher;
     initialFormData.language_id = item.language_id;
+    initialFormData.language = item.language;
     initialFormData.country_id = item.country_id;
+    initialFormData.country = item.country;
     initialFormData.category_id = item.category_id;
+    initialFormData.category = item.category;
+    initialFormData.category = item.category;
     initialFormData.sub_category_id = item.sub_category_id;
+    initialFormData.sub_category = item.sub_category;
     initialFormData.third_category_id = item.third_category_id;
+    initialFormData.third_category = item.third_category;
     initialFormData.show_home = item.show_home;
     initialFormData.status = item.status;
     initialFormData.publish_status = item.publisher_id;
     initialFormData.sequence = item.sequence;
 
-    await setFilePreview(item.photo ? item.photo : defaultImage);
-    console.log(initialFormData);
+    await setFilePreview(
+      item.itemThumbnails ? item.itemThumbnails[0].medium : defaultImage
+    );
     await setAllData(initialFormData);
   };
   useEffect(() => {
     let item = {};
-    if (!loadItem) {
+    if (!loadItem && !isError) {
       //loadItemAfterUpdate
       item = data.data.result;
       updateInitialValue(item);
@@ -227,11 +235,12 @@ export default function EditItem() {
   }
 
   const onInputChange = async (selectedOptions, select2Ref) => {
+    console.log(selectedOptions);
     if (Array.isArray(selectedOptions)) {
       // For array Object------
       let selectedIds = [];
       selectedOptions.map((item, i) => {
-        selectedIds.push(item.id);
+        selectedIds.push(item);
       });
 
       setAllData({
@@ -285,7 +294,7 @@ export default function EditItem() {
     }
     // add Author id to FormData
     await allData.item_authors.map((itemAuthor, i) => {
-      formData.append(`author_id[]`, itemAuthor);
+      formData.append(`author_id[]`, itemAuthor.id);
     });
 
     formData.append("title", allData.title);
@@ -305,10 +314,15 @@ export default function EditItem() {
     formData.append("publish_status", allData.publish_status);
     formData.append("status", allData.status);
     formData.append("sequence", allData.sequence);
+    formData.append("_method", "PUT");
 
-    await mutateAsync(formData);
-    setAllData(initialFormData);
-    setFilePreview(defaultImage);
+    const response = await updateItemRequest(formData, itemId);
+    if (response.status === 200) {
+      await onSuccess(response);
+      //await customOnSuccess("Update");
+    } else {
+      await onError(response);
+    }
     //return navigate("/admin/items/list", { replace: true });
   };
 
@@ -485,7 +499,7 @@ export default function EditItem() {
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
                         name="item_authors"
-                        defaultValue={allData.item_authors}
+                        value={allData.item_authors}
                         options={authors}
                       />
                     </div>
@@ -494,12 +508,18 @@ export default function EditItem() {
                       <Select
                         ref={select2Ref}
                         classNamePrefix="Select Publisher"
-                        onChange={onInputChange}
+                        isClearable={false}
+                        // onChange={onInputChange}
+                        onChange={(option) => option.value}
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
-                        defaultValue={allData.publisher_id}
+                        value={{
+                          name: allData.publisher,
+                          id: allData.publisher_id,
+                        }}
                         name="publisher_id"
                         options={publishers}
+                        placeholder="Good"
                       />
                       {/* <select
                         name="publisher_id"
@@ -525,7 +545,10 @@ export default function EditItem() {
                         onChange={onInputChange}
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
-                        defaultValue={allData.publisher_id}
+                        value={{
+                          name: allData.language,
+                          id: allData.language_id,
+                        }}
                         name="language_id"
                         options={languages}
                       />
@@ -538,7 +561,10 @@ export default function EditItem() {
                         onChange={onInputChange}
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
-                        defaultValue={allData.country_id}
+                        value={{
+                          name: allData.country,
+                          id: allData.country_id,
+                        }}
                         name="country_id"
                         options={countries}
                       />
@@ -552,7 +578,10 @@ export default function EditItem() {
                         onChange={onInputChange}
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
-                        defaultValue={allData.category_id}
+                        value={{
+                          name: allData.category,
+                          id: allData.category_id,
+                        }}
                         name="category_id"
                         options={categories}
                         required
@@ -566,7 +595,10 @@ export default function EditItem() {
                         onChange={onInputChange}
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
-                        defaultValue={allData.sub_category_id}
+                        value={{
+                          name: allData.sub_category,
+                          id: allData.sub_category_id,
+                        }}
                         name="sub_category_id"
                         options={subCategories}
                         required
@@ -582,7 +614,10 @@ export default function EditItem() {
                         onChange={onInputChange}
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
-                        defaultValue={allData.third_category_id}
+                        value={{
+                          name: allData.third_category,
+                          id: allData.third_category_id,
+                        }}
                         name="third_category_id"
                         options={thirdSubCategories}
                       />

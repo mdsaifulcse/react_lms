@@ -52,12 +52,22 @@ export default function ShowItemModal({
                         <div className="col-lg-4 col-xl-4">
                           <div className="card">
                             <div className="card-header contact-user">
-                              <img
-                                className="img-circle"
-                                src={data.photo}
-                                alt="contact-user"
-                              />
-                              <h4>{data.name}</h4>
+                              {data.itemThumbnails ? (
+                                <img
+                                  className="img img-circle"
+                                  src={data.itemThumbnails[0].medium}
+                                  alt="contact-user"
+                                  style={{ width: "100%" }}
+                                />
+                              ) : (
+                                <img
+                                  className="img-circle"
+                                  src=""
+                                  alt="contact-user"
+                                />
+                              )}
+
+                              <h4>{data.title}</h4>
                             </div>
                           </div>
                         </div>
@@ -121,22 +131,34 @@ export default function ShowItemModal({
                               </tr>
                               <tr>
                                 <th scope="row">Third SubCategory</th>
-                                <td>{data.third_sub_category}</td>
+                                <td>{data.third_category}</td>
                               </tr>
                               <tr>
                                 <th scope="row">Summary</th>
-                                <td>{data.summary}</td>
+                                <td>
+                                  {
+                                    <div
+                                      dangerouslySetInnerHTML={{
+                                        __html: data.summary,
+                                      }}
+                                    />
+                                  }
+                                </td>
                               </tr>
                               <tr>
                                 <th scope="row">Video Url</th>
-                                <td>{data.video}</td>
+                                <td>
+                                  <a href={data.video_url} target="_blank">
+                                    Watch
+                                  </a>
+                                </td>
                               </tr>
                               <tr>
                                 <th scope="row">Brochure</th>
                                 <td>
-                                  <Link to={data.brochure}>
-                                    <i className="ti-files"></i> PDF
-                                  </Link>
+                                  <a href={data.brochure} target="_blank">
+                                    Read Brochure
+                                  </a>
                                 </td>
                               </tr>
 

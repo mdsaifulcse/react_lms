@@ -213,7 +213,7 @@ export default function CreateItem() {
       // For array Object------
       let selectedIds = [];
       selectedOptions.map((item, i) => {
-        selectedIds.push(item.id);
+        selectedIds.push(item);
       });
 
       setAllData({
@@ -267,7 +267,7 @@ export default function CreateItem() {
     }
     // add Author id to FormData
     await allData.item_authors.map((itemAuthor, i) => {
-      formData.append(`author_id[]`, itemAuthor);
+      formData.append(`author_id[]`, itemAuthor.id);
     });
 
     formData.append("title", allData.title);

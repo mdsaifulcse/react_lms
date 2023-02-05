@@ -29,6 +29,8 @@ import CategoryList from "./admin/components/viewes/Category/CategoryList";
 import SubCategoryList from "./admin/components/viewes/SubCategory/SubCategoryList";
 //Third-categories
 import ThirdSubCategoryList from "./admin/components/viewes/ThirdSubCategory/ThirdSubCategoryList";
+//Vendors
+import VendorList from "./admin/components/viewes/Vendor/VendorList";
 //Items
 import ItemsList from "./admin/components/viewes/Items/ItemsList";
 import CreateItem from "./admin/components/viewes/Items/CreateItem";
@@ -74,10 +76,16 @@ const AppRoute = () => {
                   <Route path="create" element={<CreateLanguage />} />
                   <Route path="edit/:languageId" element={<EditLanguage />} />
                 </Route>
+
+                {/* vendors */}
+                <Route path="vendors/">
+                  <Route path="list" element={<VendorList />} />
+                </Route>
                 {/* Category */}
                 <Route path="categories/">
                   <Route path="list" element={<CategoryList />} />
                 </Route>
+
                 {/*Sub Category */}
                 <Route path="sub-categories/">
                   <Route path="list" element={<SubCategoryList />} />

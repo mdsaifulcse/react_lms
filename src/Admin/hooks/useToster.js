@@ -25,6 +25,12 @@ export default function useToster() {
         position: "top-right",
         autoClose: 5000,
       });
+    } else if (error.response.status === 500) {
+      message = error.response.data.message;
+      toast.error(message, {
+        position: "top-right",
+        autoClose: 5000,
+      });
     }
   };
 

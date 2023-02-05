@@ -71,7 +71,7 @@ export default function LeftNavbar() {
                 <i className="ti-layout"></i>
               </span>
               <span className="pcoded-mtext" data-i18n="nav.page_layout.main">
-                Page layouts
+                Setting
               </span>
               <span className="pcoded-badge label label-warning">NEW</span>
               <span className="pcoded-mcaret"></span>
@@ -256,13 +256,13 @@ export default function LeftNavbar() {
               </li>
 
               <li className=" ">
-                <Link to="dashboard">
+                {/* <Link to="dashboard">
                   <img
                     className="img-fluid"
                     src="assets/images/logo.png"
                     alt="Theme-Logo"
                   />
-                </Link>
+                </Link> */}
                 <NavLink to="user-list">
                   <span className="pcoded-micon">
                     <i className="icon-pie-chart"></i>
