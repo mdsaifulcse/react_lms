@@ -40,7 +40,7 @@ export default function ShowAuthorModal({ data, show, onHide }) {
                   <div className="col-lg-12">
                     <div className="general-info">
                       <div className="row">
-                        <div className="col-lg-4 col-xl-4">
+                        <div className="col-lg-3 col-xl-3">
                           <div className="card">
                             <div className="card-header contact-user">
                               <img
@@ -53,7 +53,7 @@ export default function ShowAuthorModal({ data, show, onHide }) {
                           </div>
                         </div>
                         {/* <!-- end of table col-lg-6 --> */}
-                        <div className="col-lg-8 col-xl-8">
+                        <div className="col-lg-9 col-xl-9">
                           <table className="table">
                             <tbody>
                               <tr>

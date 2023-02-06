@@ -3,6 +3,7 @@ import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
 import useItemApi from "./useItemApi";
+import Loading from "../../ui-component/Loading";
 import defaultImage from "../../../assets/image/default_image.jpg";
 import classes from "./Style/Item.module.css";
 import { Link, useParams } from "react-router-dom";
@@ -40,12 +41,12 @@ export default function EditItem() {
     video_url: "",
     brochure: "",
     item_authors: [],
-    publisher_id: "",
-    language_id: "",
-    country_id: "",
-    category_id: "",
-    sub_category_id: "",
-    third_category_id: "",
+    publisherSetOptions: "",
+    languageSetOptions: "",
+    countrySetOptions: "",
+    categorySetOptions: "",
+    subCategorySetOptions: "",
+    thirdCategorySetOptions: "",
     show_home: 0,
     status: 1,
     publish_status: 0,
@@ -131,7 +132,12 @@ export default function EditItem() {
   });
   //  Get sub-categories Data by categoryId-----------------------------
   const { refetch: subCategoryRefech } = useQuery(
-    ["activeSubCategoriesByCategoryRequest", allData.category_id],
+    [
+      "activeSubCategoriesByCategoryRequest",
+      Object.keys(allData.categorySetOptions).length > 0
+        ? allData.categorySetOptions.id
+        : "",
+    ],
     activeSubCategoriesByCategoryRequest,
     {
       onSuccess: async (response) => {
@@ -147,7 +153,12 @@ export default function EditItem() {
 
   //  Get Third-sub-categories Data by categoryId-----------------------------
   const { refetch: thirdSubCategoryRefech } = useQuery(
-    ["activeThirdSubCategoriesBySubCategoryRequest", allData.sub_category_id],
+    [
+      "activeThirdSubCategoriesBySubCategoryRequest",
+      Object.keys(allData.subCategorySetOptions).length > 0
+        ? allData.subCategorySetOptions.id
+        : "",
+    ],
     activeThirdSubCategoriesBySubCategoryRequest,
     {
       onSuccess: async (response) => {
@@ -184,18 +195,24 @@ export default function EditItem() {
     //initialFormData.brochure = item.brochure;
     initialFormData.item_authors = item.relItemAuthorsName;
     initialFormData.publisher_id = item.publisher_id;
-    initialFormData.publisher = item.publisher;
-    initialFormData.language_id = item.language_id;
-    initialFormData.language = item.language;
-    initialFormData.country_id = item.country_id;
-    initialFormData.country = item.country;
-    initialFormData.category_id = item.category_id;
-    initialFormData.category = item.category;
-    initialFormData.category = item.category;
-    initialFormData.sub_category_id = item.sub_category_id;
-    initialFormData.sub_category = item.sub_category;
-    initialFormData.third_category_id = item.third_category_id;
-    initialFormData.third_category = item.third_category;
+    initialFormData.publisherSetOptions = item.publisher_id
+      ? { id: item.publisher_id, name: item.publisher }
+      : "";
+    initialFormData.languageSetOptions = item.language_id
+      ? { id: item.language_id, name: item.language }
+      : "";
+    initialFormData.countrySetOptions = item.country_id
+      ? { id: item.country_id, name: item.country }
+      : "";
+    initialFormData.categorySetOptions = item.category_id
+      ? { id: item.category_id, name: item.category }
+      : "";
+    initialFormData.subCategorySetOptions = item.sub_category_id
+      ? { id: item.sub_category_id, name: item.sub_category }
+      : "";
+    initialFormData.thirdCategorySetOptions = item.third_category_id
+      ? { id: item.third_category_id, name: item.third_category }
+      : "";
     initialFormData.show_home = item.show_home;
     initialFormData.status = item.status;
     initialFormData.publish_status = item.publisher_id;
@@ -235,7 +252,6 @@ export default function EditItem() {
   }
 
   const onInputChange = async (selectedOptions, select2Ref) => {
-    console.log(selectedOptions);
     if (Array.isArray(selectedOptions)) {
       // For array Object------
       let selectedIds = [];
@@ -249,18 +265,17 @@ export default function EditItem() {
       });
     } else {
       // For single object -----------------------------------
-
       // For load thirdSubCategory by subCategory ------------
-      if (select2Ref.name === "sub_category_id") {
+      if (select2Ref.name === "subCategorySetOptions") {
         await thirdSubCategoryRefech();
       }
-      if (select2Ref.name === "category_id") {
+      if (select2Ref.name === "categorySetOptions") {
         // For Reset subCategory & ThirdSubCategory ----
         setAllData({
           ...allData,
-          [select2Ref.name]: selectedOptions.id,
-          sub_category_id: "",
-          third_category_id: "",
+          [select2Ref.name]: selectedOptions,
+          subCategorySetOptions: {},
+          thirdCategorySetOptions: {},
         });
         await setSubCategories([]);
         await setThirdSubCategories([]);
@@ -268,7 +283,7 @@ export default function EditItem() {
       } else {
         setAllData({
           ...allData,
-          [select2Ref.name]: selectedOptions.id,
+          [select2Ref.name]: selectedOptions,
         });
       }
     }
@@ -283,6 +298,8 @@ export default function EditItem() {
   // Form Submit Handle --------------
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(allData.publisherSetOptions.length);
+    console.log(allData);
     const formData = new FormData();
     if (itemPhotos) {
       // add Image File to FormData
@@ -304,12 +321,42 @@ export default function EditItem() {
     formData.append("summary", allData.summary);
     formData.append("video_url", allData.video_url);
 
-    formData.append("publisher_id", allData.publisher_id);
-    formData.append("language_id", allData.language_id);
-    formData.append("country_id", allData.country_id);
-    formData.append("category_id", allData.category_id);
-    formData.append("sub_category_id", allData.sub_category_id);
-    formData.append("third_category_id", allData.third_category_id);
+    formData.append(
+      "publisher_id",
+      Object.keys(allData.publisherSetOptions).length > 0
+        ? allData.publisherSetOptions.id
+        : ""
+    );
+    formData.append(
+      "language_id",
+      Object.keys(allData.languageSetOptions).length > 0
+        ? allData.languageSetOptions.id
+        : ""
+    );
+    formData.append(
+      "country_id",
+      Object.keys(allData.countrySetOptions).length > 0
+        ? allData.countrySetOptions.id
+        : ""
+    );
+    formData.append(
+      "category_id",
+      Object.keys(allData.categorySetOptions).length > 0
+        ? allData.categorySetOptions.id
+        : ""
+    );
+    formData.append(
+      "sub_category_id",
+      Object.keys(allData.subCategorySetOptions).length > 0
+        ? allData.subCategorySetOptions.id
+        : ""
+    );
+    formData.append(
+      "third_category_id",
+      Object.keys(allData.thirdCategorySetOptions).length > 0
+        ? allData.thirdCategorySetOptions.id
+        : ""
+    );
     formData.append("show_home", allData.show_home);
     formData.append("publish_status", allData.publish_status);
     formData.append("status", allData.status);
@@ -328,91 +375,97 @@ export default function EditItem() {
 
   return (
     <>
-      <PageHeader pageTitle={"Edit Item info"} actionPage={"Edit Item"} />
+      {loadItem ? (
+        <Loading />
+      ) : (
+        <>
+          <PageHeader pageTitle={"Edit Item info"} actionPage={"Edit Item"} />
 
-      <div className="row">
-        <div className="col-md-12">
-          <div className="card">
-            <div className="card-header">
-              <h5> Edit New Item Here </h5>
+          <div className="row">
+            <div className="col-md-12">
+              <div className="card">
+                <div className="card-header">
+                  <h5> Edit New Item Here </h5>
 
-              <span></span>
-              <div className="card-header-right">
-                {/* <i className="icofont icofont-refresh"></i> */}
-                <Link to="/admin/items/list" title="Item list">
-                  Item List <i className="icofont icofont-list"></i>
-                </Link>
-              </div>
-            </div>
-            <div className="card-block">
-              <form onSubmit={handleSubmit}>
-                <div className="row justify-content-center">
-                  {/* ------------------left side-----------------------  */}
-                  <div className={`col-md-9 ${classes.inputSec} }`}>
-                    <div className=" row">
-                      <div className="col-sm-12">
-                        <label className=" col-form-label">Title</label>
-                        <input
-                          name="title"
-                          value={allData.title}
-                          onChange={handleChange}
-                          type="text"
-                          className="form-control"
-                          placeholder="Type Item Title"
-                          required
-                        />
-                      </div>
-                    </div>
+                  <span></span>
+                  <div className="card-header-right">
+                    {/* <i className="icofont icofont-refresh"></i> */}
+                    <Link to="/admin/items/list" title="Item list">
+                      Item List <i className="icofont icofont-list"></i>
+                    </Link>
+                  </div>
+                </div>
+                <div className="card-block">
+                  <form onSubmit={handleSubmit}>
+                    <div className="row justify-content-center">
+                      {/* ------------------left side-----------------------  */}
+                      <div className={`col-md-9 ${classes.inputSec} }`}>
+                        <div className=" row">
+                          <div className="col-sm-12">
+                            <label className=" col-form-label">Title</label>
+                            <input
+                              name="title"
+                              value={allData.title}
+                              onChange={handleChange}
+                              type="text"
+                              className="form-control"
+                              placeholder="Type Item Title"
+                              required
+                            />
+                          </div>
+                        </div>
 
-                    <div className="form-group row">
-                      <div className="col-sm-4">
-                        <label className="col-form-label">ISBN</label>
-                        <input
-                          name="isbn"
-                          value={allData.isbn}
-                          onChange={handleChange}
-                          type="text"
-                          className="form-control"
-                          placeholder="Type isbn"
-                        />
-                      </div>
-                      <div className="col-sm-4">
-                        <label className="col-form-label">Edition</label>
-                        <input
-                          name="edition"
-                          value={allData.edition}
-                          onChange={handleChange}
-                          type="text"
-                          className="form-control"
-                          placeholder="item edition"
-                        />
-                      </div>
-                      <div className="col-sm-4">
-                        <label className="col-form-label">Number of Page</label>
-                        <input
-                          name="number_of_page"
-                          value={allData.number_of_page}
-                          onChange={handleChange}
-                          type="number"
-                          className="form-control"
-                          placeholder="Type number of page"
-                        />
-                      </div>
-                    </div>
+                        <div className="form-group row">
+                          <div className="col-sm-4">
+                            <label className="col-form-label">ISBN</label>
+                            <input
+                              name="isbn"
+                              value={allData.isbn}
+                              onChange={handleChange}
+                              type="text"
+                              className="form-control"
+                              placeholder="Type isbn"
+                            />
+                          </div>
+                          <div className="col-sm-4">
+                            <label className="col-form-label">Edition</label>
+                            <input
+                              name="edition"
+                              value={allData.edition}
+                              onChange={handleChange}
+                              type="text"
+                              className="form-control"
+                              placeholder="item edition"
+                            />
+                          </div>
+                          <div className="col-sm-4">
+                            <label className="col-form-label">
+                              Number of Page
+                            </label>
+                            <input
+                              name="number_of_page"
+                              value={allData.number_of_page}
+                              onChange={handleChange}
+                              type="number"
+                              className="form-control"
+                              placeholder="Type number of page"
+                            />
+                          </div>
+                        </div>
 
-                    <div className="form-group row">
-                      <div className="col-sm-12">
-                        <label className=" col-form-label">Summary</label>
-                        <JoditEditor
-                          ref={itemEditor}
-                          name="summary"
-                          value={allData.summary}
-                          onBlur={handleTextEditorChange}
-                          config={config}
-                          tabIndex={30} // tabIndex of textarea
-                        />
+                        <div className="form-group row">
+                          <div className="col-sm-12">
+                            <label className=" col-form-label">Summary</label>
+                            <JoditEditor
+                              ref={itemEditor}
+                              name="summary"
+                              value={allData.summary}
+                              onBlur={handleTextEditorChange}
+                              config={config}
+                              tabIndex={30} // tabIndex of textarea
+                            />
 
-                        {/* <textarea
+                            {/* <textarea
                           name="summary"
                           value={allData.summary}
                           onChange={handleChange}
@@ -421,107 +474,105 @@ export default function EditItem() {
                           className="form-control"
                           placeholder="Item Summery"
                         ></textarea> */}
-                      </div>
-                    </div>
+                          </div>
+                        </div>
 
-                    <div className="form-group row">
-                      <div className="col-sm-4">
-                        <label className="col-form-label">Video Url</label>
-                        <input
-                          name="video_url"
-                          value={allData.video_url}
-                          onChange={handleChange}
-                          type="text"
-                          className="form-control"
-                          placeholder="Video Url: Youtube link"
-                        />
-                      </div>
-                      <div className="col-sm-4">
-                        <label className="col-form-label">
-                          Brochure (PDF Only)
-                        </label>
-                        <input
-                          name="brochure"
-                          value={allData.brochure}
-                          onChange={handelFile}
-                          type="file"
-                          accept="application/pdf"
-                          className="form-control"
-                          placeholder="Type number of page"
-                        />
-                      </div>
+                        <div className="form-group row">
+                          <div className="col-sm-4">
+                            <label className="col-form-label">Video Url</label>
+                            <input
+                              name="video_url"
+                              value={allData.video_url}
+                              onChange={handleChange}
+                              type="text"
+                              className="form-control"
+                              placeholder="Video Url: Youtube link"
+                            />
+                          </div>
+                          <div className="col-sm-4">
+                            <label className="col-form-label">
+                              Brochure (PDF Only)
+                            </label>
+                            <input
+                              name="brochure"
+                              value={allData.brochure}
+                              onChange={handelFile}
+                              type="file"
+                              accept="application/pdf"
+                              className="form-control"
+                              placeholder="Type number of page"
+                            />
+                          </div>
 
-                      <div className="col-sm-3">
-                        <label htmlFor="imageUpladFile">
-                          <img
-                            className="py-2"
-                            src={filePreview}
-                            style={{
-                              width: "120px",
-                              border: "2px dashed #90b85c",
-                              cursor: "pointer",
-                            }}
-                            alt=""
+                          <div className="col-sm-3">
+                            <label htmlFor="imageUpladFile">
+                              <img
+                                className="py-2"
+                                src={filePreview}
+                                style={{
+                                  width: "120px",
+                                  border: "2px dashed #90b85c",
+                                  cursor: "pointer",
+                                }}
+                                alt=""
+                              />
+                            </label>
+                            <input
+                              id="imageUpladFile"
+                              type="file"
+                              className="form-control"
+                              onChange={(e) => {
+                                handelImage(e);
+                              }}
+                              accept="image/*"
+                              style={{ display: "none" }}
+                            />
+                          </div>
+                        </div>
+                        <div className="row justify-content-center">
+                          <label className="col-md-2 col-form-label">
+                            <button
+                              type="submit"
+                              className="btn btn-primary btn-md btn-block waves-effect text-center m-b-20"
+                            >
+                              Submit
+                            </button>
+                          </label>
+                        </div>
+                      </div>
+                      {/* ------------------Right side-------------------- */}
+                      <div className={`col-md-3 ${classes.dropdownSec}`}>
+                        <div className="">
+                          <label className=" col-form-label">Authors</label>
+                          <Select
+                            ref={select2Ref}
+                            classNamePrefix="select Authors"
+                            onChange={onInputChange}
+                            isMulti={true}
+                            getOptionValue={(option) => `${option["id"]}`}
+                            getOptionLabel={(option) => `${option["name"]}`}
+                            name="item_authors"
+                            value={allData.item_authors}
+                            options={authors}
+                            required
                           />
-                        </label>
-                        <input
-                          id="imageUpladFile"
-                          type="file"
-                          className="form-control"
-                          onChange={(e) => {
-                            handelImage(e);
-                          }}
-                          accept="image/*"
-                          style={{ display: "none" }}
-                        />
-                      </div>
-                    </div>
-                    <div className="row justify-content-center">
-                      <label className="col-md-2 col-form-label">
-                        <button
-                          type="submit"
-                          className="btn btn-primary btn-md btn-block waves-effect text-center m-b-20"
-                        >
-                          Submit
-                        </button>
-                      </label>
-                    </div>
-                  </div>
-                  {/* ------------------Right side-------------------- */}
-                  <div className={`col-md-3 ${classes.dropdownSec}`}>
-                    <div className="">
-                      <label className=" col-form-label">Authors</label>
-                      <Select
-                        ref={select2Ref}
-                        classNamePrefix="select Authors"
-                        onChange={onInputChange}
-                        isMulti={true}
-                        getOptionValue={(option) => `${option["id"]}`}
-                        getOptionLabel={(option) => `${option["name"]}`}
-                        name="item_authors"
-                        value={allData.item_authors}
-                        options={authors}
-                      />
-                    </div>
-                    <div className="">
-                      <label className=" col-form-label">Publisher</label>
-                      <Select
-                        ref={select2Ref}
-                        classNamePrefix="Select Publisher"
-                        isClearable={false}
-                        // onChange={onInputChange}
-                        onChange={(option) => option.value}
-                        getOptionValue={(option) => `${option["id"]}`}
-                        getOptionLabel={(option) => `${option["name"]}`}
-                        value={{
-                          name: allData.publisher,
-                          id: allData.publisher_id,
-                        }}
-                        name="publisher_id"
-                        options={publishers}
-                        placeholder="Good"
-                      />
-                      {/* <select
+                        </div>
+                        <div className="">
+                          <label className=" col-form-label">Publisher</label>
+                          <Select
+                            ref={select2Ref}
+                            isClearable={false}
+                            onChange={onInputChange}
+                            getOptionValue={(option) => `${option["id"]}`}
+                            getOptionLabel={(option) => `${option["name"]}`}
+                            name="publisherSetOptions"
+                            value={allData.publisherSetOptions}
+                            options={publishers}
+                            placeholder="Select Publisher"
+                          />
+
+                          {/* 
+                          <select
                         name="publisher_id"
                         onChange={handleChange}
                         defaultValue={allData.publisher_id}
@@ -536,152 +587,144 @@ export default function EditItem() {
                           </option>
                         ))}
                       </select> */}
-                    </div>
-                    <div className="">
-                      <label className=" col-form-label">Language</label>
-                      <Select
-                        ref={select2Ref}
-                        classNamePrefix="Select Language"
-                        onChange={onInputChange}
-                        getOptionValue={(option) => `${option["id"]}`}
-                        getOptionLabel={(option) => `${option["name"]}`}
-                        value={{
-                          name: allData.language,
-                          id: allData.language_id,
-                        }}
-                        name="language_id"
-                        options={languages}
-                      />
-                    </div>
-                    <div className="">
-                      <label className=" col-form-label">Country</label>
-                      <Select
-                        ref={select2Ref}
-                        classNamePrefix="Select Country"
-                        onChange={onInputChange}
-                        getOptionValue={(option) => `${option["id"]}`}
-                        getOptionLabel={(option) => `${option["name"]}`}
-                        value={{
-                          name: allData.country,
-                          id: allData.country_id,
-                        }}
-                        name="country_id"
-                        options={countries}
-                      />
-                    </div>
-                    <div className="">
-                      <label className=" col-form-label">Category</label>
-                      <Select
-                        ref={select2Ref}
-                        classNamePrefix="Select Category"
-                        backspaceRemovesValue={true}
-                        onChange={onInputChange}
-                        getOptionValue={(option) => `${option["id"]}`}
-                        getOptionLabel={(option) => `${option["name"]}`}
-                        value={{
-                          name: allData.category,
-                          id: allData.category_id,
-                        }}
-                        name="category_id"
-                        options={categories}
-                        required
-                      />
-                    </div>
-                    <div className="">
-                      <label className=" col-form-label">Sub Category</label>
-                      <Select
-                        ref={select2Ref}
-                        classNamePrefix="Sub Category"
-                        onChange={onInputChange}
-                        getOptionValue={(option) => `${option["id"]}`}
-                        getOptionLabel={(option) => `${option["name"]}`}
-                        value={{
-                          name: allData.sub_category,
-                          id: allData.sub_category_id,
-                        }}
-                        name="sub_category_id"
-                        options={subCategories}
-                        required
-                      />
-                    </div>
-                    <div className="">
-                      <label className=" col-form-label">
-                        Third Sub Category
-                      </label>
-                      <Select
-                        ref={select2Ref}
-                        classNamePrefix="Select Sub Category"
-                        onChange={onInputChange}
-                        getOptionValue={(option) => `${option["id"]}`}
-                        getOptionLabel={(option) => `${option["name"]}`}
-                        value={{
-                          name: allData.third_category,
-                          id: allData.third_category_id,
-                        }}
-                        name="third_category_id"
-                        options={thirdSubCategories}
-                      />
-                    </div>
+                        </div>
+                        <div className="">
+                          <label className=" col-form-label">Language</label>
+                          <Select
+                            ref={select2Ref}
+                            onChange={onInputChange}
+                            getOptionValue={(option) => `${option["id"]}`}
+                            getOptionLabel={(option) => `${option["name"]}`}
+                            value={allData.languageSetOptions}
+                            name="languageSetOptions"
+                            options={languages}
+                            placeholder="Select Language"
+                          />
+                        </div>
+                        <div className="">
+                          <label className=" col-form-label">Country</label>
+                          <Select
+                            ref={select2Ref}
+                            onChange={onInputChange}
+                            getOptionValue={(option) => `${option["id"]}`}
+                            getOptionLabel={(option) => `${option["name"]}`}
+                            value={allData.countrySetOptions}
+                            name="countrySetOptions"
+                            options={countries}
+                            placeholder="Select Country"
+                          />
+                        </div>
+                        <div className="">
+                          <label className=" col-form-label">Category</label>
+                          <Select
+                            ref={select2Ref}
+                            onChange={onInputChange}
+                            getOptionValue={(option) => `${option["id"]}`}
+                            getOptionLabel={(option) => `${option["name"]}`}
+                            value={allData.categorySetOptions}
+                            name="categorySetOptions"
+                            options={categories}
+                            required
+                            placeholder="Select Category"
+                          />
+                        </div>
+                        <div className="">
+                          <label className=" col-form-label">
+                            Sub Category
+                          </label>
+                          <Select
+                            ref={select2Ref}
+                            onChange={onInputChange}
+                            getOptionValue={(option) => `${option["id"]}`}
+                            getOptionLabel={(option) => `${option["name"]}`}
+                            value={allData.subCategorySetOptions}
+                            name="subCategorySetOptions"
+                            options={subCategories}
+                            required
+                            placeholder="Select Sub Category"
+                          />
+                        </div>
+                        <div className="">
+                          <label className=" col-form-label">
+                            Third Sub Category
+                          </label>
+                          <Select
+                            ref={select2Ref}
+                            onChange={onInputChange}
+                            getOptionValue={(option) => `${option["id"]}`}
+                            getOptionLabel={(option) => `${option["name"]}`}
+                            value={allData.thirdCategorySetOptions}
+                            name="thirdCategorySetOptions"
+                            options={thirdSubCategories}
+                            placeholder="Third Sub Category"
+                          />
+                        </div>
 
-                    <div className="">
-                      <label className=" col-form-label">Item Status</label>
-                      <select
-                        name="status"
-                        onChange={handleChange}
-                        defaultValue={allData.status}
-                        className="form-control"
-                      >
-                        <option value="">Select One</option>
-                        <option value="1">Active</option>
-                        <option value="0">Inactive</option>
-                      </select>
+                        <div className="">
+                          <label className=" col-form-label">Item Status</label>
+                          <select
+                            name="status"
+                            onChange={handleChange}
+                            defaultValue={allData.status}
+                            className="form-control"
+                          >
+                            <option value="">Select One</option>
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                          </select>
+                        </div>
+                        <div className="">
+                          <label className=" col-form-label">
+                            Publish Status
+                          </label>
+                          <select
+                            name="publish_status"
+                            onChange={handleChange}
+                            defaultValue={allData.publish_status}
+                            className="form-control"
+                          >
+                            <option value="">Select One</option>
+                            <option value="1">Publish</option>
+                            <option value="0">Unpublish</option>
+                          </select>
+                        </div>
+                        <div className="">
+                          <label className=" col-form-label">
+                            Show at Home?
+                          </label>
+                          <select
+                            name="show_home"
+                            onChange={handleChange}
+                            defaultValue={allData.show_home}
+                            className="form-control"
+                          >
+                            <option value="">Select One </option>
+                            <option value="1">Yes</option>
+                            <option value="0">No</option>
+                          </select>
+                        </div>
+                        <div className="">
+                          <label className=" col-form-label">Sequence</label>
+                          <input
+                            name="sequence"
+                            value={allData.sequence}
+                            onChange={handleChange}
+                            type="number"
+                            min={0}
+                            max={999999}
+                            className="form-control"
+                            placeholder=""
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="">
-                      <label className=" col-form-label">Publish Status</label>
-                      <select
-                        name="publish_status"
-                        onChange={handleChange}
-                        defaultValue={allData.publish_status}
-                        className="form-control"
-                      >
-                        <option value="">Select One</option>
-                        <option value="1">Publish</option>
-                        <option value="0">Unpublish</option>
-                      </select>
-                    </div>
-                    <div className="">
-                      <label className=" col-form-label">Show at Home?</label>
-                      <select
-                        name="show_home"
-                        onChange={handleChange}
-                        defaultValue={allData.show_home}
-                        className="form-control"
-                      >
-                        <option value="">Select One </option>
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
-                      </select>
-                    </div>
-                    <div className="">
-                      <label className=" col-form-label">Sequence</label>
-                      <input
-                        name="sequence"
-                        value={allData.sequence}
-                        onChange={handleChange}
-                        type="number"
-                        min={0}
-                        max={999999}
-                        className="form-control"
-                        placeholder=""
-                      />
-                    </div>
-                  </div>
+                  </form>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </>
   );
 }

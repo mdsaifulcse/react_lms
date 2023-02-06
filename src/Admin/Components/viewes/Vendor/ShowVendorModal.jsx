@@ -49,7 +49,7 @@ export default function ShowVendorModal({
                   <div className="col-lg-12">
                     <div className="general-info">
                       <div className="row">
-                        {/* <div className="col-lg-4 col-xl-4">
+                        <div className="col-lg-3 col-xl-3">
                           <div className="card">
                             <div className="card-header contact-user">
                               {data.photo ? (
@@ -67,14 +67,46 @@ export default function ShowVendorModal({
                               <h4>{data.name}</h4>
                             </div>
                           </div>
-                        </div> */}
+                        </div>
                         {/* <!-- end of table col-lg-6 --> */}
-                        <div className="col-lg-8 col-xl-8">
+                        <div className="col-lg-9 col-xl-9">
                           <table className="table">
                             <tbody>
                               <tr>
                                 <th scope="row">Name</th>
                                 <td>{data.name}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Mobile</th>
+                                <td>{data.mobile}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Email</th>
+                                <td>{data.email}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Contact Person</th>
+                                <td>{data.contact_person}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Contact Person Mobile</th>
+                                <td>{data.contact_person_mobile}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Primary Supply Products</th>
+                                <td>{data.office_address}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Office Address</th>
+                                <td>{data.office_address}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Warehouse Address</th>
+                                <td>{data.warehouse_address}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Primary Supply Products</th>
+                                <td>{data.primary_supply_products}</td>
                               </tr>
 
                               <tr>

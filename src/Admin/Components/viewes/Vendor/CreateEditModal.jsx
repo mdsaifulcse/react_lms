@@ -20,8 +20,14 @@ export default function CreateEditModal({
   const initialFormData = {
     id: "",
     name: "",
+    mobile: "",
+    email: "",
+    contact_person: "",
+    contact_person_mobile: "",
+    office_address: "",
+    warehouse_address: "",
+    primary_supply_products: "",
     status: 1,
-    show_home: 0,
     sequence: 0,
   };
   const [allData, setAllData] = useState(initialFormData);
@@ -42,10 +48,27 @@ export default function CreateEditModal({
   const updateInitialValue = async (vendorData) => {
     initialFormData.id = vendorData.id ? vendorData.id : "";
     initialFormData.name = vendorData.name ? vendorData.name : "";
+    initialFormData.mobile = vendorData.mobile ? vendorData.mobile : "";
+    initialFormData.email = vendorData.email ? vendorData.email : "";
+    initialFormData.contact_person = vendorData.contact_person
+      ? vendorData.contact_person
+      : "";
+    initialFormData.contact_person_mobile = vendorData.contact_person_mobile
+      ? vendorData.contact_person_mobile
+      : "";
+    initialFormData.office_address = vendorData.office_address
+      ? vendorData.office_address
+      : "";
+    initialFormData.warehouse_address = vendorData.warehouse_address
+      ? vendorData.warehouse_address
+      : "";
+    initialFormData.primary_supply_products = vendorData.primary_supply_products
+      ? vendorData.primary_supply_products
+      : "";
     initialFormData.status = vendorData.status ? vendorData.status : 0;
-    initialFormData.show_home = vendorData.show_home ? vendorData.show_home : 0;
     initialFormData.sequence = vendorData.sequence ? vendorData.sequence : 0;
     await setAllData({ ...allData, ...initialFormData });
+    await setFilePreview(vendorData.photo ? vendorData.photo : defaultImage);
   };
 
   useEffect(() => {
@@ -88,9 +111,19 @@ export default function CreateEditModal({
     e.preventDefault();
     const formData = new FormData();
 
+    if (vendorPhoto) {
+      formData.append("photo", vendorPhoto);
+    }
+
     formData.append("id", allData.id);
     formData.append("name", allData.name);
-    formData.append("show_home", allData.show_home);
+    formData.append("mobile", allData.mobile);
+    formData.append("email", allData.email);
+    formData.append("contact_person", allData.contact_person);
+    formData.append("contact_person_mobile", allData.contact_person_mobile);
+    formData.append("office_address", allData.office_address);
+    formData.append("warehouse_address", allData.warehouse_address);
+    formData.append("primary_supply_products", allData.primary_supply_products);
     formData.append("status", allData.status);
     formData.append("sequence", allData.sequence);
     // Edit ----------------------------
@@ -146,29 +179,126 @@ export default function CreateEditModal({
                         <div className="col-lg-12 col-xl-12">
                           <form onSubmit={handleSubmit}>
                             <div className="form-group row">
-                              <label className="col-sm-3 col-form-label">
-                                Vendor Name
-                              </label>
-                              <div className="col-sm-9">
+                              <div className="col-sm-6">
+                                <label className="col-form-label">Name</label>
                                 <input
                                   name="name"
                                   type="text"
                                   value={allData.name}
                                   onChange={handleChange}
                                   className="form-control"
+                                  required
                                   placeholder="Type Vendor name"
                                 />
                               </div>
+                              <div className="col-sm-6">
+                                <label className="col-form-label">Mobile</label>
+                                <input
+                                  name="mobile"
+                                  type="text"
+                                  value={allData.mobile}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  required
+                                  placeholder="Type Vendor Mobile"
+                                />
+                              </div>
                             </div>
+                            {/* End row */}
+                            <div className="form-group row">
+                              <div className="col-sm-6">
+                                <label className="col-form-label">Email</label>
+                                <input
+                                  name="email"
+                                  type="text"
+                                  value={allData.email}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  placeholder="Type Vendor Email"
+                                />
+                              </div>
+                              <div className="col-sm-6">
+                                <label className="col-form-label">
+                                  Contact Person
+                                </label>
+                                <input
+                                  name="contact_person"
+                                  type="text"
+                                  value={allData.contact_person}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  placeholder="Vendor's Contact Person"
+                                />
+                              </div>
+                            </div>
+                            {/* End row */}
+                            <div className="form-group row">
+                              <div className="col-sm-6">
+                                <label className="col-form-label">
+                                  Contact Person Mobile
+                                </label>
+                                <input
+                                  name="contact_person_mobile"
+                                  type="text"
+                                  value={allData.contact_person_mobile}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  placeholder="Contact Person's Mobile"
+                                />
+                              </div>
+                              <div className="col-sm-6">
+                                <label className="col-form-label">
+                                  Primary Supply Products
+                                </label>
+                                <input
+                                  name="primary_supply_products"
+                                  type="text"
+                                  value={allData.primary_supply_products}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  placeholder="Vendor's Primary Supply Products "
+                                />
+                              </div>
+                            </div>
+                            {/* End row */}
+                            <div className="form-group row">
+                              <div className="col-sm-6">
+                                <label className="col-form-label">
+                                  Office Address
+                                </label>
+                                <textarea
+                                  name="office_address"
+                                  value={allData.office_address}
+                                  onChange={handleChange}
+                                  rows="4"
+                                  className="form-control"
+                                  placeholder="Type Office Address Here"
+                                ></textarea>
+                              </div>
+                              <div className="col-sm-6">
+                                <label className="col-form-label">
+                                  Warehouse Address
+                                </label>
+                                <textarea
+                                  name="warehouse_address"
+                                  value={allData.warehouse_address}
+                                  onChange={handleChange}
+                                  rows="4"
+                                  className="form-control"
+                                  placeholder="Type Warehouse address Here"
+                                ></textarea>
+                              </div>
+                            </div>
+                            {/* End row */}
 
                             <div className="form-group row">
-                              <label className="col-sm-3 col-form-label"></label>
                               <div className="col-sm-3">
                                 <select
                                   name="status"
                                   onChange={handleChange}
                                   value={allData.status}
                                   className="form-control"
+                                  required
                                 >
                                   <option value="">Select One</option>
                                   <option value="1">Active</option>
@@ -178,12 +308,13 @@ export default function CreateEditModal({
                                   Status
                                 </label>
                               </div>
-                              <div className="col-sm-3">
+                              {/* <div className="col-sm-3">
                                 <select
                                   name="show_home"
                                   onChange={handleChange}
                                   defaultValue={allData.show_home}
                                   className="form-control"
+                                  
                                 >
                                   <option value="">Select One </option>
                                   <option value="1">Yes</option>
@@ -192,7 +323,7 @@ export default function CreateEditModal({
                                 <label className=" col-form-label">
                                   Show at Home?
                                 </label>
-                              </div>
+                              </div> */}
 
                               <div className="col-sm-3">
                                 <input
@@ -204,20 +335,14 @@ export default function CreateEditModal({
                                   max={999999}
                                   className="form-control"
                                   placeholder=""
+                                  required
                                 />
                                 <label className=" col-form-label">
                                   Sequence
                                 </label>
                               </div>
-                            </div>
 
-                            <div className="form-group row">
-                              <label className="col-sm-3 col-form-label"></label>
-
-                              <label className="col-sm-2 col-form-label">
-                                Upload File
-                              </label>
-                              <div className="col-sm-5">
+                              <div className="col-sm-3">
                                 <label htmlFor="imageUpladFile">
                                   <img
                                     className="py-2"
@@ -230,24 +355,26 @@ export default function CreateEditModal({
                                     alt=""
                                   />
                                 </label>
-                              </div>
-
-                              <div className="col-sm-5">
-                                <input
-                                  id="imageUpladFile"
-                                  type="file"
-                                  className="form-control"
-                                  onChange={(e) => {
-                                    handelImage(e);
-                                  }}
-                                  accept="image/*"
-                                  style={{ display: "none" }}
-                                />
+                                <br />
+                                <label className="col-form-label">
+                                  Vendoe Photo
+                                </label>
+                                <div className="col-sm-5">
+                                  <input
+                                    id="imageUpladFile"
+                                    type="file"
+                                    className="form-control"
+                                    onChange={(e) => {
+                                      handelImage(e);
+                                    }}
+                                    accept="image/*"
+                                    style={{ display: "none" }}
+                                  />
+                                </div>
                               </div>
                             </div>
 
                             <div className="form-group row">
-                              <label className="col-md-3 col-form-label"></label>
                               <label className="col-md-2 col-form-label">
                                 <button
                                   type="submit"

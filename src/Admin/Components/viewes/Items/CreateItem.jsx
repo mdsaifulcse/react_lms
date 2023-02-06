@@ -38,12 +38,12 @@ export default function CreateItem() {
     video_url: "",
     brochure: "",
     item_authors: [],
-    publisher_id: "",
-    language_id: "",
-    country_id: "",
-    category_id: "",
-    sub_category_id: "",
-    third_category_id: "",
+    publisherSetOptions: "",
+    languageSetOptions: "",
+    countrySetOptions: "",
+    categorySetOptions: "",
+    subCategorySetOptions: "",
+    thirdCategorySetOptions: "",
     show_home: 0,
     status: 1,
     publish_status: 0,
@@ -60,7 +60,6 @@ export default function CreateItem() {
   const [thirdSubCategories, setThirdSubCategories] = useState([]);
   const [itemPhotos, setItemPhotos] = useState(null);
   const [brochureFile, setItemBrochureFile] = useState(null);
-  const [inputValue, setInputValue] = useState(true);
 
   function makeSelectedOptions(options) {
     let returnArrayObject = [];
@@ -130,7 +129,12 @@ export default function CreateItem() {
   });
   //  Get sub-categories Data by categoryId-----------------------------
   const { refetch: subCategoryRefech } = useQuery(
-    ["activeSubCategoriesByCategoryRequest", allData.category_id],
+    [
+      "activeSubCategoriesByCategoryRequest",
+      Object.keys(allData.categorySetOptions).length > 0
+        ? allData.categorySetOptions.id
+        : "",
+    ],
     activeSubCategoriesByCategoryRequest,
     {
       onSuccess: async (response) => {
@@ -146,7 +150,12 @@ export default function CreateItem() {
 
   //  Get Third-sub-categories Data by categoryId-----------------------------
   const { refetch: thirdSubCategoryRefech } = useQuery(
-    ["activeThirdSubCategoriesBySubCategoryRequest", allData.sub_category_id],
+    [
+      "activeThirdSubCategoriesBySubCategoryRequest",
+      Object.keys(allData.subCategorySetOptions).length > 0
+        ? allData.subCategorySetOptions.id
+        : "",
+    ],
     activeThirdSubCategoriesBySubCategoryRequest,
     {
       onSuccess: async (response) => {
@@ -224,16 +233,16 @@ export default function CreateItem() {
       // For single object -----------------------------------
 
       // For load thirdSubCategory by subCategory ------------
-      if (select2Ref.name === "sub_category_id") {
+      if (select2Ref.name === "subCategorySetOptions") {
         await thirdSubCategoryRefech();
       }
-      if (select2Ref.name === "category_id") {
+      if (select2Ref.name === "categorySetOptions") {
         // For Reset subCategory & ThirdSubCategory ----
         setAllData({
           ...allData,
-          [select2Ref.name]: selectedOptions.id,
-          sub_category_id: "",
-          third_category_id: "",
+          [select2Ref.name]: selectedOptions,
+          subCategorySetOptions: {},
+          thirdCategorySetOptions: {},
         });
         await setSubCategories([]);
         await setThirdSubCategories([]);
@@ -241,7 +250,7 @@ export default function CreateItem() {
       } else {
         setAllData({
           ...allData,
-          [select2Ref.name]: selectedOptions.id,
+          [select2Ref.name]: selectedOptions,
         });
       }
     }
@@ -277,12 +286,48 @@ export default function CreateItem() {
     formData.append("summary", allData.summary);
     formData.append("video_url", allData.video_url);
 
-    formData.append("publisher_id", allData.publisher_id);
-    formData.append("language_id", allData.language_id);
-    formData.append("country_id", allData.country_id);
-    formData.append("category_id", allData.category_id);
-    formData.append("sub_category_id", allData.sub_category_id);
-    formData.append("third_category_id", allData.third_category_id);
+    // formData.append("publisher_id", allData.publisher_id);
+    // formData.append("language_id", allData.language_id);
+    // formData.append("country_id", allData.country_id);
+    // formData.append("category_id", allData.category_id);
+    // formData.append("sub_category_id", allData.sub_category_id);
+    // formData.append("third_category_id", allData.third_category_id);
+    formData.append(
+      "publisher_id",
+      Object.keys(allData.publisherSetOptions).length > 0
+        ? allData.publisherSetOptions.id
+        : ""
+    );
+    formData.append(
+      "language_id",
+      Object.keys(allData.languageSetOptions).length > 0
+        ? allData.languageSetOptions.id
+        : ""
+    );
+    formData.append(
+      "country_id",
+      Object.keys(allData.countrySetOptions).length > 0
+        ? allData.countrySetOptions.id
+        : ""
+    );
+    formData.append(
+      "category_id",
+      Object.keys(allData.categorySetOptions).length > 0
+        ? allData.categorySetOptions.id
+        : ""
+    );
+    formData.append(
+      "sub_category_id",
+      Object.keys(allData.subCategorySetOptions).length > 0
+        ? allData.subCategorySetOptions.id
+        : ""
+    );
+    formData.append(
+      "third_category_id",
+      Object.keys(allData.thirdCategorySetOptions).length > 0
+        ? allData.thirdCategorySetOptions.id
+        : ""
+    );
     formData.append("show_home", allData.show_home);
     formData.append("publish_status", allData.publish_status);
     formData.append("status", allData.status);
@@ -480,8 +525,8 @@ export default function CreateItem() {
                         onChange={onInputChange}
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
-                        defaultValue={allData.publisher_id}
-                        name="publisher_id"
+                        value={allData.publisherSetOptions}
+                        name="publisherSetOptions"
                         options={publishers}
                       />
                       {/* <select
@@ -508,8 +553,8 @@ export default function CreateItem() {
                         onChange={onInputChange}
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
-                        defaultValue={allData.publisher_id}
-                        name="language_id"
+                        defaultValue={allData.languageSetOptions}
+                        name="languageSetOptions"
                         options={languages}
                       />
                     </div>
@@ -521,8 +566,8 @@ export default function CreateItem() {
                         onChange={onInputChange}
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
-                        defaultValue={allData.country_id}
-                        name="country_id"
+                        defaultValue={allData.countrySetOptions}
+                        name="countrySetOptions"
                         options={countries}
                       />
                     </div>
@@ -535,8 +580,8 @@ export default function CreateItem() {
                         onChange={onInputChange}
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
-                        defaultValue={allData.category_id}
-                        name="category_id"
+                        defaultValue={allData.categorySetOptions}
+                        name="categorySetOptions"
                         options={categories}
                         required
                       />
@@ -549,8 +594,8 @@ export default function CreateItem() {
                         onChange={onInputChange}
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
-                        defaultValue={allData.sub_category_id}
-                        name="sub_category_id"
+                        defaultValue={allData.subCategorySetOptions}
+                        name="subCategorySetOptions"
                         options={subCategories}
                         required
                       />
@@ -565,8 +610,8 @@ export default function CreateItem() {
                         onChange={onInputChange}
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
-                        defaultValue={allData.third_category_id}
-                        name="third_category_id"
+                        defaultValue={allData.thirdCategorySetOptions}
+                        name="thirdCategorySetOptions"
                         options={thirdSubCategories}
                       />
                     </div>
