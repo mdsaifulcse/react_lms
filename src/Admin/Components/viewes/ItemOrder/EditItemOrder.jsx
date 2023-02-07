@@ -2,15 +2,15 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
-import useItemApi from "./useItemApi";
+import useItemApi from "./useItemOrderApi";
 import Loading from "../../ui-component/Loading";
 import defaultImage from "../../../assets/image/default_image.jpg";
-import classes from "./Style/Item.module.css";
+import classes from "./Style/ItemOrder.module.css";
 import { Link, useParams } from "react-router-dom";
 import Select from "react-select";
 import JoditEditor from "jodit-react";
 
-export default function EditItem() {
+export default function EditItemOrder() {
   const { itemId } = useParams();
   const itemEditor = useRef(null);
   const config = {
@@ -447,8 +447,6 @@ export default function EditItem() {
                               value={allData.number_of_page}
                               onChange={handleChange}
                               type="number"
-                              min={0}
-                              max={99999}
                               className="form-control"
                               placeholder="Type number of page"
                             />

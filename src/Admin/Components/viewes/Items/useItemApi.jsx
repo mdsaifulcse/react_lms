@@ -140,10 +140,9 @@ export default function useItemApi() {
     return response;
   };
 
-  const deleteItemRequest = async (authorId) => {
-    console.log(authorId);
+  const deleteItemRequest = async (itemId) => {
     const headers = await defaultHeadersForAdmin();
-    const response = await axios(`${baseUrl}admin/items/${authorId}`, {
+    const response = await axios(`${baseUrl}admin/items/${itemId}`, {
       method: "DELETE",
       headers,
     });

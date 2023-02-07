@@ -35,6 +35,10 @@ import VendorList from "./admin/components/viewes/Vendor/VendorList";
 import ItemsList from "./admin/components/viewes/Items/ItemsList";
 import CreateItem from "./admin/components/viewes/Items/CreateItem";
 import EditItem from "./admin/components/viewes/Items/EditItem";
+//Item Order
+import ItemOrderList from "./admin/components/viewes/ItemOrder/ItemOrderList";
+import CreateItemOrder from "./admin/components/viewes/ItemOrder/CreateItemOrder";
+import EditItemOrder from "./admin/components/viewes/ItemOrder/EditItemOrder";
 
 const AppRoute = () => {
   return (
@@ -100,6 +104,12 @@ const AppRoute = () => {
                   <Route path="list" element={<ItemsList />} />
                   <Route path="create" element={<CreateItem />} />
                   <Route path="edit/:itemId" element={<EditItem />} />
+                </Route>
+                {/*Items-Orders */}
+                <Route path="items-orders/">
+                  <Route path="list" element={<ItemOrderList />} />
+                  <Route path="create" element={<CreateItemOrder />} />
+                  <Route path="edit/:itemOrderId" element={<EditItemOrder />} />
                 </Route>
               </Route>
             </Route>

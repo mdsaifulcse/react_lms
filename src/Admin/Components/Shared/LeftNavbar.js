@@ -254,6 +254,26 @@ export default function LeftNavbar() {
                   </li>
                 </ul>
               </li>
+              <li className=" pcoded-hasmenu">
+                <Link to="#!">
+                  <span className="pcoded-micon">
+                    <i className="icon-pie-chart"></i>
+                  </span>
+                  <span className="pcoded-mtext">Vendor</span>
+                  <span className="pcoded-mcaret"></span>
+                </Link>
+                <ul className="pcoded-submenu">
+                  <li className="">
+                    <NavLink to="/admin/vendors/list">
+                      <span className="pcoded-micon">
+                        <i className="icon-chart"></i>
+                      </span>
+                      <span className="pcoded-mtext">List</span>
+                      <span className="pcoded-mcaret"></span>
+                    </NavLink>
+                  </li>
+                </ul>
+              </li>
 
               <li className=" ">
                 {/* <Link to="dashboard">

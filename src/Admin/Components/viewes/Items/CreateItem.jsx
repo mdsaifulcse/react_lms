@@ -408,6 +408,8 @@ export default function CreateItem() {
                           value={allData.number_of_page}
                           onChange={handleChange}
                           type="number"
+                          min={0}
+                          max={99999}
                           className="form-control"
                           placeholder="Type number of page"
                         />
