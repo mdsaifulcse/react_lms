@@ -286,12 +286,6 @@ export default function CreateItem() {
     formData.append("summary", allData.summary);
     formData.append("video_url", allData.video_url);
 
-    // formData.append("publisher_id", allData.publisher_id);
-    // formData.append("language_id", allData.language_id);
-    // formData.append("country_id", allData.country_id);
-    // formData.append("category_id", allData.category_id);
-    // formData.append("sub_category_id", allData.sub_category_id);
-    // formData.append("third_category_id", allData.third_category_id);
     formData.append(
       "publisher_id",
       Object.keys(allData.publisherSetOptions).length > 0

@@ -71,6 +71,27 @@ export default function useItemApi() {
   //   return response;
   // };
 
+  const activeItemSearch = async ({ queryKey }) => {
+    const searchQuery = queryKey[1];
+    const headers = await defaultHeadersForAdmin();
+    const response = await axios(
+      `${baseUrl}admin/active-item-search?q=${searchQuery}`,
+      {
+        method: "GET",
+        headers,
+      }
+    );
+    return response;
+  };
+  const itemOrderNoRequest = async () => {
+    const headers = await defaultHeadersForAdmin();
+    const response = await axios(`${baseUrl}admin/item-order-no`, {
+      method: "GET",
+      headers,
+    });
+    return response;
+  };
+
   const activeVendorsRequest = async () => {
     const headers = await defaultHeadersForAdmin();
     const response = await axios(`${baseUrl}admin/active-vendors-list`, {
@@ -79,6 +100,7 @@ export default function useItemApi() {
     });
     return response;
   };
+
   const allItemsOrdersRequest = async () => {
     const headers = await defaultHeadersForAdmin();
     const response = await axios(`${baseUrl}admin/item-orders`, {
@@ -142,6 +164,8 @@ export default function useItemApi() {
     // activeSubCategoriesByCategoryRequest,
     // activeThirdSubCategoriesBySubCategoryRequest,
 
+    activeItemSearch,
+    itemOrderNoRequest,
     activeVendorsRequest,
     allItemsOrdersRequest,
     createItemOrderRequest,
