@@ -29,7 +29,7 @@ export default function ShowItemModal({
         </Modal.Header>
         <Modal.Body>
           <div className="card">
-            <div className="card-header">
+            {/* <div className="card-header">
               <h5 className="card-header-text">
                 {cardHeader} ({data.title})
               </h5>
@@ -42,14 +42,14 @@ export default function ShowItemModal({
                   <i className="icofont icofont-edit"></i>
                 </button>
               </Link>
-            </div>
+            </div> */}
             <div className="card-block">
               <div className="view-info">
                 <div className="row">
                   <div className="col-lg-12">
                     <div className="general-info">
                       <div className="row">
-                        <div className="col-lg-3 col-xl-3">
+                        {/* <div className="col-lg-3 col-xl-3">
                           <div className="card">
                             <div className="card-header contact-user">
                               {data.itemThumbnails ? (
@@ -70,100 +70,21 @@ export default function ShowItemModal({
                               <h4>{data.title}</h4>
                             </div>
                           </div>
-                        </div>
+                        </div> */}
                         {/* <!-- end of table col-lg-6 --> */}
-                        <div className="col-lg-9 col-xl-9">
+                        <div className="col-lg-12 col-xl-12">
                           <table className="table">
                             <tbody>
                               <tr>
-                                <th scope="row">Title</th>
-                                <td>{data.title}</td>
+                                <th>Order No.</th>
+                                <th>Vendor</th>
+                                <th>Tentative Receive Date</th>
+                                <th>Status</th>
                               </tr>
                               <tr>
-                                <th scope="row">Isbn</th>
-                                <td>{data.isbn}</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Edition</th>
-                                <td>{data.edition}</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Number of Page</th>
-                                <td>{data.number_of_page}</td>
-                              </tr>
-
-                              <tr>
-                                <th scope="row">Authors</th>
-                                <td>
-                                  {data.relItemAuthorsName
-                                    ? data.relItemAuthorsName.map(
-                                        (authorData, i) => (
-                                          <span
-                                            key={i}
-                                            className="badge badge-success"
-                                          >
-                                            {authorData.name}
-                                          </span>
-                                        )
-                                      )
-                                    : ""}
-                                </td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Publisher</th>
-                                <td>{data.publisher}</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Language</th>
-                                <td>{data.language}</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Country</th>
-                                <td>{data.country}</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Category</th>
-                                <td>{data.category}</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">SubCategory</th>
-                                <td>{data.sub_category}</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Third SubCategory</th>
-                                <td>{data.third_category}</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Summary</th>
-                                <td>
-                                  {
-                                    <div
-                                      dangerouslySetInnerHTML={{
-                                        __html: data.summary,
-                                      }}
-                                    />
-                                  }
-                                </td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Video Url</th>
-                                <td>
-                                  <a href={data.video_url} target="_blank">
-                                    Watch
-                                  </a>
-                                </td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Brochure</th>
-                                <td>
-                                  <a href={data.brochure} target="_blank">
-                                    Read Brochure
-                                  </a>
-                                </td>
-                              </tr>
-
-                              <tr>
-                                <th scope="row">Status</th>
+                                <td>{data.order_no}</td>
+                                <td>{data.vendor_name}</td>
+                                <td>{data.tentative_date}</td>
                                 <td>
                                   {data.status === 1 ? (
                                     <>
@@ -175,34 +96,6 @@ export default function ShowItemModal({
                                     <span className="text-danger">
                                       Inactive
                                     </span>
-                                  )}
-                                </td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Status</th>
-                                <td>
-                                  {data.publish_status === 1 ? (
-                                    <>
-                                      <span className="text-primary">
-                                        PUblished
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <span className="text-danger">
-                                      Unpublished
-                                    </span>
-                                  )}
-                                </td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Status</th>
-                                <td>
-                                  {data.show_home === 1 ? (
-                                    <>
-                                      <span className="text-primary">Yes</span>
-                                    </>
-                                  ) : (
-                                    <span className="text-danger">No</span>
                                   )}
                                 </td>
                               </tr>

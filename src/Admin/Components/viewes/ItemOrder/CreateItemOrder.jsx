@@ -10,9 +10,11 @@ import Select from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ItemList from "./ItemList";
+import useUtility from "../../../hooks/useUtility";
 
 export default function CreateItemOrder() {
   const select2Ref = useRef();
+  const { generateDateForApi } = useUtility();
   const { onError, onSuccess } = useToster();
   const {
     createItemOrderRequest,
@@ -40,6 +42,7 @@ export default function CreateItemOrder() {
   const [vendors, setVendors] = useState([]);
   const [itemPhotos, setItemPhotos] = useState(null);
   const [brochureFile, setItemBrochureFile] = useState(null);
+  // clicke Add Button
   const initialItemQtyPrice = {
     itemId: "",
     searchQuery: "",
@@ -161,20 +164,12 @@ export default function CreateItemOrder() {
     );
 
   function makeItemOrderAbleList(itemObj) {
-    //let returnArrayObject = [];
     const singleItemObject = {};
     singleItemObject.itemId = itemObj.itemId;
     singleItemObject.name = itemObj.searchQuery;
     singleItemObject.itemQty = itemObj.itemQty;
     singleItemObject.itemPrice = itemObj.itemPrice;
     singleItemObject.itemTotalPrice = itemObj.itemPrice * itemObj.itemQty;
-
-    setAllData({
-      ...allData,
-      ["amount"]: allData.amount + singleItemObject.itemTotalPrice,
-      ["total"]: allData.amount + singleItemObject.itemTotalPrice,
-    });
-
     return singleItemObject;
   }
 
@@ -186,20 +181,93 @@ export default function CreateItemOrder() {
     } else if (addItemQtyPrice.itemPrice === 0) {
       return setAddError("Item price is required");
     } else {
+      // checke Item alrady exist or not -------
+      if (itemOrderAbleList.length > 0) {
+        if (
+          itemOrderAbleList.find(
+            (item) => item.itemId === addItemQtyPrice.itemId
+          )
+        ) {
+          return setAddError(addItemQtyPrice.searchQuery + " Already Exist");
+        }
+      }
+
       // Add to the list ------------------
       const itemArray = await makeItemOrderAbleList(addItemQtyPrice);
+      // Calculate --- SubTotal and Total When Add Item to order list
+      setAllData({
+        ...allData,
+        ["amount"]: allData.amount + itemArray.itemTotalPrice,
+        ["total"]: allData.amount + itemArray.itemTotalPrice,
+      });
+
       await setItemOrderAbleList([...itemOrderAbleList, itemArray]);
       await setAddError("");
+      // Reset search, Quantity and price field -------------------
       setAddItemQtyPrice(initialItemQtyPrice);
     }
   };
 
   // Delete item from orderable list
+
   const deleteItemFromList = async (index) => {
-    //const newArrayObj = itemOrderAbleList.splice(index, 1);
-    await setItemOrderAbleList(
-      itemOrderAbleList.filter((item, i) => i !== index)
+    setItemOrderAbleList(
+      itemOrderAbleList.filter((item, i) => {
+        if (i === index) {
+          setAllData({
+            ...allData,
+            ["amount"]: allData.amount - item.itemTotalPrice,
+            ["total"]: allData.amount - item.itemTotalPrice,
+            ["discount"]: 0,
+          });
+        }
+        return i !== index;
+      })
     );
+
+    // const filteredArray = await itemOrderAbleList.filter(
+    //   (item, i) => {
+    //     if (i === index) {
+    //       setAllData({
+    //         ...allData,
+    //         ["amount"]: allData.amount - item.itemTotalPrice,
+    //         ["total"]: allData.amount - item.itemTotalPrice,
+    //         ["discount"]: 0,
+    //       });
+    //     }
+    //     return i !== index;
+    //   }
+    //   //(item, i) => i !== index
+    // );
+
+    //await setItemOrderAbleList(filteredArray);
+
+    // const initialValue = 0;
+    // const accumulator = 0;
+    // const amount = filteredArray.reduce(
+    //   (accumulator, currentValue) => accumulator + currentValue.itemTotalPrice,
+    //   initialValue
+    // );
+
+    // await setAllData({
+    //   ...allData,
+    //   ["amount"]: amount,
+    //   ["total"]: amount,
+    //   ["discount"]: 0,
+    // });
+
+    //const newArrayObj = itemOrderAbleList.splice(index, 1);
+    //itemOrderAbleList.filter((item, i) => i !== index)
+  };
+
+  // Deduct discount from subTotal and set discount to allData State-------
+  const discountHandle = async (e) => {
+    //return console.log(e);
+    setAllData({
+      ...allData,
+      ["total"]: allData.amount - e.target.value,
+      ["discount"]: e.target.value,
+    });
   };
 
   // Create Api MutateAsync --------------
@@ -215,13 +283,15 @@ export default function CreateItemOrder() {
   // Form Submit Handle --------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // return console.log(allData);
     const formData = new FormData();
+    console.log(itemOrderAbleList);
 
-    // add Author id to FormData
-    // await allData.item_authors.map((itemAuthor, i) => {
-    //   formData.append(`author_id[]`, itemAuthor.id);
-    // });
+    //add itmeId,Qty, Price to FormData
+    await itemOrderAbleList.map((item, i) => {
+      formData.append(`item_id[]`, item.itemId);
+      formData.append(`item_qty[]`, item.itemQty);
+      formData.append(`item_price[]`, item.itemPrice);
+    });
 
     formData.append(
       "vendor_id",
@@ -229,20 +299,22 @@ export default function CreateItemOrder() {
         ? allData.vendorSetOption.id
         : ""
     );
-    formData.append("title", allData.title);
-    formData.append("isbn", allData.isbn);
-    formData.append("edition", allData.edition);
-    formData.append("number_of_page", allData.number_of_page);
+    formData.append("order_no", allData.order_no);
+    formData.append("amount", allData.amount);
+    formData.append("discount", allData.discount);
+    formData.append(
+      "tentative_date",
+      generateDateForApi(allData.tentative_date)
+    );
 
-    formData.append("show_home", allData.show_home);
-    formData.append("publish_status", allData.publish_status);
+    formData.append("note", allData.note);
     formData.append("status", allData.status);
-    formData.append("sequence", allData.sequence);
 
     await mutateAsync(formData);
-    setAllData(initialFormData);
-    setFilePreview(defaultImage);
-    //return navigate("/admin/items/list", { replace: true });
+    await setAllData(initialFormData);
+    await setItemOrderAbleList([]);
+    await itemOrderNoRefetch();
+    //return navigate("/admin/items-orders/list", { replace: true });
   };
 
   return (
@@ -293,6 +365,7 @@ export default function CreateItemOrder() {
                         name="vendorSetOption"
                         defaultValue={allData.vendorSetOption}
                         options={vendors}
+                        required
                       />
                     </div>
                   </div>
@@ -309,6 +382,7 @@ export default function CreateItemOrder() {
                       selected={allData.tentative_date}
                       name="tentative_date"
                       onChange={handleDateChange}
+                      required
                     />
                     {/* <input
                           name="tentative_date"
@@ -348,6 +422,7 @@ export default function CreateItemOrder() {
                       name="searchQuery"
                       value={addItemQtyPrice.searchQuery}
                       onChange={itemSearchHandeler}
+                      placeholder="Search Item here"
                     />
                     {searchLoading ? (
                       "loading..."
@@ -386,7 +461,7 @@ export default function CreateItemOrder() {
                     <input
                       className="form-control"
                       type="number"
-                      min="1"
+                      min="0"
                       max="999999"
                       name="itemQty"
                       value={addItemQtyPrice.itemQty}
@@ -397,7 +472,7 @@ export default function CreateItemOrder() {
                     <label className=" col-form-label">Price</label>
                     <input
                       type="number"
-                      min="1"
+                      min="0"
                       max="999999"
                       className="form-control"
                       name="itemPrice"
@@ -434,9 +509,21 @@ export default function CreateItemOrder() {
                     />
                   </div>
                 </div>
+                <hr />
                 <div className="row justify-content-end">
-                  <div className="col-md-5">
-                    <table className="table table-border">
+                  <div className="col-md-4">
+                    <textarea
+                      name="note"
+                      value={allData.note}
+                      onChange={handleChange}
+                      rows="8"
+                      cols="5"
+                      className="form-control"
+                      placeholder="Note Here"
+                    ></textarea>
+                  </div>
+                  <div className="col-md-4">
+                    <table className="table table-bordered table-striped">
                       <thead>
                         <tr>
                           <td className="text-right">Sub Total :</td>
@@ -445,7 +532,13 @@ export default function CreateItemOrder() {
                         <tr>
                           <td className="text-right">Discount :</td>
                           <td>
-                            <input type="number" />{" "}
+                            <input
+                              type="number"
+                              max={allData.amount}
+                              min={0}
+                              value={allData.discount}
+                              onChange={discountHandle}
+                            />
                           </td>
                         </tr>
                         <tr>

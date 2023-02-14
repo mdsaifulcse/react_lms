@@ -41,7 +41,7 @@ export default function ItemOrderList() {
   );
   const deleteHandler = async (itemsOrderId, name) => {
     Swal.fire({
-      title: "Error!",
+      title: "Warning!",
       text: `Do you want to delete ${name}`,
       icon: "warning",
       showCancelButton: true,
@@ -175,8 +175,12 @@ export default function ItemOrderList() {
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
-                                let item = row.row.original;
-                                deleteHandler(itemsOrder.id, itemsOrder.name);
+                                let itemsOrder = row.row.original;
+                                console.log(itemsOrder);
+                                deleteHandler(
+                                  itemsOrder.id,
+                                  itemsOrder.order_no
+                                );
                               }}
                               className="btn  btn-danger btn-sm"
                             >
