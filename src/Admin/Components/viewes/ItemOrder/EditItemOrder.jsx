@@ -2,235 +2,114 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
-import useItemApi from "./useItemOrderApi";
-import Loading from "../../ui-component/Loading";
+import useItemOrderApi from "./useItemOrderApi";
 import defaultImage from "../../../assets/image/default_image.jpg";
 import classes from "./Style/ItemOrder.module.css";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Select from "react-select";
-import JoditEditor from "jodit-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import ItemList from "./ItemList";
+import useUtility from "../../../hooks/useUtility";
 
 export default function EditItemOrder() {
-  const { itemId } = useParams();
-  const itemEditor = useRef(null);
-  const config = {
-    readonly: false, // all options from https://xdsoft.net/jodit/doc/,
-    placeholder: "Item summery here",
-  };
+  let navigate = useNavigate();
+  const { itemOrderId } = useParams();
   const select2Ref = useRef();
+  const { generateDateForApi } = useUtility();
   const { onError, onSuccess } = useToster();
   const {
-    showItemRequest,
-    updateItemRequest,
-    activeCategoriesRequest,
-    activeSubCategoriesByCategoryRequest,
-    activeThirdSubCategoriesBySubCategoryRequest,
-    activeAuthorListRequest,
-    activeCountryListRequest,
-    activeLanguageListRequest,
-    activePublisherListRequest,
-  } = useItemApi();
+    showItemOrderRequest,
+    activeVendorsRequest,
+    activeItemSearch,
+    updateItemOrderRequest,
+  } = useItemOrderApi();
+  // initioal value
   const initialFormData = {
-    id: "",
-    title: "",
-    isbn: "",
-    edition: "",
-    photo: defaultImage,
-    number_of_page: "",
-    summary: "",
-    video_url: "",
-    brochure: "",
-    item_authors: [],
-    publisherSetOptions: "",
-    languageSetOptions: "",
-    countrySetOptions: "",
-    categorySetOptions: "",
-    subCategorySetOptions: "",
-    thirdCategorySetOptions: "",
-    show_home: 0,
+    vendor_id: "",
+    vendorSetOption: "",
+    order_no: "",
+    amount: 0,
+    discount: "",
+    total: 0,
+    tentative_date: new Date(),
+    item_id: "",
+    item_qty: "",
+    item_price: "",
+    note: "",
     status: 1,
-    publish_status: 0,
-    sequence: 1,
   };
   const [allData, setAllData] = useState(initialFormData);
   const [filePreview, setFilePreview] = useState(defaultImage);
-  const [authors, setAuthors] = useState([]);
-  const [publishers, setPublishers] = useState([]);
-  const [languages, setLanguages] = useState([]);
-  const [countries, setCountries] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
-  const [thirdSubCategories, setThirdSubCategories] = useState([]);
+  const [vendors, setVendors] = useState([]);
   const [itemPhotos, setItemPhotos] = useState(null);
-  const [brochureFile, setItemBrochureFile] = useState(null);
 
-  function makeSelectedOptions(options) {
-    let returnArrayObject = [];
-    options.map((option, i) => {
-      let singleObject = { value: option.id, label: option.name };
-      // returnObject.value = option.id;
-      // returnObject.label = option.name;
-      returnArrayObject[i] = singleObject;
-    });
-
-    return returnArrayObject;
-  }
-
-  //Get Authors Data-----------------------------
-  useQuery("activeAuthorListRequest", activeAuthorListRequest, {
-    onSuccess: async (response) => {
-      if (response.status === 200) {
-        await setAuthors(response.data.result);
-        //let authorOptions = makeSelectedOptions(response.data.result);
-        //console.log(authorOptions);
-        //await setAuthors(authorOptions);
-      }
-    },
-    onError: onError,
-    refetchOnWindowChange: false,
-  });
-
-  //  Get Publishers Data-----------------------------
-  useQuery("activePublisherListRequest", activePublisherListRequest, {
-    onSuccess: async (response) => {
-      if (response.status === 200) {
-        await setPublishers(response.data.result);
-      }
-    },
-    onError: onError,
-    refetchOnWindowChange: false,
-  });
-  //  Get Country Data-----------------------------
-  useQuery("activeCountryListRequest", activeCountryListRequest, {
-    onSuccess: async (response) => {
-      if (response.status === 200) {
-        await setCountries(response.data.result);
-      }
-    },
-    onError: onError,
-    refetchOnWindowChange: false,
-  });
-  //  Get Languages Data-----------------------------
-  useQuery("activeLanguageListRequest", activeLanguageListRequest, {
-    onSuccess: async (response) => {
-      if (response.status === 200) {
-        await setLanguages(response.data.result);
-      }
-    },
-    onError: onError,
-    refetchOnWindowChange: false,
-  });
-  //  Get categories Data-----------------------------
-  useQuery("activeCategoriesRequest", activeCategoriesRequest, {
-    onSuccess: async (response) => {
-      if (response.status === 200) {
-        await setCategories(response.data.result);
-      }
-    },
-    onError: onError,
-    refetchOnWindowChange: false,
-  });
-  //  Get sub-categories Data by categoryId-----------------------------
-  const { refetch: subCategoryRefech } = useQuery(
-    [
-      "activeSubCategoriesByCategoryRequest",
-      Object.keys(allData.categorySetOptions).length > 0
-        ? allData.categorySetOptions.id
-        : "",
-    ],
-    activeSubCategoriesByCategoryRequest,
-    {
-      onSuccess: async (response) => {
-        if (response.status === 200) {
-          await setSubCategories(response.data.result);
-        }
-      },
-      onError: onError,
-      refetchOnWindowChange: false,
-      enabled: true,
-    }
-  );
-
-  //  Get Third-sub-categories Data by categoryId-----------------------------
-  const { refetch: thirdSubCategoryRefech } = useQuery(
-    [
-      "activeThirdSubCategoriesBySubCategoryRequest",
-      Object.keys(allData.subCategorySetOptions).length > 0
-        ? allData.subCategorySetOptions.id
-        : "",
-    ],
-    activeThirdSubCategoriesBySubCategoryRequest,
-    {
-      onSuccess: async (response) => {
-        if (response.status === 200) {
-          await setThirdSubCategories(response.data.result);
-        }
-      },
-      onError: onError,
-      refetchOnWindowChange: false,
-      enabled: true,
-    }
-  );
-  // get & set Edit Item data ----------
-  const {
-    data,
-    isLoading: loadItem,
-    isError,
-  } = useQuery(["showItemRequest", parseInt(itemId)], showItemRequest, {
-    //onSuccess: onSuccess,
-    onError: onError,
-    enabled: true,
-    refetchOnWindowFocus: false,
-  });
-
-  const updateInitialValue = async (item) => {
-    initialFormData.id = item.id;
-    initialFormData.title = item.title;
-    initialFormData.isbn = item.isbn;
-    initialFormData.edition = item.edition;
-    initialFormData.photo = defaultImage;
-    initialFormData.number_of_page = item.number_of_page;
-    initialFormData.summary = item.summary;
-    initialFormData.video_url = item.video_url;
-    //initialFormData.brochure = item.brochure;
-    initialFormData.item_authors = item.relItemAuthorsName;
-    initialFormData.publisher_id = item.publisher_id;
-    initialFormData.publisherSetOptions = item.publisher_id
-      ? { id: item.publisher_id, name: item.publisher }
-      : "";
-    initialFormData.languageSetOptions = item.language_id
-      ? { id: item.language_id, name: item.language }
-      : "";
-    initialFormData.countrySetOptions = item.country_id
-      ? { id: item.country_id, name: item.country }
-      : "";
-    initialFormData.categorySetOptions = item.category_id
-      ? { id: item.category_id, name: item.category }
-      : "";
-    initialFormData.subCategorySetOptions = item.sub_category_id
-      ? { id: item.sub_category_id, name: item.sub_category }
-      : "";
-    initialFormData.thirdCategorySetOptions = item.third_category_id
-      ? { id: item.third_category_id, name: item.third_category }
-      : "";
-    initialFormData.show_home = item.show_home;
-    initialFormData.status = item.status;
-    initialFormData.publish_status = item.publisher_id;
-    initialFormData.sequence = item.sequence;
-
-    await setFilePreview(
-      item.itemThumbnails ? item.itemThumbnails[0].medium : defaultImage
-    );
-    await setAllData(initialFormData);
+  // clicke Add Button
+  const initialItemQtyPrice = {
+    itemId: "",
+    searchQuery: "",
+    itemQty: 0,
+    itemPrice: 0,
   };
+  const [addItemQtyPrice, setAddItemQtyPrice] = useState(initialItemQtyPrice);
+  const [addError, setAddError] = useState("");
+
+  const [searchQueryResult, setSearchQueryResult] = useState([]);
+  const [displayState, setDisplayState] = useState("none");
+
+  const [itemOrderAbleList, setItemOrderAbleList] = useState([]);
+
+  // Get Item Order Data. ---------------
+  const {
+    data: itemOrederData,
+    isLoading: loadItemOrder,
+    isError,
+    refetch: showItemOrderRefetch,
+  } = useQuery(["showItemOrderRequest", itemOrderId], showItemOrderRequest, {
+    onError: onError,
+    refetchOnWindowFocus: true,
+  });
+  //Get Active Vendor Data-----------------------------
+  useQuery("activeVendorsRequest", activeVendorsRequest, {
+    onSuccess: async (response) => {
+      if (response.status === 200) {
+        await setVendors(response.data.result);
+      }
+    },
+    onError: onError,
+    refetchOnWindowChange: false,
+  });
+
+  // Update state by api response data ------
+  const updateInitialValue = async (itemOreder) => {
+    initialFormData.id = itemOreder.id;
+    initialFormData.vendor_id = itemOreder.vendor_id;
+    initialFormData.vendorSetOption = itemOreder.vendor_id
+      ? { id: itemOreder.vendor_id, name: itemOreder.vendor_name }
+      : "";
+    initialFormData.order_no = itemOreder.order_no;
+    initialFormData.amount = itemOreder.amount;
+    initialFormData.discount = itemOreder.discount;
+    initialFormData.total = itemOreder.total;
+    initialFormData.tentative_date = new Date(itemOreder.tentative_date);
+    initialFormData.item_id = "";
+    initialFormData.item_qty = "";
+    initialFormData.item_price = "";
+    initialFormData.note = itemOreder.note;
+    initialFormData.status = itemOreder.status;
+    await setAllData(initialFormData);
+    await setItemOrderAbleList(itemOreder.itemOrderDetails);
+  };
+
   useEffect(() => {
-    let item = {};
-    if (!loadItem && !isError) {
-      //loadItemAfterUpdate
-      item = data.data.result;
-      updateInitialValue(item);
+    if (!loadItemOrder && !isError) {
+      let itemOreder = {};
+      console.log(itemOrederData.data.result);
+      itemOreder = itemOrederData.data.result;
+
+      updateInitialValue(itemOreder);
     }
-  }, [loadItem]);
+  }, [loadItemOrder]);
 
   const handleChange = (e, maxSequenceData) => {
     if (e) {
@@ -244,487 +123,455 @@ export default function EditItemOrder() {
     setFilePreview(URL.createObjectURL(e.target.files[0]));
   }
 
-  function handelFile(e) {
-    setItemBrochureFile(e.target.files[0]);
-  }
-  function handleTextEditorChange(textEditorData) {
-    setAllData({ ...allData, ["summary"]: textEditorData });
-  }
-
   const onInputChange = async (selectedOptions, select2Ref) => {
-    if (Array.isArray(selectedOptions)) {
-      // For array Object------
-      let selectedIds = [];
-      selectedOptions.map((item, i) => {
-        selectedIds.push(item);
-      });
+    setAllData({
+      ...allData,
+      [select2Ref.name]: selectedOptions,
+    });
+  };
 
+  const handleDateChange = async (e) => {
+    setAllData({ ...allData, ["tentative_date"]: e });
+    console.log(e);
+  };
+
+  const itemSearchHandeler = async (e) => {
+    setAddItemQtyPrice({
+      ...addItemQtyPrice,
+      [e.target.name]: e.target.value,
+    });
+  };
+  // User when select item name --------
+  const setItemHandeler = async (e) => {
+    e.preventDefault();
+    setAddItemQtyPrice({
+      ...addItemQtyPrice,
+      [e.target.name]: e.target.innerHTML,
+      ["itemId"]: e.target.id,
+    });
+    setDisplayState("none");
+  };
+
+  // Get Search Items -----
+  const { isLoading: searchLoading, refetch: activeItemSearchRefetch } =
+    useQuery(
+      ["activeItemSearch", addItemQtyPrice.searchQuery],
+      activeItemSearch,
+      {
+        onSuccess: async (response) => {
+          if (response.status === 200) {
+            setSearchQueryResult(response.data);
+            if (response.data.length > 0) {
+              setDisplayState("block");
+            } else {
+              setDisplayState("none");
+            }
+          }
+        },
+        onError: onError,
+        refetchOnWindowFocus: false,
+      }
+    );
+
+  function makeItemOrderAbleList(itemObj) {
+    const singleItemObject = {};
+    singleItemObject.itemId = itemObj.itemId;
+    singleItemObject.name = itemObj.searchQuery;
+    singleItemObject.itemQty = itemObj.itemQty;
+    singleItemObject.itemPrice = itemObj.itemPrice;
+    singleItemObject.itemTotalPrice = itemObj.itemPrice * itemObj.itemQty;
+    return singleItemObject;
+  }
+
+  const addItemToOrderList = async () => {
+    if (addItemQtyPrice.searchQuery.length === 0) {
+      return setAddError("Item is required");
+    } else if (addItemQtyPrice.itemQty === 0) {
+      return setAddError("Item quantity is required");
+    } else if (addItemQtyPrice.itemPrice === 0) {
+      return setAddError("Item price is required");
+    } else {
+      // checke Item alrady exist or not -------
+      if (itemOrderAbleList.length > 0) {
+        if (
+          itemOrderAbleList.find(
+            (item) => item.itemId === addItemQtyPrice.itemId
+          )
+        ) {
+          return setAddError(addItemQtyPrice.searchQuery + " Already Exist");
+        }
+      }
+
+      // Add to the list ------------------
+      const itemArray = await makeItemOrderAbleList(addItemQtyPrice);
+      // Calculate --- SubTotal and Total When Add Item to order list
       setAllData({
         ...allData,
-        [select2Ref.name]: selectedIds,
+        ["amount"]: allData.amount + itemArray.itemTotalPrice,
+        ["total"]: allData.amount + itemArray.itemTotalPrice,
       });
-    } else {
-      // For single object -----------------------------------
-      // For load thirdSubCategory by subCategory ------------
-      if (select2Ref.name === "subCategorySetOptions") {
-        await thirdSubCategoryRefech();
-      }
-      if (select2Ref.name === "categorySetOptions") {
-        // For Reset subCategory & ThirdSubCategory ----
-        setAllData({
-          ...allData,
-          [select2Ref.name]: selectedOptions,
-          subCategorySetOptions: {},
-          thirdCategorySetOptions: {},
-        });
-        await setSubCategories([]);
-        await setThirdSubCategories([]);
-        await subCategoryRefech();
-      } else {
-        setAllData({
-          ...allData,
-          [select2Ref.name]: selectedOptions,
-        });
-      }
+
+      await setItemOrderAbleList([...itemOrderAbleList, itemArray]);
+      await setAddError("");
+      // Reset search, Quantity and price field -------------------
+      setAddItemQtyPrice(initialItemQtyPrice);
     }
   };
 
+  // Delete item from orderable list
+
+  const deleteItemFromList = async (index) => {
+    setItemOrderAbleList(
+      itemOrderAbleList.filter((item, i) => {
+        if (i === index) {
+          setAllData({
+            ...allData,
+            ["amount"]: allData.amount - item.itemTotalPrice,
+            ["total"]: allData.amount - item.itemTotalPrice,
+            ["discount"]: "",
+          });
+        }
+        return i !== index;
+      })
+    );
+
+    // const filteredArray = await itemOrderAbleList.filter(
+    //   (item, i) => {
+    //     if (i === index) {
+    //       setAllData({
+    //         ...allData,
+    //         ["amount"]: allData.amount - item.itemTotalPrice,
+    //         ["total"]: allData.amount - item.itemTotalPrice,
+    //         ["discount"]: 0,
+    //       });
+    //     }
+    //     return i !== index;
+    //   }
+    //   //(item, i) => i !== index
+    // );
+
+    //await setItemOrderAbleList(filteredArray);
+
+    // const initialValue = 0;
+    // const accumulator = 0;
+    // const amount = filteredArray.reduce(
+    //   (accumulator, currentValue) => accumulator + currentValue.itemTotalPrice,
+    //   initialValue
+    // );
+
+    // await setAllData({
+    //   ...allData,
+    //   ["amount"]: amount,
+    //   ["total"]: amount,
+    //   ["discount"]: 0,
+    // });
+
+    //const newArrayObj = itemOrderAbleList.splice(index, 1);
+    //itemOrderAbleList.filter((item, i) => i !== index)
+  };
+
+  // Deduct discount from subTotal and set discount to allData State-------
+  const discountHandle = async (e) => {
+    //return console.log(e);
+    setAllData({
+      ...allData,
+      ["total"]: allData.amount - e.target.value,
+      ["discount"]: e.target.value,
+    });
+  };
+
   // Create Api MutateAsync --------------
-  const { mutateAsync } = useMutation("updateItemRequest", updateItemRequest, {
-    onSuccess: onSuccess,
-    onError: onError,
-  });
 
   // Form Submit Handle --------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(allData.publisherSetOptions.length);
-    console.log(allData);
     const formData = new FormData();
-    if (itemPhotos) {
-      // add Image File to FormData
-      formData.append("image[]", itemPhotos);
-    }
-    if (brochureFile) {
-      // add brochureFile to FormData
-      formData.append("brochure", brochureFile);
-    }
-    // add Author id to FormData
-    await allData.item_authors.map((itemAuthor, i) => {
-      formData.append(`author_id[]`, itemAuthor.id);
+
+    //add itmeId,Qty, Price to FormData
+    await itemOrderAbleList.map((item, i) => {
+      formData.append(`item_id[]`, item.itemId);
+      formData.append(`item_qty[]`, item.itemQty);
+      formData.append(`item_price[]`, item.itemPrice);
     });
 
-    formData.append("title", allData.title);
-    formData.append("isbn", allData.isbn);
-    formData.append("edition", allData.edition);
-    formData.append("number_of_page", allData.number_of_page);
-    formData.append("summary", allData.summary);
-    formData.append("video_url", allData.video_url);
+    formData.append(
+      "vendor_id",
+      Object.keys(allData.vendorSetOption).length > 0
+        ? allData.vendorSetOption.id
+        : ""
+    );
+    formData.append("order_no", allData.order_no);
+    formData.append("amount", allData.amount);
+    formData.append("discount", allData.discount);
+    formData.append(
+      "tentative_date",
+      generateDateForApi(allData.tentative_date)
+    );
 
-    formData.append(
-      "publisher_id",
-      Object.keys(allData.publisherSetOptions).length > 0
-        ? allData.publisherSetOptions.id
-        : ""
-    );
-    formData.append(
-      "language_id",
-      Object.keys(allData.languageSetOptions).length > 0
-        ? allData.languageSetOptions.id
-        : ""
-    );
-    formData.append(
-      "country_id",
-      Object.keys(allData.countrySetOptions).length > 0
-        ? allData.countrySetOptions.id
-        : ""
-    );
-    formData.append(
-      "category_id",
-      Object.keys(allData.categorySetOptions).length > 0
-        ? allData.categorySetOptions.id
-        : ""
-    );
-    formData.append(
-      "sub_category_id",
-      Object.keys(allData.subCategorySetOptions).length > 0
-        ? allData.subCategorySetOptions.id
-        : ""
-    );
-    formData.append(
-      "third_category_id",
-      Object.keys(allData.thirdCategorySetOptions).length > 0
-        ? allData.thirdCategorySetOptions.id
-        : ""
-    );
-    formData.append("show_home", allData.show_home);
-    formData.append("publish_status", allData.publish_status);
+    formData.append("note", allData.note);
     formData.append("status", allData.status);
-    formData.append("sequence", allData.sequence);
     formData.append("_method", "PUT");
 
-    const response = await updateItemRequest(formData, itemId);
+    const response = await updateItemOrderRequest(formData, itemOrderId);
     if (response.status === 200) {
       await onSuccess(response);
-      //await customOnSuccess("Update");
+      // await setAllData(initialFormData);
+      // await setItemOrderAbleList([]);
     } else {
       await onError(response);
     }
-    //return navigate("/admin/items/list", { replace: true });
+    return navigate("/admin/items-orders/list", { replace: true });
   };
 
   return (
     <>
-      {loadItem ? (
-        <Loading />
-      ) : (
-        <>
-          <PageHeader pageTitle={"Edit Item info"} actionPage={"Edit Item"} />
+      <PageHeader pageTitle={"Create New Item"} actionPage={"Create Item"} />
 
-          <div className="row">
-            <div className="col-md-12">
-              <div className="card">
-                <div className="card-header">
-                  <h5> Edit New Item Here </h5>
+      <div className="row">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-header">
+              <h5> Create New Items Order Here </h5>
 
-                  <span></span>
-                  <div className="card-header-right">
-                    {/* <i className="icofont icofont-refresh"></i> */}
-                    <Link to="/admin/items/list" title="Item list">
-                      Item List <i className="icofont icofont-list"></i>
-                    </Link>
-                  </div>
-                </div>
-                <div className="card-block">
-                  <form onSubmit={handleSubmit}>
-                    <div className="row justify-content-center">
-                      {/* ------------------left side-----------------------  */}
-                      <div className={`col-md-9 ${classes.inputSec} }`}>
-                        <div className=" row">
-                          <div className="col-sm-12">
-                            <label className=" col-form-label">Title</label>
-                            <input
-                              name="title"
-                              value={allData.title}
-                              onChange={handleChange}
-                              type="text"
-                              className="form-control"
-                              placeholder="Type Item Title"
-                              required
-                            />
-                          </div>
-                        </div>
-
-                        <div className="form-group row">
-                          <div className="col-sm-4">
-                            <label className="col-form-label">ISBN</label>
-                            <input
-                              name="isbn"
-                              value={allData.isbn}
-                              onChange={handleChange}
-                              type="text"
-                              className="form-control"
-                              placeholder="Type isbn"
-                            />
-                          </div>
-                          <div className="col-sm-4">
-                            <label className="col-form-label">Edition</label>
-                            <input
-                              name="edition"
-                              value={allData.edition}
-                              onChange={handleChange}
-                              type="text"
-                              className="form-control"
-                              placeholder="item edition"
-                            />
-                          </div>
-                          <div className="col-sm-4">
-                            <label className="col-form-label">
-                              Number of Page
-                            </label>
-                            <input
-                              name="number_of_page"
-                              value={allData.number_of_page}
-                              onChange={handleChange}
-                              type="number"
-                              className="form-control"
-                              placeholder="Type number of page"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="form-group row">
-                          <div className="col-sm-12">
-                            <label className=" col-form-label">Summary</label>
-                            <JoditEditor
-                              ref={itemEditor}
-                              name="summary"
-                              value={allData.summary}
-                              onBlur={handleTextEditorChange}
-                              config={config}
-                              tabIndex={30} // tabIndex of textarea
-                            />
-
-                            {/* <textarea
-                          name="summary"
-                          value={allData.summary}
-                          onChange={handleChange}
-                          rows="8"
-                          cols="5"
-                          className="form-control"
-                          placeholder="Item Summery"
-                        ></textarea> */}
-                          </div>
-                        </div>
-
-                        <div className="form-group row">
-                          <div className="col-sm-4">
-                            <label className="col-form-label">Video Url</label>
-                            <input
-                              name="video_url"
-                              value={allData.video_url}
-                              onChange={handleChange}
-                              type="text"
-                              className="form-control"
-                              placeholder="Video Url: Youtube link"
-                            />
-                          </div>
-                          <div className="col-sm-4">
-                            <label className="col-form-label">
-                              Brochure (PDF Only)
-                            </label>
-                            <input
-                              name="brochure"
-                              value={allData.brochure}
-                              onChange={handelFile}
-                              type="file"
-                              accept="application/pdf"
-                              className="form-control"
-                              placeholder="Type number of page"
-                            />
-                          </div>
-
-                          <div className="col-sm-3">
-                            <label htmlFor="imageUpladFile">
-                              <img
-                                className="py-2"
-                                src={filePreview}
-                                style={{
-                                  width: "120px",
-                                  border: "2px dashed #90b85c",
-                                  cursor: "pointer",
-                                }}
-                                alt=""
-                              />
-                            </label>
-                            <input
-                              id="imageUpladFile"
-                              type="file"
-                              className="form-control"
-                              onChange={(e) => {
-                                handelImage(e);
-                              }}
-                              accept="image/*"
-                              style={{ display: "none" }}
-                            />
-                          </div>
-                        </div>
-                        <div className="row justify-content-center">
-                          <label className="col-md-2 col-form-label">
-                            <button
-                              type="submit"
-                              className="btn btn-primary btn-md btn-block waves-effect text-center m-b-20"
-                            >
-                              Submit
-                            </button>
-                          </label>
-                        </div>
-                      </div>
-                      {/* ------------------Right side-------------------- */}
-                      <div className={`col-md-3 ${classes.dropdownSec}`}>
-                        <div className="">
-                          <label className=" col-form-label">Authors</label>
-                          <Select
-                            ref={select2Ref}
-                            classNamePrefix="select Authors"
-                            onChange={onInputChange}
-                            isMulti={true}
-                            getOptionValue={(option) => `${option["id"]}`}
-                            getOptionLabel={(option) => `${option["name"]}`}
-                            name="item_authors"
-                            value={allData.item_authors}
-                            options={authors}
-                            required
-                          />
-                        </div>
-                        <div className="">
-                          <label className=" col-form-label">Publisher</label>
-                          <Select
-                            ref={select2Ref}
-                            isClearable={false}
-                            onChange={onInputChange}
-                            getOptionValue={(option) => `${option["id"]}`}
-                            getOptionLabel={(option) => `${option["name"]}`}
-                            name="publisherSetOptions"
-                            value={allData.publisherSetOptions}
-                            options={publishers}
-                            placeholder="Select Publisher"
-                          />
-
-                          {/* 
-                          <select
-                        name="publisher_id"
-                        onChange={handleChange}
-                        defaultValue={allData.publisher_id}
-                        className="form-control"
-                      >
-                        <option key="0" value="">
-                          Select Publisher
-                        </option>
-                        {publishers?.map((publisher, i) => (
-                          <option key={i + 1} value={publisher?.id}>
-                            {publisher?.name}
-                          </option>
-                        ))}
-                      </select> */}
-                        </div>
-                        <div className="">
-                          <label className=" col-form-label">Language</label>
-                          <Select
-                            ref={select2Ref}
-                            onChange={onInputChange}
-                            getOptionValue={(option) => `${option["id"]}`}
-                            getOptionLabel={(option) => `${option["name"]}`}
-                            value={allData.languageSetOptions}
-                            name="languageSetOptions"
-                            options={languages}
-                            placeholder="Select Language"
-                          />
-                        </div>
-                        <div className="">
-                          <label className=" col-form-label">Country</label>
-                          <Select
-                            ref={select2Ref}
-                            onChange={onInputChange}
-                            getOptionValue={(option) => `${option["id"]}`}
-                            getOptionLabel={(option) => `${option["name"]}`}
-                            value={allData.countrySetOptions}
-                            name="countrySetOptions"
-                            options={countries}
-                            placeholder="Select Country"
-                          />
-                        </div>
-                        <div className="">
-                          <label className=" col-form-label">Category</label>
-                          <Select
-                            ref={select2Ref}
-                            onChange={onInputChange}
-                            getOptionValue={(option) => `${option["id"]}`}
-                            getOptionLabel={(option) => `${option["name"]}`}
-                            value={allData.categorySetOptions}
-                            name="categorySetOptions"
-                            options={categories}
-                            required
-                            placeholder="Select Category"
-                          />
-                        </div>
-                        <div className="">
-                          <label className=" col-form-label">
-                            Sub Category
-                          </label>
-                          <Select
-                            ref={select2Ref}
-                            onChange={onInputChange}
-                            getOptionValue={(option) => `${option["id"]}`}
-                            getOptionLabel={(option) => `${option["name"]}`}
-                            value={allData.subCategorySetOptions}
-                            name="subCategorySetOptions"
-                            options={subCategories}
-                            required
-                            placeholder="Select Sub Category"
-                          />
-                        </div>
-                        <div className="">
-                          <label className=" col-form-label">
-                            Third Sub Category
-                          </label>
-                          <Select
-                            ref={select2Ref}
-                            onChange={onInputChange}
-                            getOptionValue={(option) => `${option["id"]}`}
-                            getOptionLabel={(option) => `${option["name"]}`}
-                            value={allData.thirdCategorySetOptions}
-                            name="thirdCategorySetOptions"
-                            options={thirdSubCategories}
-                            placeholder="Third Sub Category"
-                          />
-                        </div>
-
-                        <div className="">
-                          <label className=" col-form-label">Item Status</label>
-                          <select
-                            name="status"
-                            onChange={handleChange}
-                            defaultValue={allData.status}
-                            className="form-control"
-                          >
-                            <option value="">Select One</option>
-                            <option value="1">Active</option>
-                            <option value="0">Inactive</option>
-                          </select>
-                        </div>
-                        <div className="">
-                          <label className=" col-form-label">
-                            Publish Status
-                          </label>
-                          <select
-                            name="publish_status"
-                            onChange={handleChange}
-                            defaultValue={allData.publish_status}
-                            className="form-control"
-                          >
-                            <option value="">Select One</option>
-                            <option value="1">Publish</option>
-                            <option value="0">Unpublish</option>
-                          </select>
-                        </div>
-                        <div className="">
-                          <label className=" col-form-label">
-                            Show at Home?
-                          </label>
-                          <select
-                            name="show_home"
-                            onChange={handleChange}
-                            defaultValue={allData.show_home}
-                            className="form-control"
-                          >
-                            <option value="">Select One </option>
-                            <option value="1">Yes</option>
-                            <option value="0">No</option>
-                          </select>
-                        </div>
-                        <div className="">
-                          <label className=" col-form-label">Sequence</label>
-                          <input
-                            name="sequence"
-                            value={allData.sequence}
-                            onChange={handleChange}
-                            type="number"
-                            min={0}
-                            max={999999}
-                            className="form-control"
-                            placeholder=""
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </form>
-                </div>
+              <span></span>
+              <div className="card-header-right">
+                {/* <i className="icofont icofont-refresh"></i> */}
+                <Link to="/admin/items-orders/list" title="Item list">
+                  Items Order List <i className="icofont icofont-list"></i>
+                </Link>
               </div>
             </div>
+            <div className="card-block">
+              <form onSubmit={handleSubmit}>
+                {/* ------------------Top side-----------------------  */}
+                <div className="form-group row">
+                  <div className="col-sm-3">
+                    <div className="">
+                      <label className=" col-form-label">Order Id</label>
+                      <input
+                        name="order_no"
+                        value={allData.order_no}
+                        onChange={handleChange}
+                        type="text"
+                        readOnly
+                        className="form-control"
+                        placeholder="Tentative Oreder Receive Date"
+                      />
+                    </div>
+                  </div>
+                  <div className="col-sm-3">
+                    <div className="">
+                      <label className=" col-form-label">Vendor</label>
+                      <Select
+                        ref={select2Ref}
+                        classNamePrefix="select Authors"
+                        onChange={onInputChange}
+                        getOptionValue={(option) => `${option["id"]}`}
+                        getOptionLabel={(option) => `${option["name"]}`}
+                        name="vendorSetOption"
+                        value={allData.vendorSetOption}
+                        options={vendors}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="col-sm-3">
+                    <label className="col-form-label">
+                      Tentative Receive Date
+                    </label>
+                    <DatePicker
+                      showIcon
+                      className="form-control"
+                      isClearable
+                      dateFormat="yyyy/MM/dd"
+                      placeholderText="I have been cleared!"
+                      selected={allData.tentative_date}
+                      name="tentative_date"
+                      onChange={handleDateChange}
+                      required
+                    />
+                    {/* <input
+                          name="tentative_date"
+                          value={allData.tentative_date}
+                          onChange={handleChange}
+                          type="text"
+                          className="form-control"
+                          placeholder="Tentative Oreder Receive Date"
+                        /> */}
+                  </div>
+                  <div className="col-sm-3">
+                    <div className="">
+                      <label className=" col-form-label">Status</label>
+                      <select
+                        name="status"
+                        onChange={handleChange}
+                        value={allData.status}
+                        className="form-control"
+                      >
+                        <option value="">Select One</option>
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                {/* Item Search */}
+                <div
+                  className="form-group row"
+                  style={{ backgroundColor: "#dfdfdf", padding: "10px" }}
+                >
+                  <div className="col-md-5" style={{ position: "relative" }}>
+                    <label className=" col-form-label">Search Item</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="searchQuery"
+                      value={addItemQtyPrice.searchQuery}
+                      onChange={itemSearchHandeler}
+                      placeholder="Type here to item search"
+                    />
+                    {searchLoading ? (
+                      "loading..."
+                    ) : (
+                      <ul
+                        style={{
+                          display: `${displayState}`,
+                          height: " 180px",
+                          overflowY: "scroll",
+                          backgroundColor: "#e9e9e9",
+                          position: "absolute",
+                          width: "100%",
+                          zIndex: 999,
+                        }}
+                      >
+                        {searchQueryResult.map((result, i) => (
+                          <li key={i}>
+                            {" "}
+                            <a
+                              id={result.id}
+                              href="noaction"
+                              name="searchQuery"
+                              dataitemid="itemId"
+                              style={{ cursor: "pointer" }}
+                              onClick={setItemHandeler}
+                            >
+                              {result.title}
+                            </a>{" "}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="col-md-2">
+                    <label className=" col-form-label">Quantity</label>
+                    <input
+                      className="form-control"
+                      type="number"
+                      min="0"
+                      max="999999"
+                      name="itemQty"
+                      value={addItemQtyPrice.itemQty}
+                      onChange={itemSearchHandeler}
+                    />
+                  </div>
+                  <div className="col-md-2">
+                    <label className=" col-form-label">Price</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="999999"
+                      className="form-control"
+                      name="itemPrice"
+                      value={addItemQtyPrice.itemPrice}
+                      onChange={itemSearchHandeler}
+                    />
+                  </div>
+                  <div className="col-md-2">
+                    <label className=" col-form-label"> </label>
+                    <br />
+                    <br />
+                    <button
+                      className="btn btn-warning btn-sm"
+                      type="button"
+                      onClick={addItemToOrderList}
+                      title="Click here to add item to order list"
+                    >
+                      Add <i className="icofont icofont-plus"></i>
+                    </button>
+                  </div>
+                  <div className="col-md-12 text-danger text-center">
+                    <br />
+                    {addError ? addError : ""}
+                  </div>
+                </div>
+                {/* end row */}
+
+                {/* Item Details */}
+                <div className="form-group row">
+                  <div className="col-md-12">
+                    <ItemList
+                      itemOrderAbleList={itemOrderAbleList}
+                      deleteItemFromList={deleteItemFromList}
+                    />
+                  </div>
+                </div>
+                <hr />
+                <div className="row justify-content-end">
+                  <div className="col-md-4">
+                    <textarea
+                      name="note"
+                      value={allData.note}
+                      onChange={handleChange}
+                      rows="8"
+                      cols="5"
+                      className="form-control"
+                      placeholder="Note Here"
+                    ></textarea>
+                  </div>
+                  <div className="col-md-4">
+                    <table className="table table-bordered table-striped">
+                      <thead>
+                        <tr>
+                          <td className="text-right">Sub Total :</td>
+                          <td className="text-bold">{allData.amount}</td>
+                        </tr>
+                        <tr>
+                          <td className="text-right">Discount :</td>
+                          <td>
+                            <input
+                              type="number"
+                              max={allData.amount}
+                              min={0}
+                              value={allData.discount}
+                              onChange={discountHandle}
+                              required
+                            />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="text-right">Total :</td>
+                          <td>{allData.total}</td>
+                        </tr>
+                      </thead>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="row justify-content-left">
+                  <label className="col-md-2 col-form-label">
+                    <button
+                      type="submit"
+                      className="btn btn-primary btn-md btn-block waves-effect text-center m-b-20"
+                    >
+                      Submit
+                    </button>
+                  </label>
+                </div>
+              </form>
+            </div>
           </div>
-        </>
-      )}
+        </div>
+      </div>
     </>
   );
 }

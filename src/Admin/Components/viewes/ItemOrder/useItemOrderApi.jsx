@@ -121,9 +121,9 @@ export default function useItemApi() {
   };
 
   const showItemOrderRequest = async ({ queryKey }) => {
-    const authorId = queryKey[1];
+    const itemOrderId = queryKey[1];
     const headers = await defaultHeadersForAdmin();
-    const response = await axios(`${baseUrl}admin/item-orders/${authorId}`, {
+    const response = await axios(`${baseUrl}admin/item-orders/${itemOrderId}`, {
       method: "GET",
       headers,
     });
@@ -134,7 +134,6 @@ export default function useItemApi() {
     try {
       const headers = await defaultHeadersForAdmin("multipart/form-data");
       const response = await axios(`${baseUrl}admin/item-orders/${id}`, {
-        //${authorId}
         method: "POST",
         headers,
         data: data,
@@ -146,7 +145,6 @@ export default function useItemApi() {
   };
 
   const deleteItemOrderRequest = async (itemOrderId) => {
-    console.log(itemOrderId);
     const headers = await defaultHeadersForAdmin();
     const response = await axios(`${baseUrl}admin/item-orders/${itemOrderId}`, {
       method: "DELETE",

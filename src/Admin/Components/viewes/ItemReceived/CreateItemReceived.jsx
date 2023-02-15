@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
-import useItemOrderApi from "./useItemOrderApi";
+import useItemOrderApi from "./useItemReceivedApi";
 import defaultImage from "../../../assets/image/default_image.jpg";
 import classes from "./Style/ItemOrder.module.css";
 import { Link } from "react-router-dom";
@@ -12,7 +12,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import ItemList from "./ItemList";
 import useUtility from "../../../hooks/useUtility";
 
-export default function CreateItemOrder() {
+export default function CreateItemReceived() {
   const select2Ref = useRef();
   const { generateDateForApi } = useUtility();
   const { onError, onSuccess } = useToster();

@@ -5,22 +5,24 @@ import { useQuery, useMutation } from "react-query";
 import useItemOrderApi from "./useItemOrderApi";
 import defaultImage from "../../../assets/image/default_image.jpg";
 import classes from "./Style/ItemOrder.module.css";
-import { Link } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ItemList from "./ItemList";
 import useUtility from "../../../hooks/useUtility";
 
-export default function CreateItemOrder() {
+export default function EditItemReceived() {
+  let navigate = useNavigate();
+  const { itemOrderId } = useParams();
   const select2Ref = useRef();
   const { generateDateForApi } = useUtility();
   const { onError, onSuccess } = useToster();
   const {
-    createItemOrderRequest,
+    showItemOrderRequest,
     activeVendorsRequest,
-    itemOrderNoRequest,
     activeItemSearch,
+    updateItemOrderRequest,
   } = useItemOrderApi();
   // initioal value
   const initialFormData = {
@@ -28,7 +30,7 @@ export default function CreateItemOrder() {
     vendorSetOption: "",
     order_no: "",
     amount: 0,
-    discount: 0,
+    discount: "",
     total: 0,
     tentative_date: new Date(),
     item_id: "",
@@ -41,7 +43,7 @@ export default function CreateItemOrder() {
   const [filePreview, setFilePreview] = useState(defaultImage);
   const [vendors, setVendors] = useState([]);
   const [itemPhotos, setItemPhotos] = useState(null);
-  const [brochureFile, setItemBrochureFile] = useState(null);
+
   // clicke Add Button
   const initialItemQtyPrice = {
     itemId: "",
@@ -57,24 +59,16 @@ export default function CreateItemOrder() {
 
   const [itemOrderAbleList, setItemOrderAbleList] = useState([]);
 
-  // Get Item Order no. ---------------
-  const { refetch: itemOrderNoRefetch } = useQuery(
-    "itemOrderNoRequest",
-    itemOrderNoRequest,
-    {
-      onSuccess: async (response) => {
-        if (response.status === 200) {
-          console.log(response.data);
-          await setAllData({
-            ...allData,
-            order_no: response.data,
-          });
-        }
-      },
-      onError: onError,
-      refetchOnWindowFocus: false,
-    }
-  );
+  // Get Item Order Data. ---------------
+  const {
+    data: itemOrederData,
+    isLoading: loadItemOrder,
+    isError,
+    refetch: showItemOrderRefetch,
+  } = useQuery(["showItemOrderRequest", itemOrderId], showItemOrderRequest, {
+    onError: onError,
+    refetchOnWindowFocus: true,
+  });
   //Get Active Vendor Data-----------------------------
   useQuery("activeVendorsRequest", activeVendorsRequest, {
     onSuccess: async (response) => {
@@ -86,18 +80,38 @@ export default function CreateItemOrder() {
     refetchOnWindowChange: false,
   });
 
-  // useEffect(() => {
-  //   handleChange("", maxSequenceData?.data?.result?.sequence);
-  // }, [maxSequenceData]);
+  // Update state by api response data ------
+  const updateInitialValue = async (itemOreder) => {
+    initialFormData.id = itemOreder.id;
+    initialFormData.vendor_id = itemOreder.vendor_id;
+    initialFormData.vendorSetOption = itemOreder.vendor_id
+      ? { id: itemOreder.vendor_id, name: itemOreder.vendor_name }
+      : "";
+    initialFormData.order_no = itemOreder.order_no;
+    initialFormData.amount = itemOreder.amount;
+    initialFormData.discount = itemOreder.discount;
+    initialFormData.total = itemOreder.total;
+    initialFormData.tentative_date = new Date(itemOreder.tentative_date);
+    initialFormData.item_id = "";
+    initialFormData.item_qty = "";
+    initialFormData.item_price = "";
+    initialFormData.note = itemOreder.note;
+    initialFormData.status = itemOreder.status;
+    await setAllData(initialFormData);
+    await setItemOrderAbleList(itemOreder.itemOrderDetails);
+  };
+
+  useEffect(() => {
+    if (!loadItemOrder && !isError) {
+      let itemOreder = {};
+      console.log(itemOrederData.data.result);
+      itemOreder = itemOrederData.data.result;
+
+      updateInitialValue(itemOreder);
+    }
+  }, [loadItemOrder]);
 
   const handleChange = (e, maxSequenceData) => {
-    //if (maxSequenceData) {
-    //   // when api response -----
-    //   setAllData({
-    //     ...allData,
-    //     sequence: maxSequenceData,
-    //   });
-
     if (e) {
       // on user change -----
       setAllData({ ...allData, [e.target.name]: e.target.value });
@@ -107,10 +121,6 @@ export default function CreateItemOrder() {
   function handelImage(e) {
     setItemPhotos(e.target.files[0]);
     setFilePreview(URL.createObjectURL(e.target.files[0]));
-  }
-
-  function handelFile(e) {
-    setItemBrochureFile(e.target.files[0]);
   }
 
   const onInputChange = async (selectedOptions, select2Ref) => {
@@ -218,7 +228,7 @@ export default function CreateItemOrder() {
             ...allData,
             ["amount"]: allData.amount - item.itemTotalPrice,
             ["total"]: allData.amount - item.itemTotalPrice,
-            ["discount"]: 0,
+            ["discount"]: "",
           });
         }
         return i !== index;
@@ -271,20 +281,11 @@ export default function CreateItemOrder() {
   };
 
   // Create Api MutateAsync --------------
-  const { mutateAsync } = useMutation(
-    "createItemOrderRequest",
-    createItemOrderRequest,
-    {
-      onSuccess: onSuccess,
-      onError: onError,
-    }
-  );
 
   // Form Submit Handle --------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    console.log(itemOrderAbleList);
 
     //add itmeId,Qty, Price to FormData
     await itemOrderAbleList.map((item, i) => {
@@ -309,12 +310,17 @@ export default function CreateItemOrder() {
 
     formData.append("note", allData.note);
     formData.append("status", allData.status);
+    formData.append("_method", "PUT");
 
-    await mutateAsync(formData);
-    await setAllData(initialFormData);
-    await setItemOrderAbleList([]);
-    await itemOrderNoRefetch();
-    //return navigate("/admin/items-orders/list", { replace: true });
+    const response = await updateItemOrderRequest(formData, itemOrderId);
+    if (response.status === 200) {
+      await onSuccess(response);
+      // await setAllData(initialFormData);
+      // await setItemOrderAbleList([]);
+    } else {
+      await onError(response);
+    }
+    return navigate("/admin/items-orders/list", { replace: true });
   };
 
   return (
@@ -363,7 +369,7 @@ export default function CreateItemOrder() {
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
                         name="vendorSetOption"
-                        defaultValue={allData.vendorSetOption}
+                        value={allData.vendorSetOption}
                         options={vendors}
                         required
                       />
@@ -399,7 +405,7 @@ export default function CreateItemOrder() {
                       <select
                         name="status"
                         onChange={handleChange}
-                        defaultValue={allData.status}
+                        value={allData.status}
                         className="form-control"
                       >
                         <option value="">Select One</option>
@@ -538,6 +544,7 @@ export default function CreateItemOrder() {
                               min={0}
                               value={allData.discount}
                               onChange={discountHandle}
+                              required
                             />
                           </td>
                         </tr>

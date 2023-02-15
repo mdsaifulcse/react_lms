@@ -43,7 +43,7 @@ export default function LeftNavbar() {
           Navigation
         </div>
         <ul className="pcoded-item pcoded-left-item">
-          {/* Page layouts */}
+          {/* Items Create, List */}
           <li className="pcoded-hasmenu">
             <Link to="#">
               <span className="pcoded-micon">
@@ -61,6 +61,48 @@ export default function LeftNavbar() {
               </li>
               <li className="">
                 <Link to="/admin/items/create"> Create</Link>
+              </li>
+            </ul>
+          </li>
+          {/* Item Order */}
+          <li className="pcoded-hasmenu">
+            <Link to="#">
+              <span className="pcoded-micon">
+                <i className="ti-layout"></i>
+              </span>
+              <span className="pcoded-mtext" data-i18n="nav.page_layout.main">
+                Item Order
+              </span>
+              <span className="pcoded-badge label label-warning">NEW</span>
+              <span className="pcoded-mcaret"></span>
+            </Link>
+            <ul className="pcoded-submenu">
+              <li className="">
+                <Link to="/admin/item-received/list"> List</Link>
+              </li>
+              <li className="">
+                <Link to="/admin/item-received/create"> Create</Link>
+              </li>
+            </ul>
+          </li>
+          {/* Item Received */}
+          <li className="pcoded-hasmenu">
+            <Link to="#">
+              <span className="pcoded-micon">
+                <i className="ti-layout"></i>
+              </span>
+              <span className="pcoded-mtext" data-i18n="nav.page_layout.main">
+                Item Received
+              </span>
+              <span className="pcoded-badge label label-warning">NEW</span>
+              <span className="pcoded-mcaret"></span>
+            </Link>
+            <ul className="pcoded-submenu">
+              <li className="">
+                <Link to="/admin/item-received/list"> List</Link>
+              </li>
+              <li className="">
+                <Link to="/admin/item-received/create"> Create</Link>
               </li>
             </ul>
           </li>

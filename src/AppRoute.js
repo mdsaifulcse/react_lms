@@ -111,6 +111,15 @@ const AppRoute = () => {
                   <Route path="create" element={<CreateItemOrder />} />
                   <Route path="edit/:itemOrderId" element={<EditItemOrder />} />
                 </Route>
+                {/*Items-Received */}
+                <Route path="item-received/">
+                  <Route path="list" element={<ItemOrderList />} />
+                  <Route path="create" element={<CreateItemOrder />} />
+                  <Route
+                    path="edit/:itemReceivedId"
+                    element={<EditItemOrder />}
+                  />
+                </Route>
               </Route>
             </Route>
           </Route>
