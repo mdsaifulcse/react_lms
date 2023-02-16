@@ -6,3 +6,6 @@
 .inputSec {
   border-right: none;
 }
+.actionBtn {
+  display: inline-block;
+}

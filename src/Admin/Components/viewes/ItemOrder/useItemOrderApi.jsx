@@ -101,12 +101,17 @@ export default function useItemApi() {
     return response;
   };
 
-  const allItemsOrdersRequest = async () => {
+  const allItemsOrdersRequest = async ({ queryKey }) => {
+    const orderStatus = queryKey[1];
+    console.log(orderStatus);
     const headers = await defaultHeadersForAdmin();
-    const response = await axios(`${baseUrl}admin/item-orders`, {
-      method: "GET",
-      headers,
-    });
+    const response = await axios(
+      `${baseUrl}admin/item-orders?order_status=${orderStatus}`,
+      {
+        method: "GET",
+        headers,
+      }
+    );
     return response;
   };
 

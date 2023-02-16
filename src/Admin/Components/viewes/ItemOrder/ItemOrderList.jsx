@@ -1,15 +1,23 @@
 import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
+import styles from "./Style/ItemOrder.module.css";
 import { useQuery, useMutation } from "react-query";
 import useItemOrderApi from "./useItemOrderApi";
 import Loading from "../../ui-component/Loading";
 import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import MaterialReactTable from "material-react-table";
 import ShowItemOrderModal from "./ShowItemOrderModal";
+import { sizeWidth } from "@mui/system";
+import { Action } from "@remix-run/router";
 
 export default function ItemOrderList() {
+  // Get Query Parma
+  const orderStatus = new URLSearchParams(useLocation().search).get(
+    "orderStatus"
+  );
+
   const { onError, onSuccess } = useToster();
   const { allItemsOrdersRequest, deleteItemOrderRequest } = useItemOrderApi();
   const [itemsOrder, setItemsOrder] = useState({});
@@ -19,7 +27,7 @@ export default function ItemOrderList() {
     data: itemsOrders,
     isLoading,
     refetch,
-  } = useQuery("allItemsOrdersRequest", allItemsOrdersRequest, {
+  } = useQuery(["allItemsOrdersRequest", orderStatus], allItemsOrdersRequest, {
     //onSuccess: onSuccess,
     onError: onError,
     refetchOnWindowFocus: false,
@@ -68,12 +76,14 @@ export default function ItemOrderList() {
       {
         accessorKey: "order_no", //simple recommended way to define a column
         header: <span className="table-header">Order No.</span>,
+        size: 150,
         //muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
         //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
       },
       {
         accessorKey: "qty", //simple recommended way to define a column
         header: <span className="table-header">Qty</span>,
+        size: 150,
         // muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
         //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
       },
@@ -106,6 +116,21 @@ export default function ItemOrderList() {
         id: "status", //id required if you use accessorFn instead of accessorKey
         header: "Status",
         Header: <span className="table-header">Status</span>, //optional custom markup
+      },
+      {
+        accessorFn: (row) =>
+          row.order_status === 1 ? (
+            <>
+              <span className="badge badge-success">Receive</span>
+            </>
+          ) : (
+            <>
+              <span className="badge badge-danger">Unreceived</span>
+            </>
+          ), //alternate way
+        id: "order_status", //id required if you use accessorFn instead of accessorKey
+        header: "Order Status",
+        Header: <span className="table-header">Order Status</span>, //optional custom markup
       },
     ],
     []
@@ -150,9 +175,16 @@ export default function ItemOrderList() {
                         data={data}
                         enableRowActions
                         enableColumnActions
+                        action
                         enableRowNumbers
-                        positionActionsColumn="last"
                         enablePagination="true"
+                        positionActionsColumn="last"
+                        displayColumnDefOptions={{
+                          "mrt-row-actions": {
+                            header: "Action", //change header text
+                            size: 200, //make actions column wider
+                          },
+                        }}
                         renderRowActions={(row, index) => (
                           <>
                             <button
@@ -161,17 +193,30 @@ export default function ItemOrderList() {
                                 let itemsOrder = row.row.original;
                                 showModalHandler(itemsOrder);
                               }}
-                              className="btn  btn-info btn-sm"
+                              className={`btn  btn-info btn-sm ${styles.actionBtn}`}
                             >
                               <i className="icofont icofont-eye"></i>
                             </button>{" "}
-                            <Link
-                              to={`/admin/items-orders/edit/${row.row.original.id}`}
-                              title="Edit Items Order"
-                              className="btn btn-warning btn-sm"
-                            >
-                              <i className="icofont icofont-edit"></i>
-                            </Link>{" "}
+                            {row.row.original.order_status === 0 ? (
+                              <>
+                                <Link
+                                  to={`/admin/items-orders/edit/${row.row.original.id}`}
+                                  title="Edit Items Order"
+                                  className={`btn  btn-warning btn-sm ${styles.actionBtn}`}
+                                >
+                                  <i className="icofont icofont-edit"></i>
+                                </Link>{" "}
+                                <Link
+                                  to={`/admin/items-orders/edit/${row.row.original.id}`}
+                                  title="Click Here To Receive Order Item"
+                                  className={`btn  btn-danger btn-sm ${styles.actionBtn}`}
+                                >
+                                  <i className="icofont icofont-inbox"></i>
+                                </Link>{" "}
+                              </>
+                            ) : (
+                              ""
+                            )}
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
@@ -182,7 +227,7 @@ export default function ItemOrderList() {
                                   itemsOrder.order_no
                                 );
                               }}
-                              className="btn  btn-danger btn-sm"
+                              className={`btn  btn-danger btn-sm ${styles.actionBtn}`}
                             >
                               <i className="icofont icofont-trash"></i>
                             </button>

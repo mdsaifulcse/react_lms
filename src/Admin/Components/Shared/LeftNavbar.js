@@ -78,10 +78,16 @@ export default function LeftNavbar() {
             </Link>
             <ul className="pcoded-submenu">
               <li className="">
-                <Link to="/admin/item-received/list"> List</Link>
+                <Link to="/admin/items-orders/list"> Order List</Link>
               </li>
               <li className="">
-                <Link to="/admin/item-received/create"> Create</Link>
+                <Link to="/admin/items-orders/create"> Create</Link>
+              </li>
+              <li className="">
+                <Link to="/admin/items-orders/list?orderStatus=unreceived">
+                  {" "}
+                  Unreceived Order Item
+                </Link>
               </li>
             </ul>
           </li>

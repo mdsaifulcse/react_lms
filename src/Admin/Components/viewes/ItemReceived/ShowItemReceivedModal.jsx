@@ -10,6 +10,7 @@ export default function ShowItemReceivedModal({
   modalTitle,
   cardHeader,
 }) {
+  console.log(data);
   return (
     <>
       <Modal
@@ -53,28 +54,14 @@ export default function ShowItemReceivedModal({
                           <table className="table table-bordered table-striped">
                             <tbody>
                               <tr>
-                                <th>Order No.</th>
+                                <th>Received No.</th>
                                 <th>Vendor</th>
                                 <th>Tentative Receive Date</th>
-                                <th>Status</th>
                               </tr>
                               <tr>
-                                <td>{data.order_no}</td>
+                                <td>{data.receive_no}</td>
                                 <td>{data.vendor_name}</td>
-                                <td>{data.tentative_date}</td>
-                                <td>
-                                  {data.status === 1 ? (
-                                    <>
-                                      <span className="text-primary">
-                                        Active
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <span className="text-danger">
-                                      Inactive
-                                    </span>
-                                  )}
-                                </td>
+                                <td>{data.received_date}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -123,26 +110,26 @@ export default function ShowItemReceivedModal({
                             <thead>
                               <tr>
                                 <td className="text-right">
-                                  <b>Sub Total</b> :
+                                  <b>Payable Amount</b> :
                                 </td>
                                 <td className="text-bold">
-                                  <b>{data.amount}</b>
+                                  <b>{data.payable_amount}</b>
                                 </td>
                               </tr>
                               <tr>
                                 <td className="text-right">
-                                  <b>Discount</b> :
+                                  <b>Paid Amount</b> :
                                 </td>
                                 <td>
-                                  <b>{data.discount}</b>
+                                  <b>{data.paid_amount}</b>
                                 </td>
                               </tr>
                               <tr>
                                 <td className="text-right">
-                                  <b>Total</b> :
+                                  <b>Due Amount</b> :
                                 </td>
                                 <td>
-                                  <b>{data.total}</b>
+                                  <b>{data.due_amount}</b>
                                 </td>
                               </tr>
                             </thead>

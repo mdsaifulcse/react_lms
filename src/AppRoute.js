@@ -40,6 +40,11 @@ import ItemOrderList from "./admin/components/viewes/ItemOrder/ItemOrderList";
 import CreateItemOrder from "./admin/components/viewes/ItemOrder/CreateItemOrder";
 import EditItemOrder from "./admin/components/viewes/ItemOrder/EditItemOrder";
 
+//Item Order Recieve List
+import ItemReceivedList from "./admin/components/viewes/ItemReceived/ItemReceivedList";
+// import CreateItemOrder from "./admin/components/viewes/ItemOrder/CreateItemOrder";
+// import EditItemOrder from "./admin/components/viewes/ItemOrder/EditItemOrder";
+
 const AppRoute = () => {
   return (
     <>
@@ -99,21 +104,21 @@ const AppRoute = () => {
                 <Route path="third-sub-categories/">
                   <Route path="list" element={<ThirdSubCategoryList />} />
                 </Route>
-                {/*Item */}
+                {/*----------------------------Item--------------------- */}
                 <Route path="items/">
                   <Route path="list" element={<ItemsList />} />
                   <Route path="create" element={<CreateItem />} />
                   <Route path="edit/:itemId" element={<EditItem />} />
                 </Route>
-                {/*Items-Orders */}
+                {/* ------------------------ Items-Orders ---------------- */}
                 <Route path="items-orders/">
                   <Route path="list" element={<ItemOrderList />} />
                   <Route path="create" element={<CreateItemOrder />} />
                   <Route path="edit/:itemOrderId" element={<EditItemOrder />} />
                 </Route>
-                {/*Items-Received */}
+                {/*-------------------------Items-Received------------------ */}
                 <Route path="item-received/">
-                  <Route path="list" element={<ItemOrderList />} />
+                  <Route path="list" element={<ItemReceivedList />} />
                   <Route path="create" element={<CreateItemOrder />} />
                   <Route
                     path="edit/:itemReceivedId"

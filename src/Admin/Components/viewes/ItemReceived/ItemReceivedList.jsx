@@ -7,18 +7,19 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import MaterialReactTable from "material-react-table";
-import ShowItemOrderModal from "./ShowItemReceivedModal";
+import ShowItemReceivedModal from "./ShowItemReceivedModal";
 
 export default function ItemReceivedList() {
   const { onError, onSuccess } = useToster();
   const { allItemsReceivedsRequest, deleteItemReceivedRequest } =
     useItemReceivedApi();
-  const [itemsOrder, setItemsOrder] = useState({});
+  const [modalData, setModalData] = useState({});
   const [modalShow, setModalShow] = useState(false);
 
   const {
-    data: itemsOrders,
+    data: itemsReceived,
     isLoading,
+    isError,
     refetch,
   } = useQuery("allItemsReceivedsRequest", allItemsReceivedsRequest, {
     //onSuccess: onSuccess,
@@ -60,15 +61,15 @@ export default function ItemReceivedList() {
   };
 
   let data = [];
-  if (!isLoading) {
-    data = itemsOrders.data.result.itemOrders;
+  if (!isLoading && !isError) {
+    data = itemsReceived.data.result.receivedItems;
   }
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: "order_no", //simple recommended way to define a column
-        header: <span className="table-header">Order No.</span>,
+        accessorKey: "receive_no", //simple recommended way to define a column
+        header: <span className="table-header">Received No.</span>,
         //muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
         //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
       },
@@ -79,41 +80,25 @@ export default function ItemReceivedList() {
         //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
       },
       {
-        accessorFn: (row) => row.amount, //alternate way
-        id: "amount", //id required if you use accessorFn instead of accessorKey
+        accessorFn: (row) => row.payable_amount, //alternate way
+        id: "payable_amount", //id required if you use accessorFn instead of accessorKey
         header: "Amount",
         Header: <span className="table-header">Amount</span>, //optional custom markup
       },
       {
-        accessorKey: "tentative_date", //simple recommended way to define a column
-        header: <span className="table-header">Tentative Date Receive</span>,
+        accessorKey: "received_date", //simple recommended way to define a column
+        header: <span className="table-header">Received</span>,
       },
       {
         accessorKey: "vendor_name", //simple recommended way to define a column
         header: <span className="table-header">Vendor Name</span>,
       },
-
-      {
-        accessorFn: (row) =>
-          row.status === 1 ? (
-            <>
-              <span className="badge badge-success">Active</span>
-            </>
-          ) : (
-            <>
-              <span className="badge badge-danger">Inactive</span>
-            </>
-          ), //alternate way
-        id: "status", //id required if you use accessorFn instead of accessorKey
-        header: "Status",
-        Header: <span className="table-header">Status</span>, //optional custom markup
-      },
     ],
     []
   );
 
-  const showModalHandler = async (item) => {
-    await setItemsOrder(item);
+  const showModalHandler = async (itemsReceived) => {
+    await setModalData(itemsReceived);
     await setModalShow(true);
   };
 
@@ -123,12 +108,15 @@ export default function ItemReceivedList() {
         <Loading />
       ) : (
         <>
-          <PageHeader pageTitle={"Items Orders"} actionPage={"Items Orders"} />
+          <PageHeader
+            pageTitle={"Items Received"}
+            actionPage={"Items Received"}
+          />
           <div className="row">
             <div className="col-md-12">
               <div className="card">
                 <div className="card-header">
-                  <h5>All Items Orders List</h5>
+                  <h5>All Items Received List</h5>
                   <span></span>
                   <div className="card-header-right">
                     <i
@@ -154,34 +142,29 @@ export default function ItemReceivedList() {
                         enableRowNumbers
                         positionActionsColumn="last"
                         enablePagination="true"
+                        displayColumnDefOptions={{
+                          "mrt-row-actions": {
+                            header: "Action", //change header text
+                            size: 200, //make actions column wider
+                          },
+                        }}
                         renderRowActions={(row, index) => (
                           <>
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
-                                let itemsOrder = row.row.original;
-                                showModalHandler(itemsOrder);
+                                let itemsReceived = row.row.original;
+                                showModalHandler(itemsReceived);
                               }}
                               className="btn  btn-info btn-sm"
                             >
                               <i className="icofont icofont-eye"></i>
                             </button>{" "}
-                            <Link
-                              to={`/admin/items-orders/edit/${row.row.original.id}`}
-                              title="Edit Items Order"
-                              className="btn btn-warning btn-sm"
-                            >
-                              <i className="icofont icofont-edit"></i>
-                            </Link>{" "}
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
-                                let itemsOrder = row.row.original;
-                                console.log(itemsOrder);
-                                deleteHandler(
-                                  itemsOrder.id,
-                                  itemsOrder.order_no
-                                );
+                                let data = row.row.original;
+                                deleteHandler(data.id, data.receive_no);
                               }}
                               className="btn  btn-danger btn-sm"
                             >
@@ -196,12 +179,12 @@ export default function ItemReceivedList() {
               </div>
             </div>
           </div>
-          <ShowItemOrderModal
-            data={itemsOrder}
+          <ShowItemReceivedModal
+            data={modalData}
             show={modalShow}
             onHide={() => setModalShow(false)}
-            modalTitle="Items Order Details"
-            cardHeader="Items Order Info"
+            modalTitle="Items Received Details"
+            cardHeader="Items Received Info"
           />
         </>
       )}
