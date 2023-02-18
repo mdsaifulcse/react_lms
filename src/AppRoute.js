@@ -42,7 +42,7 @@ import EditItemOrder from "./admin/components/viewes/ItemOrder/EditItemOrder";
 
 //Item Order Recieve List
 import ItemReceivedList from "./admin/components/viewes/ItemReceived/ItemReceivedList";
-// import CreateItemOrder from "./admin/components/viewes/ItemOrder/CreateItemOrder";
+import CreateItemReceived from "./admin/components/viewes/ItemReceived/CreateItemReceived";
 // import EditItemOrder from "./admin/components/viewes/ItemOrder/EditItemOrder";
 
 const AppRoute = () => {
@@ -119,10 +119,9 @@ const AppRoute = () => {
                 {/*-------------------------Items-Received------------------ */}
                 <Route path="item-received/">
                   <Route path="list" element={<ItemReceivedList />} />
-                  <Route path="create" element={<CreateItemOrder />} />
                   <Route
-                    path="edit/:itemReceivedId"
-                    element={<EditItemOrder />}
+                    path="create/:orderId"
+                    element={<CreateItemReceived />}
                   />
                 </Route>
               </Route>

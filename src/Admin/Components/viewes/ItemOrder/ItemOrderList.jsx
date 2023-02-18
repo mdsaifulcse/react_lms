@@ -206,10 +206,12 @@ export default function ItemOrderList() {
                                 >
                                   <i className="icofont icofont-edit"></i>
                                 </Link>{" "}
+                                {/*----------- Order Receive --------------*/}
                                 <Link
-                                  to={`/admin/items-orders/edit/${row.row.original.id}`}
+                                  to={`/admin/item-received/create/${row.row.original.id}`}
                                   title="Click Here To Receive Order Item"
                                   className={`btn  btn-danger btn-sm ${styles.actionBtn}`}
+                                  target="_blank"
                                 >
                                   <i className="icofont icofont-inbox"></i>
                                 </Link>{" "}

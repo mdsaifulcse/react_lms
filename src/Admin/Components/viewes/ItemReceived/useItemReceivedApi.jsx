@@ -6,18 +6,6 @@ export default function useItemReceivedApi() {
   const { defaultHeadersForAdmin } = httpHeaders();
   const baseUrl = config.baseUrl;
 
-  const activeItemSearch = async ({ queryKey }) => {
-    const searchQuery = queryKey[1];
-    const headers = await defaultHeadersForAdmin();
-    const response = await axios(
-      `${baseUrl}admin/active-item-search?q=${searchQuery}`,
-      {
-        method: "GET",
-        headers,
-      }
-    );
-    return response;
-  };
   const itemReceivedNoRequest = async () => {
     const headers = await defaultHeadersForAdmin();
     const response = await axios(`${baseUrl}admin/item-received-no`, {
@@ -55,6 +43,19 @@ export default function useItemReceivedApi() {
     return response;
   };
 
+  const unreceivedOrderByOrderIdRequest = async ({ queryKey }) => {
+    const itemOrderId = queryKey[1];
+    const headers = await defaultHeadersForAdmin();
+    const response = await axios(
+      `${baseUrl}admin/unreceivedOrderByOrderId/${itemOrderId}`,
+      {
+        method: "GET",
+        headers,
+      }
+    );
+    return response;
+  };
+
   const showItemReceivedRequest = async ({ queryKey }) => {
     const itemOrderId = queryKey[1];
     const headers = await defaultHeadersForAdmin();
@@ -66,20 +67,6 @@ export default function useItemReceivedApi() {
       }
     );
     return response;
-  };
-
-  const updateItemReceivedRequest = async (data, id) => {
-    try {
-      const headers = await defaultHeadersForAdmin("multipart/form-data");
-      const response = await axios(`${baseUrl}admin/item-received/${id}`, {
-        method: "POST",
-        headers,
-        data: data,
-      });
-      return response;
-    } catch (error) {
-      return error;
-    }
   };
 
   const deleteItemReceivedRequest = async (itemOrderId) => {
@@ -95,13 +82,12 @@ export default function useItemReceivedApi() {
   };
 
   return {
-    activeItemSearch,
     itemReceivedNoRequest,
     activeVendorsRequest,
     allItemsReceivedsRequest,
     createItemReceivedRequest,
+    unreceivedOrderByOrderIdRequest,
     showItemReceivedRequest,
-    updateItemReceivedRequest,
     deleteItemReceivedRequest,
   };
 }

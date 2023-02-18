@@ -4,8 +4,9 @@ import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
 import useItemOrderApi from "./useItemReceivedApi";
 import defaultImage from "../../../assets/image/default_image.jpg";
-import classes from "./Style/ItemOrder.module.css";
-import { Link } from "react-router-dom";
+import classes from "./Style/ItemReceived.module.css";
+import { Link, useParams } from "react-router-dom";
+import Swal from "sweetalert2";
 import Select from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -13,28 +14,32 @@ import ItemList from "./ItemList";
 import useUtility from "../../../hooks/useUtility";
 
 export default function CreateItemReceived() {
+  const { orderId } = useParams();
   const select2Ref = useRef();
   const { generateDateForApi } = useUtility();
   const { onError, onSuccess } = useToster();
   const {
-    createItemOrderRequest,
+    createItemReceivedRequest,
     activeVendorsRequest,
-    itemOrderNoRequest,
-    activeItemSearch,
+    itemReceivedNoRequest,
+    unreceivedOrderByOrderIdRequest,
   } = useItemOrderApi();
   // initioal value
   const initialFormData = {
+    item_order_id: "",
     vendor_id: "",
     vendorSetOption: "",
-    order_no: "",
-    amount: 0,
+    receive_no: "",
+    invoice_no: "",
+    payable_amount: 0,
+    paid_amount: 0,
+    due_amount: 0,
     discount: 0,
-    total: 0,
-    tentative_date: new Date(),
+    received_date: new Date(),
     item_id: "",
     item_qty: "",
     item_price: "",
-    note: "",
+    comments: "",
     status: 1,
   };
   const [allData, setAllData] = useState(initialFormData);
@@ -50,24 +55,41 @@ export default function CreateItemReceived() {
     itemPrice: 0,
   };
   const [addItemQtyPrice, setAddItemQtyPrice] = useState(initialItemQtyPrice);
-  const [addError, setAddError] = useState("");
-
-  const [searchQueryResult, setSearchQueryResult] = useState([]);
-  const [displayState, setDisplayState] = useState("none");
 
   const [itemOrderAbleList, setItemOrderAbleList] = useState([]);
 
-  // Get Item Order no. ---------------
-  const { refetch: itemOrderNoRefetch } = useQuery(
-    "itemOrderNoRequest",
-    itemOrderNoRequest,
+  // Get Item Order Data -----------------
+  const { refetch: itemOrederDataRefetch } = useQuery(
+    ["unreceivedOrderByOrderIdRequest", orderId],
+    unreceivedOrderByOrderIdRequest,
     {
       onSuccess: async (response) => {
         if (response.status === 200) {
-          console.log(response.data);
-          await setAllData({
+          const itemOrder = response.data.result;
+          console.log(itemOrder);
+          let payable_amount = 0;
+          let due_amount = 0;
+          await setItemOrderAbleList(
+            // Add new property as orgQty to maintail max input for itemQty
+            // Claculate PayableAmount
+            response.data.result.itemOrderDetails.filter((item) => {
+              payable_amount += item.itemTotalPrice;
+              due_amount += item.itemTotalPrice;
+
+              return (item.orgQty = item.itemQty);
+            })
+          );
+          setAllData({
             ...allData,
-            order_no: response.data,
+            ["payable_amount"]: payable_amount,
+            ["due_amount"]: due_amount,
+            ["vendor_name"]: itemOrder.vendor_name,
+            ["item_order_id"]: itemOrder.id,
+            ["vendor_id"]: itemOrder.vendor_id,
+            ["vendorSetOption"]: {
+              id: itemOrder.id,
+              name: itemOrder.vendor_name,
+            },
           });
         }
       },
@@ -75,7 +97,29 @@ export default function CreateItemReceived() {
       refetchOnWindowFocus: false,
     }
   );
-  //Get Active Vendor Data-----------------------------
+
+  // Refetch Order Data -----
+  async function handleRefetchOrderData() {
+    itemOrederDataRefetch();
+  }
+  // Get Item Receiv no. ---------------
+  const { refetch: itemOrderNoRefetch } = useQuery(
+    "itemReceivedNoRequest",
+    itemReceivedNoRequest,
+    {
+      onSuccess: async (response) => {
+        if (response.status === 200) {
+          await setAllData({
+            ...allData,
+            receive_no: response.data,
+          });
+        }
+      },
+      onError: onError,
+      refetchOnWindowFocus: false,
+    }
+  );
+  //Get Active Vendor Data--------------------------------
   useQuery("activeVendorsRequest", activeVendorsRequest, {
     onSuccess: async (response) => {
       if (response.status === 200) {
@@ -91,13 +135,6 @@ export default function CreateItemReceived() {
   // }, [maxSequenceData]);
 
   const handleChange = (e, maxSequenceData) => {
-    //if (maxSequenceData) {
-    //   // when api response -----
-    //   setAllData({
-    //     ...allData,
-    //     sequence: maxSequenceData,
-    //   });
-
     if (e) {
       // on user change -----
       setAllData({ ...allData, [e.target.name]: e.target.value });
@@ -125,44 +162,6 @@ export default function CreateItemReceived() {
     console.log(e);
   };
 
-  const itemSearchHandeler = async (e) => {
-    setAddItemQtyPrice({
-      ...addItemQtyPrice,
-      [e.target.name]: e.target.value,
-    });
-  };
-  // User when select item name --------
-  const setItemHandeler = async (e) => {
-    e.preventDefault();
-    setAddItemQtyPrice({
-      ...addItemQtyPrice,
-      [e.target.name]: e.target.innerHTML,
-      ["itemId"]: e.target.id,
-    });
-    setDisplayState("none");
-  };
-
-  // Get Search Items -----
-  const { isLoading: searchLoading, refetch: activeItemSearchRefetch } =
-    useQuery(
-      ["activeItemSearch", addItemQtyPrice.searchQuery],
-      activeItemSearch,
-      {
-        onSuccess: async (response) => {
-          if (response.status === 200) {
-            setSearchQueryResult(response.data);
-            if (response.data.length > 0) {
-              setDisplayState("block");
-            } else {
-              setDisplayState("none");
-            }
-          }
-        },
-        onError: onError,
-        refetchOnWindowFocus: false,
-      }
-    );
-
   function makeItemOrderAbleList(itemObj) {
     const singleItemObject = {};
     singleItemObject.itemId = itemObj.itemId;
@@ -174,106 +173,100 @@ export default function CreateItemReceived() {
   }
 
   const addItemToOrderList = async () => {
-    if (addItemQtyPrice.searchQuery.length === 0) {
-      return setAddError("Item is required");
-    } else if (addItemQtyPrice.itemQty === 0) {
-      return setAddError("Item quantity is required");
-    } else if (addItemQtyPrice.itemPrice === 0) {
-      return setAddError("Item price is required");
-    } else {
-      // checke Item alrady exist or not -------
-      if (itemOrderAbleList.length > 0) {
-        if (
-          itemOrderAbleList.find(
-            (item) => item.itemId === addItemQtyPrice.itemId
-          )
-        ) {
-          return setAddError(addItemQtyPrice.searchQuery + " Already Exist");
-        }
-      }
+    // Add to the list ------------------
+    const itemArray = await makeItemOrderAbleList(addItemQtyPrice);
+    // Calculate --- SubTotal and Total When Add Item to order list
+    setAllData({
+      ...allData,
+      ["amount"]: allData.amount + itemArray.itemTotalPrice,
+      ["total"]: allData.amount + itemArray.itemTotalPrice,
+    });
 
-      // Add to the list ------------------
-      const itemArray = await makeItemOrderAbleList(addItemQtyPrice);
-      // Calculate --- SubTotal and Total When Add Item to order list
-      setAllData({
-        ...allData,
-        ["amount"]: allData.amount + itemArray.itemTotalPrice,
-        ["total"]: allData.amount + itemArray.itemTotalPrice,
-      });
+    await setItemOrderAbleList([...itemOrderAbleList, itemArray]);
 
-      await setItemOrderAbleList([...itemOrderAbleList, itemArray]);
-      await setAddError("");
-      // Reset search, Quantity and price field -------------------
-      setAddItemQtyPrice(initialItemQtyPrice);
-    }
+    // Reset search, Quantity and price field -------------------
+    setAddItemQtyPrice(initialItemQtyPrice);
   };
 
   // Delete item from orderable list
+  const deleteItemFromList = async (index, itemName) => {
+    // Delete Confiramtion -----------
+    Swal.fire({
+      title: "Warning!",
+      text: `Do you want to delete ${itemName} ?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "No, cancel!",
+      reverseButtons: true,
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        // Finaly Delete
+        setItemOrderAbleList(
+          itemOrderAbleList.filter((item, i) => {
+            if (i === index) {
+              setAllData({
+                ...allData,
+                ["payable_amount"]:
+                  allData.payable_amount - item.itemTotalPrice,
+                ["due_amount"]: allData.payable_amount - item.itemTotalPrice,
+                ["paid_amount"]: 0,
+              });
+            }
+            return i !== index;
+          })
+        );
+      } else {
+        console.log("delete error");
+      }
+    });
+  };
 
-  const deleteItemFromList = async (index) => {
-    setItemOrderAbleList(
+  // Delete item from orderable list
+  const handleItemReceiveQty = async (e) => {
+    let payable_amount = 0;
+    let due_amount = 0;
+
+    await setItemOrderAbleList(
       itemOrderAbleList.filter((item, i) => {
-        if (i === index) {
-          setAllData({
-            ...allData,
-            ["amount"]: allData.amount - item.itemTotalPrice,
-            ["total"]: allData.amount - item.itemTotalPrice,
-            ["discount"]: 0,
-          });
+        if (i === parseInt(e.target.id)) {
+          let changeQty = e.target.value;
+          let itemTotalPrice = changeQty * item.itemPrice;
+          // Update single Item Object ------
+          item.itemQty = changeQty;
+          item.itemTotalPrice = itemTotalPrice;
         }
-        return i !== index;
+
+        // Update Amunt and total --------
+
+        payable_amount += item.itemTotalPrice;
+        due_amount += item.itemTotalPrice;
+
+        setAllData({
+          ...allData,
+          ["payable_amount"]: payable_amount,
+          ["paid_amount"]: 0,
+          ["due_amount"]: due_amount,
+        });
+        return item;
       })
     );
-
-    // const filteredArray = await itemOrderAbleList.filter(
-    //   (item, i) => {
-    //     if (i === index) {
-    //       setAllData({
-    //         ...allData,
-    //         ["amount"]: allData.amount - item.itemTotalPrice,
-    //         ["total"]: allData.amount - item.itemTotalPrice,
-    //         ["discount"]: 0,
-    //       });
-    //     }
-    //     return i !== index;
-    //   }
-    //   //(item, i) => i !== index
-    // );
-
-    //await setItemOrderAbleList(filteredArray);
-
-    // const initialValue = 0;
-    // const accumulator = 0;
-    // const amount = filteredArray.reduce(
-    //   (accumulator, currentValue) => accumulator + currentValue.itemTotalPrice,
-    //   initialValue
-    // );
-
-    // await setAllData({
-    //   ...allData,
-    //   ["amount"]: amount,
-    //   ["total"]: amount,
-    //   ["discount"]: 0,
-    // });
-
-    //const newArrayObj = itemOrderAbleList.splice(index, 1);
-    //itemOrderAbleList.filter((item, i) => i !== index)
   };
 
   // Deduct discount from subTotal and set discount to allData State-------
-  const discountHandle = async (e) => {
+  const handlePaidAmount = async (e) => {
     //return console.log(e);
     setAllData({
       ...allData,
-      ["total"]: allData.amount - e.target.value,
-      ["discount"]: e.target.value,
+      ["due_amount"]: allData.payable_amount - e.target.value,
+      ["paid_amount"]: e.target.value,
     });
   };
 
   // Create Api MutateAsync --------------
   const { mutateAsync } = useMutation(
-    "createItemOrderRequest",
-    createItemOrderRequest,
+    "createItemReceivedRequest",
+    createItemReceivedRequest,
     {
       onSuccess: onSuccess,
       onError: onError,
@@ -284,28 +277,20 @@ export default function CreateItemReceived() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    console.log(itemOrderAbleList);
 
     //add itmeId,Qty, Price to FormData
     await itemOrderAbleList.map((item, i) => {
       formData.append(`item_id[]`, item.itemId);
       formData.append(`item_qty[]`, item.itemQty);
-      formData.append(`item_price[]`, item.itemPrice);
     });
 
-    formData.append(
-      "vendor_id",
-      Object.keys(allData.vendorSetOption).length > 0
-        ? allData.vendorSetOption.id
-        : ""
-    );
-    formData.append("order_no", allData.order_no);
-    formData.append("amount", allData.amount);
-    formData.append("discount", allData.discount);
-    formData.append(
-      "tentative_date",
-      generateDateForApi(allData.tentative_date)
-    );
+    formData.append("vendor_id", allData.vendor_id);
+    formData.append("item_order_id", allData.item_order_id);
+    formData.append("receive_no", allData.receive_no);
+    formData.append("invoice_no", allData.invoice_no);
+    formData.append("paid_amount", allData.paid_amount);
+    formData.append("comments", allData.comments);
+    formData.append("received_date", generateDateForApi(allData.received_date));
 
     formData.append("note", allData.note);
     formData.append("status", allData.status);
@@ -329,7 +314,10 @@ export default function CreateItemReceived() {
 
               <span></span>
               <div className="card-header-right">
-                {/* <i className="icofont icofont-refresh"></i> */}
+                <i
+                  onClick={handleRefetchOrderData}
+                  className="icofont icofont-refresh"
+                ></i>
                 <Link to="/admin/items-orders/list" title="Item list">
                   Items Order List <i className="icofont icofont-list"></i>
                 </Link>
@@ -341,15 +329,15 @@ export default function CreateItemReceived() {
                 <div className="form-group row">
                   <div className="col-sm-3">
                     <div className="">
-                      <label className=" col-form-label">Order Id</label>
+                      <label className=" col-form-label">Receive ID</label>
                       <input
-                        name="order_no"
-                        value={allData.order_no}
+                        name="receive_no"
+                        value={allData.receive_no}
                         onChange={handleChange}
                         type="text"
                         readOnly
                         className="form-control"
-                        placeholder="Tentative Oreder Receive Date"
+                        placeholder="Receive ID"
                       />
                     </div>
                   </div>
@@ -363,23 +351,21 @@ export default function CreateItemReceived() {
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
                         name="vendorSetOption"
-                        defaultValue={allData.vendorSetOption}
-                        options={vendors}
+                        value={allData.vendorSetOption}
+                        // options={vendors}
                         required
                       />
                     </div>
                   </div>
                   <div className="col-sm-3">
-                    <label className="col-form-label">
-                      Tentative Receive Date
-                    </label>
+                    <label className="col-form-label">Receive Date</label>
                     <DatePicker
                       showIcon
                       className="form-control"
                       isClearable
                       dateFormat="yyyy/MM/dd"
                       placeholderText="I have been cleared!"
-                      selected={allData.tentative_date}
+                      selected={allData.received_date}
                       name="tentative_date"
                       onChange={handleDateChange}
                       required
@@ -395,109 +381,19 @@ export default function CreateItemReceived() {
                   </div>
                   <div className="col-sm-3">
                     <div className="">
-                      <label className=" col-form-label">Status</label>
-                      <select
-                        name="status"
+                      <label className=" col-form-label">Invoice No.</label>
+                      <input
+                        name="order_no"
+                        value={allData.invoice_no}
                         onChange={handleChange}
-                        defaultValue={allData.status}
+                        type="text"
                         className="form-control"
-                      >
-                        <option value="">Select One</option>
-                        <option value="1">Active</option>
-                        <option value="0">Inactive</option>
-                      </select>
+                        placeholder="Invoice No. "
+                      />
                     </div>
                   </div>
                 </div>
-                {/* Item Search */}
-                <div
-                  className="form-group row"
-                  style={{ backgroundColor: "#dfdfdf", padding: "10px" }}
-                >
-                  <div className="col-md-5" style={{ position: "relative" }}>
-                    <label className=" col-form-label">Search Item</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="searchQuery"
-                      value={addItemQtyPrice.searchQuery}
-                      onChange={itemSearchHandeler}
-                      placeholder="Type here to item search"
-                    />
-                    {searchLoading ? (
-                      "loading..."
-                    ) : (
-                      <ul
-                        style={{
-                          display: `${displayState}`,
-                          height: " 180px",
-                          overflowY: "scroll",
-                          backgroundColor: "#e9e9e9",
-                          position: "absolute",
-                          width: "100%",
-                          zIndex: 999,
-                        }}
-                      >
-                        {searchQueryResult.map((result, i) => (
-                          <li key={i}>
-                            {" "}
-                            <a
-                              id={result.id}
-                              href="noaction"
-                              name="searchQuery"
-                              dataitemid="itemId"
-                              style={{ cursor: "pointer" }}
-                              onClick={setItemHandeler}
-                            >
-                              {result.title}
-                            </a>{" "}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                  <div className="col-md-2">
-                    <label className=" col-form-label">Quantity</label>
-                    <input
-                      className="form-control"
-                      type="number"
-                      min="0"
-                      max="999999"
-                      name="itemQty"
-                      value={addItemQtyPrice.itemQty}
-                      onChange={itemSearchHandeler}
-                    />
-                  </div>
-                  <div className="col-md-2">
-                    <label className=" col-form-label">Price</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="999999"
-                      className="form-control"
-                      name="itemPrice"
-                      value={addItemQtyPrice.itemPrice}
-                      onChange={itemSearchHandeler}
-                    />
-                  </div>
-                  <div className="col-md-2">
-                    <label className=" col-form-label"> </label>
-                    <br />
-                    <br />
-                    <button
-                      className="btn btn-warning btn-sm"
-                      type="button"
-                      onClick={addItemToOrderList}
-                      title="Click here to add item to order list"
-                    >
-                      Add <i className="icofont icofont-plus"></i>
-                    </button>
-                  </div>
-                  <div className="col-md-12 text-danger text-center">
-                    <br />
-                    {addError ? addError : ""}
-                  </div>
-                </div>
+
                 {/* end row */}
 
                 {/* Item Details */}
@@ -506,6 +402,7 @@ export default function CreateItemReceived() {
                     <ItemList
                       itemOrderAbleList={itemOrderAbleList}
                       deleteItemFromList={deleteItemFromList}
+                      handleItemReceiveQty={handleItemReceiveQty}
                     />
                   </div>
                 </div>
@@ -513,8 +410,8 @@ export default function CreateItemReceived() {
                 <div className="row justify-content-end">
                   <div className="col-md-4">
                     <textarea
-                      name="note"
-                      value={allData.note}
+                      name="comments"
+                      value={allData.comments}
                       onChange={handleChange}
                       rows="8"
                       cols="5"
@@ -526,24 +423,27 @@ export default function CreateItemReceived() {
                     <table className="table table-bordered table-striped">
                       <thead>
                         <tr>
-                          <td className="text-right">Sub Total :</td>
-                          <td className="text-bold">{allData.amount}</td>
+                          <td className="text-right">Payable Amount :</td>
+                          <td className="text-bold">
+                            {allData.payable_amount}
+                          </td>
                         </tr>
                         <tr>
-                          <td className="text-right">Discount :</td>
+                          <td className="text-right">Paid Amount :</td>
                           <td>
                             <input
                               type="number"
-                              max={allData.amount}
+                              name=""
+                              max={allData.payable_amount}
                               min={0}
-                              value={allData.discount}
-                              onChange={discountHandle}
+                              value={allData.paid_amount}
+                              onChange={handlePaidAmount}
                             />
                           </td>
                         </tr>
                         <tr>
-                          <td className="text-right">Total :</td>
-                          <td>{allData.total}</td>
+                          <td className="text-right">Du Amount :</td>
+                          <td>{allData.due_amount}</td>
                         </tr>
                       </thead>
                     </table>

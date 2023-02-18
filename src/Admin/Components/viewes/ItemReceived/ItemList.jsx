@@ -1,11 +1,17 @@
-export default function ItemList({ itemOrderAbleList, deleteItemFromList }) {
+export default function ItemList({
+  itemOrderAbleList,
+  deleteItemFromList,
+  handleItemReceiveQty,
+}) {
   return (
     <table className="table table-border">
       <thead>
         <tr>
           <th>SL</th>
           <th>Name</th>
-          <th>Qty</th>
+          <th>
+            <b>Qty</b>
+          </th>
           <th>Price</th>
           <th>Item Price</th>
           <th>Action</th>
@@ -18,7 +24,17 @@ export default function ItemList({ itemOrderAbleList, deleteItemFromList }) {
             <tr key={i} id={i}>
               <td>{i + 1}</td>
               <td>{item.name}</td>
-              <td>{item.itemQty}</td>
+              <td>
+                <input
+                  type="number"
+                  min={1}
+                  max={item.orgQty}
+                  name="itemQty"
+                  value={item.itemQty}
+                  onChange={handleItemReceiveQty}
+                  id={i}
+                />
+              </td>
               <td>{item.itemPrice}</td>
               <td>{item.itemTotalPrice}</td>
               <td>
@@ -31,7 +47,7 @@ export default function ItemList({ itemOrderAbleList, deleteItemFromList }) {
                   className="btn btn-sm btn-danger"
                   onClick={(e) => {
                     e.preventDefault();
-                    deleteItemFromList(i);
+                    deleteItemFromList(i, item.name);
                   }}
                 >
                   <i className="icofont icofont-trash"></i>
