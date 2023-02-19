@@ -264,7 +264,7 @@ export default function CreateItemReceived() {
   };
 
   // Create Api MutateAsync --------------
-  const { mutateAsync } = useMutation(
+  const { mutateAsync, isLoading: submitLoader } = useMutation(
     "createItemReceivedRequest",
     createItemReceivedRequest,
     {
@@ -296,15 +296,17 @@ export default function CreateItemReceived() {
     formData.append("status", allData.status);
 
     await mutateAsync(formData);
-    await setAllData(initialFormData);
-    await setItemOrderAbleList([]);
-    await itemOrderNoRefetch();
+    if (!submitLoader) {
+      await setAllData(initialFormData);
+      await setItemOrderAbleList([]);
+      await itemOrderNoRefetch();
+    }
     //return navigate("/admin/items-orders/list", { replace: true });
   };
 
   return (
     <>
-      <PageHeader pageTitle={"Create New Item"} actionPage={"Create Item"} />
+      <PageHeader pageTitle={" Received Order"} actionPage={"Receive Order"} />
 
       <div className="row">
         <div className="col-md-12">
@@ -383,7 +385,7 @@ export default function CreateItemReceived() {
                     <div className="">
                       <label className=" col-form-label">Invoice No.</label>
                       <input
-                        name="order_no"
+                        name="invoice_no"
                         value={allData.invoice_no}
                         onChange={handleChange}
                         type="text"
@@ -452,12 +454,21 @@ export default function CreateItemReceived() {
 
                 <div className="row justify-content-left">
                   <label className="col-md-2 col-form-label">
-                    <button
-                      type="submit"
-                      className="btn btn-primary btn-md btn-block waves-effect text-center m-b-20"
-                    >
-                      Submit
-                    </button>
+                    {submitLoader ? (
+                      <button
+                        type="button"
+                        className="btn btn-default btn-md btn-block waves-effect text-center m-b-20"
+                      >
+                        Submit ...
+                      </button>
+                    ) : (
+                      <button
+                        type="submit"
+                        className="btn btn-primary btn-md btn-block waves-effect text-center m-b-20"
+                      >
+                        Submit
+                      </button>
+                    )}
                   </label>
                 </div>
               </form>

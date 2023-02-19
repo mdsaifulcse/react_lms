@@ -56,12 +56,14 @@ export default function ShowItemReceivedModal({
                               <tr>
                                 <th>Received No.</th>
                                 <th>Vendor</th>
-                                <th>Tentative Receive Date</th>
+                                <th>Receive Date</th>
+                                <th>Invoice</th>
                               </tr>
                               <tr>
                                 <td>{data.receive_no}</td>
                                 <td>{data.vendor_name}</td>
                                 <td>{data.received_date}</td>
+                                <td>{data.invoice_no}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -76,9 +78,9 @@ export default function ShowItemReceivedModal({
                               </tr>
                             </thead>
                             <tbody>
-                              {data.itemOrderDetails ? (
-                                data.itemOrderDetails.map((item, i) => (
-                                  <tr key={i} id={i}>
+                              {data.itemReceiveDetails ? (
+                                data.itemReceiveDetails.map((item, i) => (
+                                  <tr key={i} id={i} className="text-center">
                                     <td>{i + 1}</td>
                                     <td>{item.name}</td>
                                     <td>{item.itemQty}</td>

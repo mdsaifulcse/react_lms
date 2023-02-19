@@ -93,6 +93,47 @@ export default function ItemReceivedList() {
         accessorKey: "vendor_name", //simple recommended way to define a column
         header: <span className="table-header">Vendor Name</span>,
       },
+      {
+        accessorFn: (row) => {
+          if (row.payment_status === 1) {
+            return (
+              <>
+                <span className="btn btn-success btn-sm">Paid</span>
+              </>
+            );
+          } else if (row.payment_status === 2) {
+            return (
+              <>
+                <Link
+                  to={`/admin/item-received/create/`}
+                  title="Click Here To Make Vendor Payment"
+                  className={`btn  btn-danger btn-sm`}
+                  target="_blank"
+                >
+                  <span>Unpaind</span>
+                </Link>
+              </>
+            );
+          } else if (row.payment_status === 3) {
+            return (
+              <>
+                <Link
+                  to={`/admin/item-received/create/`}
+                  title="Click Here To Make Vendor Payment"
+                  className={`btn  btn-warning btn-sm`}
+                  target="_blank"
+                >
+                  <span>Due</span>
+                </Link>
+              </>
+            );
+          }
+        },
+        //alternate way
+        id: "payment_status", //id required if you use accessorFn instead of accessorKey
+        header: "Payment Status",
+        Header: <span className="table-header">Payment Status</span>, //optional custom markup
+      },
     ],
     []
   );

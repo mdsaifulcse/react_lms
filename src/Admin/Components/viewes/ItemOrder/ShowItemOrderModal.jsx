@@ -91,7 +91,7 @@ export default function ShowItemModal({
                             <tbody>
                               {data.itemOrderDetails ? (
                                 data.itemOrderDetails.map((item, i) => (
-                                  <tr key={i} id={i}>
+                                  <tr key={i} id={i} className="text-center">
                                     <td>{i + 1}</td>
                                     <td>{item.name}</td>
                                     <td>{item.itemQty}</td>

@@ -7,7 +7,12 @@ export default function useToster() {
   const onError = async (error) => {
     var message = "";
     if (error.response.status === 400) {
-      message = error.response.data.errors;
+      if (error.response.data.errors) {
+        message = error.response.data.errors;
+      } else if (error.response.data.message) {
+        message = error.response.data.message;
+      }
+
       toast.error(message, {
         position: "top-right",
         autoClose: 5000,
@@ -21,6 +26,12 @@ export default function useToster() {
       });
     } else if (error.response.status === 404) {
       message = error.response.data.message + " Or Api Not Found";
+      toast.error(message, {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    } else if (error.response.status === 409) {
+      message = error.response.data.message;
       toast.error(message, {
         position: "top-right",
         autoClose: 5000,

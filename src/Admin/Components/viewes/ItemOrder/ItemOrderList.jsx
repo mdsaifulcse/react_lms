@@ -30,7 +30,7 @@ export default function ItemOrderList() {
   } = useQuery(["allItemsOrdersRequest", orderStatus], allItemsOrdersRequest, {
     //onSuccess: onSuccess,
     onError: onError,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
   });
 
   async function handleRefetchAllData() {
