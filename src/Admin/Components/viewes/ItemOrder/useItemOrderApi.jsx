@@ -85,7 +85,7 @@ export default function useItemApi() {
   };
   const itemOrderNoRequest = async () => {
     const headers = await defaultHeadersForAdmin();
-    const response = await axios(`${baseUrl}admin/item-order-no`, {
+    const response = await axios(`${baseUrl}admin/item-order-num`, {
       method: "GET",
       headers,
     });
@@ -103,7 +103,6 @@ export default function useItemApi() {
 
   const allItemsOrdersRequest = async ({ queryKey }) => {
     const orderStatus = queryKey[1];
-    console.log(orderStatus);
     const headers = await defaultHeadersForAdmin();
     const response = await axios(
       `${baseUrl}admin/item-orders?order_status=${orderStatus}`,

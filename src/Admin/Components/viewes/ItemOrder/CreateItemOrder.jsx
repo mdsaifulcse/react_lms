@@ -363,9 +363,10 @@ export default function CreateItemOrder() {
                         getOptionValue={(option) => `${option["id"]}`}
                         getOptionLabel={(option) => `${option["name"]}`}
                         name="vendorSetOption"
-                        defaultValue={allData.vendorSetOption}
+                        value={allData.vendorSetOption}
                         options={vendors}
                         required
+                        isClearable={true}
                       />
                     </div>
                   </div>

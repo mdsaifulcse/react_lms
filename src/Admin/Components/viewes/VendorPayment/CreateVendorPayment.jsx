@@ -2,94 +2,66 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
-import useItemOrderApi from "./useItemReceivedApi";
+import useVendorPaymentApi from "./useVendorPaymentApi";
 import defaultImage from "../../../assets/image/default_image.jpg";
-import classes from "./Style/ItemReceived.module.css";
+import classes from "./Style/VendorPayment.module.css";
 import { Link, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import Select from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import ItemList from "./ItemList";
 import useUtility from "../../../hooks/useUtility";
 
-export default function CreateItemReceived() {
-  const { orderId } = useParams();
+export default function CreateVendorPayment() {
+  const { receivedOrderId } = useParams();
+  console.log(receivedOrderId);
   const select2Ref = useRef();
   const { generateDateForApi } = useUtility();
   const { onError, onSuccess } = useToster();
   const {
-    createItemReceivedRequest,
-    activeVendorsRequest,
-    itemReceivedNoRequest,
-    unreceivedOrderByOrderIdRequest,
-  } = useItemOrderApi();
+    createVendorPaymentRequest,
+    itemVendorPaymentNumRequest,
+    payableReceivedOrderByReceivedId,
+  } = useVendorPaymentApi();
   // initioal value
   const initialFormData = {
-    item_order_id: "",
-    vendor_id: "",
-    vendorSetOption: "",
-    receive_no: "",
-    invoice_no: "",
+    item_receive_id: "",
+    vendor_payment_no: "",
     payable_amount: 0,
+    current_payable_amount: 0,
+    last_paid_amount: 0,
     paid_amount: 0,
     due_amount: 0,
     discount: 0,
-    received_date: new Date(),
-    item_id: "",
-    item_qty: "",
-    item_price: "",
+    vendor_name: 0,
+    payment_date: new Date(),
     comments: "",
     status: 1,
   };
   const [allData, setAllData] = useState(initialFormData);
   const [filePreview, setFilePreview] = useState(defaultImage);
-  const [vendors, setVendors] = useState([]);
   const [itemPhotos, setItemPhotos] = useState(null);
-  const [brochureFile, setItemBrochureFile] = useState(null);
-  // clicke Add Button
-  const initialItemQtyPrice = {
-    itemId: "",
-    searchQuery: "",
-    itemQty: 0,
-    itemPrice: 0,
-  };
-  const [addItemQtyPrice, setAddItemQtyPrice] = useState(initialItemQtyPrice);
 
-  const [itemOrderAbleList, setItemOrderAbleList] = useState([]);
-
-  // Get Item Order Data -----------------
-  const { refetch: itemOrederDataRefetch } = useQuery(
-    ["unreceivedOrderByOrderIdRequest", orderId],
-    unreceivedOrderByOrderIdRequest,
+  // Get Payable received order Data -----------------
+  const { refetch: payableReceivedOrderRefetch } = useQuery(
+    ["payableReceivedOrderByReceivedId", receivedOrderId],
+    payableReceivedOrderByReceivedId,
     {
       onSuccess: async (response) => {
         if (response.status === 200) {
-          const itemOrder = response.data.result;
-          console.log(itemOrder);
-          let payable_amount = 0;
-          let due_amount = 0;
-          await setItemOrderAbleList(
-            // Add new property as orgQty to maintail max input for itemQty
-            // Claculate PayableAmount
-            response.data.result.itemOrderDetails.filter((item) => {
-              payable_amount += item.itemTotalPrice;
-              due_amount += item.itemTotalPrice;
+          const payableReceiveOrder = response.data.result;
 
-              return (item.orgQty = item.itemQty);
-            })
-          );
           setAllData({
             ...allData,
-            ["payable_amount"]: payable_amount,
-            ["due_amount"]: due_amount,
-            ["vendor_name"]: itemOrder.vendor_name,
-            ["item_order_id"]: itemOrder.id,
-            ["vendor_id"]: itemOrder.vendor_id,
-            ["vendorSetOption"]: {
-              id: itemOrder.id,
-              name: itemOrder.vendor_name,
-            },
+            ["payable_amount"]: payableReceiveOrder.payable_amount,
+            ["current_payable_amount"]:
+              payableReceiveOrder.payable_amount -
+              payableReceiveOrder.paid_amount,
+            ["last_paid_amount"]: payableReceiveOrder.paid_amount,
+            ["due_amount"]: payableReceiveOrder.due_amount,
+            ["vendor_name"]: payableReceiveOrder.vendor_name,
+            ["item_receive_id"]: payableReceiveOrder.id,
+            ["vendor_id"]: payableReceiveOrder.vendor_id,
           });
         }
       },
@@ -100,18 +72,18 @@ export default function CreateItemReceived() {
 
   // Refetch Order Data -----
   async function handleRefetchOrderData() {
-    itemOrederDataRefetch();
+    payableReceivedOrderRefetch();
   }
-  // Get Item Receiv no. ---------------
-  const { refetch: itemOrderNoRefetch } = useQuery(
-    "itemReceivedNoRequest",
-    itemReceivedNoRequest,
+  // Get Vendor pament no. ---------------
+  const { refetch: vendoerPayemntNumRefetch } = useQuery(
+    "itemVendorPaymentNumRequest",
+    itemVendorPaymentNumRequest,
     {
       onSuccess: async (response) => {
         if (response.status === 200) {
           await setAllData({
             ...allData,
-            receive_no: response.data,
+            vendor_payment_no: response.data,
           });
         }
       },
@@ -119,16 +91,6 @@ export default function CreateItemReceived() {
       refetchOnWindowFocus: false,
     }
   );
-  //Get Active Vendor Data--------------------------------
-  useQuery("activeVendorsRequest", activeVendorsRequest, {
-    onSuccess: async (response) => {
-      if (response.status === 200) {
-        await setVendors(response.data.result);
-      }
-    },
-    onError: onError,
-    refetchOnWindowChange: false,
-  });
 
   // useEffect(() => {
   //   handleChange("", maxSequenceData?.data?.result?.sequence);
@@ -146,20 +108,11 @@ export default function CreateItemReceived() {
     setFilePreview(URL.createObjectURL(e.target.files[0]));
   }
 
-  function handelFile(e) {
-    setItemBrochureFile(e.target.files[0]);
-  }
-
   const onInputChange = async (selectedOptions, select2Ref) => {
     setAllData({
       ...allData,
       [select2Ref.name]: selectedOptions,
     });
-  };
-
-  const handleDateChange = async (e) => {
-    setAllData({ ...allData, ["received_date"]: e });
-    console.log(e);
   };
 
   function makeItemOrderAbleList(itemObj) {
@@ -172,101 +125,24 @@ export default function CreateItemReceived() {
     return singleItemObject;
   }
 
-  const addItemToOrderList = async () => {
-    // Add to the list ------------------
-    const itemArray = await makeItemOrderAbleList(addItemQtyPrice);
-    // Calculate --- SubTotal and Total When Add Item to order list
-    setAllData({
-      ...allData,
-      ["amount"]: allData.amount + itemArray.itemTotalPrice,
-      ["total"]: allData.amount + itemArray.itemTotalPrice,
-    });
-
-    await setItemOrderAbleList([...itemOrderAbleList, itemArray]);
-
-    // Reset search, Quantity and price field -------------------
-    setAddItemQtyPrice(initialItemQtyPrice);
-  };
-
-  // Delete item from orderable list
-  const deleteItemFromList = async (index, itemName) => {
-    // Delete Confiramtion -----------
-    Swal.fire({
-      title: "Warning!",
-      text: `Do you want to delete ${itemName} ?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "No, cancel!",
-      reverseButtons: true,
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        // Finaly Delete
-        setItemOrderAbleList(
-          itemOrderAbleList.filter((item, i) => {
-            if (i === index) {
-              setAllData({
-                ...allData,
-                ["payable_amount"]:
-                  allData.payable_amount - item.itemTotalPrice,
-                ["due_amount"]: allData.payable_amount - item.itemTotalPrice,
-                ["paid_amount"]: 0,
-              });
-            }
-            return i !== index;
-          })
-        );
-      } else {
-        console.log("delete error");
-      }
-    });
-  };
-
-  // Delete item from orderable list
-  const handleItemReceiveQty = async (e) => {
-    let payable_amount = 0;
-    let due_amount = 0;
-
-    await setItemOrderAbleList(
-      itemOrderAbleList.filter((item, i) => {
-        if (i === parseInt(e.target.id)) {
-          let changeQty = e.target.value;
-          let itemTotalPrice = changeQty * item.itemPrice;
-          // Update single Item Object ------
-          item.itemQty = changeQty;
-          item.itemTotalPrice = itemTotalPrice;
-        }
-
-        // Update Amunt and total --------
-
-        payable_amount += item.itemTotalPrice;
-        due_amount += item.itemTotalPrice;
-
-        setAllData({
-          ...allData,
-          ["payable_amount"]: payable_amount,
-          ["paid_amount"]: 0,
-          ["due_amount"]: due_amount,
-        });
-        return item;
-      })
-    );
-  };
-
   // Deduct discount from subTotal and set discount to allData State-------
   const handlePaidAmount = async (e) => {
     //return console.log(e);
     setAllData({
       ...allData,
-      ["due_amount"]: allData.payable_amount - e.target.value,
+      ["due_amount"]: allData.current_payable_amount - e.target.value,
       ["paid_amount"]: e.target.value,
     });
+  };
+  const handleDateChange = async (e) => {
+    setAllData({ ...allData, ["payment_date"]: e });
+    console.log(e);
   };
 
   // Create Api MutateAsync --------------
   const { mutateAsync, isLoading: submitLoader } = useMutation(
-    "createItemReceivedRequest",
-    createItemReceivedRequest,
+    "createVendorPaymentRequest",
+    createVendorPaymentRequest,
     {
       onSuccess: onSuccess,
       onError: onError,
@@ -278,28 +154,21 @@ export default function CreateItemReceived() {
     e.preventDefault();
     const formData = new FormData();
 
-    //add itmeId,Qty, Price to FormData
-    await itemOrderAbleList.map((item, i) => {
-      formData.append(`item_id[]`, item.itemId);
-      formData.append(`item_qty[]`, item.itemQty);
-    });
+    console.log(allData);
 
     formData.append("vendor_id", allData.vendor_id);
-    formData.append("item_order_id", allData.item_order_id);
+    formData.append("item_receive_id", allData.item_receive_id);
     formData.append("receive_no", allData.receive_no);
-    formData.append("invoice_no", allData.invoice_no);
     formData.append("paid_amount", allData.paid_amount);
     formData.append("comments", allData.comments);
-    formData.append("received_date", generateDateForApi(allData.received_date));
+    formData.append("payment_date", generateDateForApi(allData.payment_date));
 
-    formData.append("note", allData.note);
-    formData.append("status", allData.status);
+    formData.append("note", allData.comments);
 
     await mutateAsync(formData);
     if (!submitLoader) {
       await setAllData(initialFormData);
-      await setItemOrderAbleList([]);
-      await itemOrderNoRefetch();
+      await vendoerPayemntNumRefetch();
     }
     //return navigate("/admin/items-orders/list", { replace: true });
   };
@@ -320,8 +189,8 @@ export default function CreateItemReceived() {
                   onClick={handleRefetchOrderData}
                   className="icofont icofont-refresh"
                 ></i>
-                <Link to="/admin/items-orders/list" title="Item list">
-                  Items Order List <i className="icofont icofont-list"></i>
+                <Link to="/admin/item-received/list" title="Received list">
+                  Order Received List <i className="icofont icofont-list"></i>
                 </Link>
               </div>
             </div>
@@ -331,44 +200,40 @@ export default function CreateItemReceived() {
                 <div className="form-group row">
                   <div className="col-sm-3">
                     <div className="">
-                      <label className=" col-form-label">Receive ID</label>
+                      <label className=" col-form-label">Payment ID</label>
                       <input
-                        name="receive_no"
-                        value={allData.receive_no}
+                        name="vendor_payment_no"
+                        value={allData.vendor_payment_no}
                         onChange={handleChange}
                         type="text"
                         readOnly
                         className="form-control"
-                        placeholder="Receive ID"
+                        placeholder="Payment ID"
                       />
                     </div>
                   </div>
                   <div className="col-sm-3">
-                    <div className="">
-                      <label className=" col-form-label">Vendor</label>
-                      <Select
-                        ref={select2Ref}
-                        classNamePrefix="select Authors"
-                        onChange={onInputChange}
-                        getOptionValue={(option) => `${option["id"]}`}
-                        getOptionLabel={(option) => `${option["name"]}`}
-                        name="vendorSetOption"
-                        value={allData.vendorSetOption}
-                        // options={vendors}
-                        required
-                      />
-                    </div>
+                    <label className=" col-form-label">Vendor</label>
+                    <input
+                      name="vendor_name"
+                      value={allData.vendor_name}
+                      onChange={handleChange}
+                      type="text"
+                      readOnly
+                      className="form-control"
+                      placeholder="Vendor name"
+                    />
                   </div>
                   <div className="col-sm-3">
-                    <label className="col-form-label">Receive Date</label>
+                    <label className="col-form-label">Payment Date</label>
                     <DatePicker
                       showIcon
                       className="form-control"
                       isClearable
                       dateFormat="yyyy/MM/dd"
                       placeholderText="I have been cleared!"
-                      selected={allData.received_date}
-                      name="received_date"
+                      selected={allData.payment_date}
+                      name="payment_date"
                       onChange={handleDateChange}
                       required
                     />
@@ -381,7 +246,7 @@ export default function CreateItemReceived() {
                           placeholder="Tentative Oreder Receive Date"
                         /> */}
                   </div>
-                  <div className="col-sm-3">
+                  {/* <div className="col-sm-3">
                     <div className="">
                       <label className=" col-form-label">Invoice No.</label>
                       <input
@@ -393,23 +258,13 @@ export default function CreateItemReceived() {
                         placeholder="Invoice No. "
                       />
                     </div>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* end row */}
 
-                {/* Item Details */}
-                <div className="form-group row">
-                  <div className="col-md-12">
-                    <ItemList
-                      itemOrderAbleList={itemOrderAbleList}
-                      deleteItemFromList={deleteItemFromList}
-                      handleItemReceiveQty={handleItemReceiveQty}
-                    />
-                  </div>
-                </div>
                 <hr />
-                <div className="row justify-content-end">
+                <div className="row justify-content-start">
                   <div className="col-md-4">
                     <textarea
                       name="comments"
@@ -425,26 +280,49 @@ export default function CreateItemReceived() {
                     <table className="table table-bordered table-striped">
                       <thead>
                         <tr>
-                          <td className="text-right">Payable Amount :</td>
+                          <td className="text-right">Total Payable Amount :</td>
                           <td className="text-bold">
                             {allData.payable_amount}
                           </td>
                         </tr>
                         <tr>
-                          <td className="text-right">Paid Amount :</td>
+                          <td className="text-right">Last Total Paid :</td>
+                          <td className="text-bold">
+                            {allData.last_paid_amount}
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td className="text-right">
+                            <b className="font-weight-bold">
+                              Current Payable Amount
+                            </b>{" "}
+                            :
+                          </td>
+                          <td className="text-bold">
+                            {allData.current_payable_amount}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="text-right">
+                            <b>Paid Amount</b> :
+                          </td>
                           <td>
                             <input
                               type="number"
                               name=""
-                              max={allData.payable_amount}
-                              min={0}
+                              max={allData.current_payable_amount}
+                              min={1}
                               value={allData.paid_amount}
                               onChange={handlePaidAmount}
+                              required
                             />
                           </td>
                         </tr>
                         <tr>
-                          <td className="text-right">Du Amount :</td>
+                          <td className="text-right">
+                            <b>Du Amount</b> :
+                          </td>
                           <td>{allData.due_amount}</td>
                         </tr>
                       </thead>

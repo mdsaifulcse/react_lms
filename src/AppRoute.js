@@ -40,10 +40,13 @@ import ItemOrderList from "./admin/components/viewes/ItemOrder/ItemOrderList";
 import CreateItemOrder from "./admin/components/viewes/ItemOrder/CreateItemOrder";
 import EditItemOrder from "./admin/components/viewes/ItemOrder/EditItemOrder";
 
-//Item Order Recieve List
+//Item Order Recieve
 import ItemReceivedList from "./admin/components/viewes/ItemReceived/ItemReceivedList";
 import CreateItemReceived from "./admin/components/viewes/ItemReceived/CreateItemReceived";
-// import EditItemOrder from "./admin/components/viewes/ItemOrder/EditItemOrder";
+
+//Vendoer Payment
+import VendorPaymentList from "./admin/components/viewes/VendorPayment/VendorPaymentList";
+import CreateVendorPayment from "./admin/components/viewes/VendorPayment/CreateVendorPayment";
 
 const AppRoute = () => {
   return (
@@ -122,6 +125,14 @@ const AppRoute = () => {
                   <Route
                     path="create/:orderId"
                     element={<CreateItemReceived />}
+                  />
+                </Route>
+                {/*-------------------------Vendor Payment------------------ */}
+                <Route path="vendor-payments/">
+                  <Route path="list" element={<VendorPaymentList />} />
+                  <Route
+                    path="create/:receivedOrderId"
+                    element={<CreateVendorPayment />}
                   />
                 </Route>
               </Route>

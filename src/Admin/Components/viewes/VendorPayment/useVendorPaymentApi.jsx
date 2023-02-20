@@ -2,13 +2,13 @@ import axios from "axios";
 import httpHeaders from "../../../hooks/useHttpHeader";
 import config from "../../../helper/config";
 
-export default function useItemReceivedApi() {
+export default function useVendorPaymentApi() {
   const { defaultHeadersForAdmin } = httpHeaders();
   const baseUrl = config.baseUrl;
 
-  const itemReceivedNoRequest = async () => {
+  const itemVendorPaymentNumRequest = async () => {
     const headers = await defaultHeadersForAdmin();
-    const response = await axios(`${baseUrl}admin/item-received-num`, {
+    const response = await axios(`${baseUrl}admin/vendor-payment-num`, {
       method: "GET",
       headers,
     });
@@ -24,12 +24,12 @@ export default function useItemReceivedApi() {
     return response;
   };
 
-  const allItemsReceivedsRequest = async ({ queryKey }) => {
+  const allVendorPaymentsRequest = async ({ queryKey }) => {
     const paymentStatus = queryKey[1];
     console.log(paymentStatus);
     const headers = await defaultHeadersForAdmin();
     const response = await axios(
-      `${baseUrl}admin/item-received?paymentStatus=${paymentStatus}`,
+      `${baseUrl}admin/vendor-payments?paymentStatus=${paymentStatus}`,
       {
         method: "GET",
         headers,
@@ -38,9 +38,9 @@ export default function useItemReceivedApi() {
     return response;
   };
 
-  const createItemReceivedRequest = async (data) => {
+  const createVendorPaymentRequest = async (data) => {
     const headers = await defaultHeadersForAdmin("multipart/form-data");
-    const response = await axios(`${baseUrl}admin/item-received`, {
+    const response = await axios(`${baseUrl}admin/vendor-payments`, {
       method: "POST",
       headers,
       data: data,
@@ -48,11 +48,11 @@ export default function useItemReceivedApi() {
     return response;
   };
 
-  const unreceivedOrderByOrderIdRequest = async ({ queryKey }) => {
-    const itemOrderId = queryKey[1];
+  const payableReceivedOrderByReceivedId = async ({ queryKey }) => {
+    const itemReceivedId = queryKey[1];
     const headers = await defaultHeadersForAdmin();
     const response = await axios(
-      `${baseUrl}admin/unreceivedOrderByOrderId/${itemOrderId}`,
+      `${baseUrl}admin/payableReceivedOrderByReceivedId/${itemReceivedId}`,
       {
         method: "GET",
         headers,
@@ -61,11 +61,11 @@ export default function useItemReceivedApi() {
     return response;
   };
 
-  const showItemReceivedRequest = async ({ queryKey }) => {
+  const showVendorPaymentRequest = async ({ queryKey }) => {
     const itemOrderId = queryKey[1];
     const headers = await defaultHeadersForAdmin();
     const response = await axios(
-      `${baseUrl}admin/item-received/${itemOrderId}`,
+      `${baseUrl}admin/vendor-payments/${itemOrderId}`,
       {
         method: "GET",
         headers,
@@ -74,10 +74,10 @@ export default function useItemReceivedApi() {
     return response;
   };
 
-  const deleteItemReceivedRequest = async (receivedId) => {
+  const deleteVendorPaymentRequest = async (vendorId) => {
     const headers = await defaultHeadersForAdmin();
     const response = await axios(
-      `${baseUrl}admin/item-received/${receivedId}`,
+      `${baseUrl}admin/vendor-payments/${vendorId}`,
       {
         method: "DELETE",
         headers,
@@ -87,12 +87,12 @@ export default function useItemReceivedApi() {
   };
 
   return {
-    itemReceivedNoRequest,
+    itemVendorPaymentNumRequest,
     activeVendorsRequest,
-    allItemsReceivedsRequest,
-    createItemReceivedRequest,
-    unreceivedOrderByOrderIdRequest,
-    showItemReceivedRequest,
-    deleteItemReceivedRequest,
+    allVendorPaymentsRequest,
+    createVendorPaymentRequest,
+    payableReceivedOrderByReceivedId,
+    showVendorPaymentRequest,
+    deleteVendorPaymentRequest,
   };
 }

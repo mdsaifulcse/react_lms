@@ -43,7 +43,7 @@ export default function LeftNavbar() {
           Navigation
         </div>
         <ul className="pcoded-item pcoded-left-item">
-          {/* Items Create, List */}
+          {/*------------------ Items Create, List ---------------------*/}
           <li className="pcoded-hasmenu">
             <Link to="#">
               <span className="pcoded-micon">
@@ -64,7 +64,7 @@ export default function LeftNavbar() {
               </li>
             </ul>
           </li>
-          {/* Item Order */}
+          {/* ------------------- Item Order------------ */}
           <li className="pcoded-hasmenu">
             <Link to="#">
               <span className="pcoded-micon">
@@ -91,7 +91,25 @@ export default function LeftNavbar() {
               </li>
             </ul>
           </li>
-          {/* Item Received */}
+          {/*------------------ Vendor Payment -----------------*/}
+          <li className="pcoded-hasmenu">
+            <Link to="#">
+              <span className="pcoded-micon">
+                <i className="ti-layout"></i>
+              </span>
+              <span className="pcoded-mtext" data-i18n="nav.page_layout.main">
+                Vendor Payment
+              </span>
+
+              <span className="pcoded-mcaret"></span>
+            </Link>
+            <ul className="pcoded-submenu">
+              <li className="">
+                <Link to="/admin/vendor-payments/list">List</Link>
+              </li>
+            </ul>
+          </li>
+          {/*------------------ Item Received -----------------*/}
           <li className="pcoded-hasmenu">
             <Link to="#">
               <span className="pcoded-micon">
@@ -105,10 +123,21 @@ export default function LeftNavbar() {
             </Link>
             <ul className="pcoded-submenu">
               <li className="">
-                <Link to="/admin/item-received/list"> List</Link>
+                <Link to="/admin/item-received/create">New Receive Oreder</Link>
               </li>
               <li className="">
-                <Link to="/admin/item-received/create"> Create</Link>
+                <Link to="/admin/item-received/list">All List</Link>
+              </li>
+              <li className="">
+                <Link to="/admin/item-received/list?paymentStatus=1">Paid</Link>
+              </li>
+              <li className="">
+                <Link to="/admin/item-received/list?paymentStatus=2">
+                  UnpPaid
+                </Link>
+              </li>
+              <li className="">
+                <Link to="/admin/item-received/list?paymentStatus=3">Due</Link>
               </li>
             </ul>
           </li>

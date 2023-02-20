@@ -1,15 +1,18 @@
-import React, { useState } from "react";
-import Button from "react-bootstrap/Button";
+import React from "react";
 import Modal from "react-bootstrap/Modal";
 import { Link } from "react-router-dom";
+import useItemReceivedApi from "./useVendorPaymentApi";
 
-export default function ShowItemReceivedModal({
+export default function ShowVendoerPaymentModal({
   data,
   show,
   onHide,
   modalTitle,
   cardHeader,
 }) {
+  const { allVendorPaymentsRequest, deleteVendorPaymentRequest } =
+    useItemReceivedApi();
+  console.log(data);
   return (
     <>
       <Modal
