@@ -10,6 +10,7 @@ export default function ShowItemReceivedModal({
   modalTitle,
   cardHeader,
 }) {
+  console.log(data);
   return (
     <>
       <Modal
@@ -114,7 +115,17 @@ export default function ShowItemReceivedModal({
                                   <b>Payable Amount</b> :
                                 </td>
                                 <td className="text-bold">
-                                  <b>{data.payable_amount}</b>
+                                  <b>
+                                    {data.payable_amount + data.order_discount}
+                                  </b>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="text-right">
+                                  <b>Discount Amount</b> :
+                                </td>
+                                <td className="text-bold">
+                                  <b>{data.order_discount}</b>
                                 </td>
                               </tr>
                               <tr>

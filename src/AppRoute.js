@@ -33,6 +33,7 @@ import ThirdSubCategoryList from "./admin/components/viewes/ThirdSubCategory/Thi
 import VendorList from "./admin/components/viewes/Vendor/VendorList";
 //Items
 import ItemsList from "./admin/components/viewes/Items/ItemsList";
+import ItemsInventoryStock from "./admin/components/viewes/Items/ItemsInventoryStock";
 import CreateItem from "./admin/components/viewes/Items/CreateItem";
 import EditItem from "./admin/components/viewes/Items/EditItem";
 //Item Order
@@ -47,6 +48,10 @@ import CreateItemReceived from "./admin/components/viewes/ItemReceived/CreateIte
 //Vendoer Payment
 import VendorPaymentList from "./admin/components/viewes/VendorPayment/VendorPaymentList";
 import CreateVendorPayment from "./admin/components/viewes/VendorPayment/CreateVendorPayment";
+
+//Vendoer Payment
+import MembershipPlanList from "./admin/components/viewes/MembershipPlan/MembershipPlanList";
+import CreateEditModal from "./admin/components/viewes/MembershipPlan/CreateEditModal";
 
 const AppRoute = () => {
   return (
@@ -110,6 +115,10 @@ const AppRoute = () => {
                 {/*----------------------------Item--------------------- */}
                 <Route path="items/">
                   <Route path="list" element={<ItemsList />} />
+                  <Route
+                    path="items-inventory-stock"
+                    element={<ItemsInventoryStock />}
+                  />
                   <Route path="create" element={<CreateItem />} />
                   <Route path="edit/:itemId" element={<EditItem />} />
                 </Route>
@@ -133,6 +142,14 @@ const AppRoute = () => {
                   <Route
                     path="create/:receivedOrderId"
                     element={<CreateVendorPayment />}
+                  />
+                </Route>
+                {/*-------------------------Membership Plan------------------ */}
+                <Route path="membership-plans/">
+                  <Route path="list" element={<MembershipPlanList />} />
+                  <Route
+                    path="create/:membershipPlanId"
+                    element={<CreateEditModal />}
                   />
                 </Route>
               </Route>

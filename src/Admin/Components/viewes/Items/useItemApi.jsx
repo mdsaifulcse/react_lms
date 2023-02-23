@@ -96,6 +96,15 @@ export default function useItemApi() {
     return response;
   };
 
+  const itemsInventoryStockRequest = async () => {
+    const headers = await defaultHeadersForAdmin();
+    const response = await axios(`${baseUrl}admin/items-inventory-stock`, {
+      method: "GET",
+      headers,
+    });
+    return response;
+  };
+
   const createItemRequest = async (data) => {
     const headers = await defaultHeadersForAdmin("multipart/form-data");
     const response = await axios(`${baseUrl}admin/items`, {
@@ -159,6 +168,7 @@ export default function useItemApi() {
     activeThirdSubCategoriesBySubCategoryRequest,
     deleteItemRequest,
     createItemRequest,
+    itemsInventoryStockRequest,
     allItemsRequest,
     showItemRequest,
     updateItemRequest,

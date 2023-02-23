@@ -8,22 +8,26 @@ import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import MaterialReactTable from "material-react-table";
 import ShowVendoerPaymentModal from "./ShowVendoerPaymentModal";
+import useUtility from "../../../hooks/useUtility";
 
 export default function VendorPaymentList() {
+  const { formatAMPM } = useUtility();
   const paymentStatus = new URLSearchParams(useLocation().search).get(
     "paymentStatus"
   );
   const { onError, onSuccess } = useToster();
   const { allVendorPaymentsRequest, deleteVendorPaymentRequest } =
     useItemReceivedApi();
+  const [receivedId, setReceivedId] = useState();
   const [modalData, setModalData] = useState({});
   const [modalShow, setModalShow] = useState(false);
 
+  // Get All vendor payment data---------
   const {
-    data: itemsReceived,
-    isLoading,
-    isError,
-    refetch,
+    data: allVendorPayments,
+    isLoading: isLoadingAllVendorPayments,
+    isError: isErrorAllVendorPayments,
+    refetch: allVendoerPaymentsRefetch,
   } = useQuery(
     ["allVendorPaymentsRequest", paymentStatus],
     allVendorPaymentsRequest,
@@ -35,7 +39,7 @@ export default function VendorPaymentList() {
   );
 
   async function handleRefetchAllData() {
-    refetch();
+    allVendoerPaymentsRefetch();
   }
 
   // Delete confirmation then delete -----------------
@@ -60,7 +64,7 @@ export default function VendorPaymentList() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         await mutateAsync(paymentId);
-        await refetch();
+        await allVendoerPaymentsRefetch();
       } else {
         console.log("delete error");
       }
@@ -68,8 +72,9 @@ export default function VendorPaymentList() {
   };
 
   let data = [];
-  if (!isLoading && !isError) {
-    data = itemsReceived.data.result.vendorPayments;
+  if (!isLoadingAllVendorPayments && !isErrorAllVendorPayments) {
+    //console.log(allVendorPayments);
+    data = allVendorPayments.data.result.vendorPayments;
   }
 
   const columns = useMemo(
@@ -80,7 +85,6 @@ export default function VendorPaymentList() {
         //muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
         //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
       },
-
       {
         accessorFn: (row) => row.paid_amount, //alternate way
         id: "paid_amount", //id required if you use accessorFn instead of accessorKey
@@ -89,8 +93,23 @@ export default function VendorPaymentList() {
         size: 50,
       },
       {
-        accessorKey: "payment_date", //simple recommended way to define a column
-        header: <span className="table-header">Payment</span>,
+        accessorFn: (row) => {
+          let date = new Date(row.payment_date);
+          var year = date.getFullYear();
+          var month = date.getMonth() + 1;
+          var fullDate = date.getDate();
+          var hours = date.getHours();
+          var minutes = date.getMinutes();
+          var ampm = hours >= 12 ? "pm" : "am";
+          hours = hours % 12;
+          hours = hours ? hours : 12; // the hour '0' should be '12'
+          minutes = minutes < 10 ? "0" + minutes : minutes;
+          var strTime = hours + ":" + minutes + " " + ampm;
+          return [year + "-" + month + "-" + fullDate + "-" + strTime];
+        }, //alternate way
+        id: "payment_date", //id required if you use accessorFn instead of accessorKey
+        header: "Payment Date",
+        Header: <span className="table-header">Payment Date</span>, //optional custom markup
       },
       {
         accessorKey: "vendor_name", //simple recommended way to define a column
@@ -107,7 +126,7 @@ export default function VendorPaymentList() {
 
   return (
     <>
-      {isLoading ? (
+      {isLoadingAllVendorPayments ? (
         <Loading />
       ) : (
         <>

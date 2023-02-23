@@ -9,9 +9,9 @@ import Swal from "sweetalert2";
 import MaterialReactTable from "material-react-table";
 import ShowItemModal from "./ShowItemModal";
 
-export default function ItemsList() {
+export default function ItemsInventoryStock() {
   const { onError, onSuccess } = useToster();
-  const { allItemsRequest, deleteItemRequest } = useItemApi();
+  const { itemsInventoryStockRequest } = useItemApi();
   const [item, setItem] = useState({});
   const [modalShow, setModalShow] = useState(false);
 
@@ -19,7 +19,7 @@ export default function ItemsList() {
     data: items,
     isLoading,
     refetch,
-  } = useQuery("allItemsRequest", allItemsRequest, {
+  } = useQuery("itemsInventoryStockRequest", itemsInventoryStockRequest, {
     //onSuccess: onSuccess,
     onError: onError,
     refetchOnWindowFocus: false,
@@ -29,34 +29,10 @@ export default function ItemsList() {
     refetch();
   }
 
-  // Delete confirmation then delete -----------------
-  // Create Api MutateAsync --------------
-  const { mutateAsync } = useMutation("deleteItemRequest", deleteItemRequest, {
-    onSuccess: onSuccess,
-    onError: onError,
-  });
-  const deleteHandler = async (itemId, name) => {
-    Swal.fire({
-      title: "Warning!",
-      text: `Do you want to delete ${name}`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "No, cancel!",
-      reverseButtons: true,
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        await mutateAsync(itemId);
-        await refetch();
-      } else {
-        console.log("delete error");
-      }
-    });
-  };
-
   let data = [];
   if (!isLoading) {
     data = items.data.result.items;
+    console.log(items.data.result.items);
   }
 
   const columns = useMemo(
@@ -68,10 +44,12 @@ export default function ItemsList() {
         //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
       },
       {
+        accessorKey: "itemQty.qty", //simple recommended way to define a column
+        header: <span className="table-header btn">Item Qty</span>,
+      },
+      {
         accessorKey: "isbn", //simple recommended way to define a column
         header: <span className="table-header">ISBN</span>,
-        // muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
-        //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
       },
       {
         accessorFn: (row) => row.edition, //alternate way
@@ -85,18 +63,7 @@ export default function ItemsList() {
         // muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
         //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
       },
-      {
-        accessorKey: "country", //simple recommended way to define a column
-        header: <span className="table-header">Country</span>,
-        // muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
-        //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
-      },
-      {
-        accessorKey: "publisher", //simple recommended way to define a column
-        header: <span className="table-header">Publisher</span>,
-        // muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
-        //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
-      },
+
       {
         accessorFn: (row) =>
           row.status === 1 ? (
@@ -127,12 +94,12 @@ export default function ItemsList() {
         <Loading />
       ) : (
         <>
-          <PageHeader pageTitle={"Item"} actionPage={"Item"} />
+          <PageHeader pageTitle={"Inventory Stock"} actionPage={"Item Stock"} />
           <div className="row">
             <div className="col-md-12">
               <div className="card">
                 <div className="card-header">
-                  <h5>All Item List</h5>
+                  <h5>Item & Stock</h5>
                   <span></span>
                   <div className="card-header-right">
                     <i
@@ -167,23 +134,6 @@ export default function ItemsList() {
                             >
                               <i className="icofont icofont-eye"></i>
                             </button>{" "}
-                            <Link
-                              to={`/admin/items/edit/${row.row.original.id}`}
-                              title="Edit Item"
-                              className="btn btn-warning btn-sm"
-                            >
-                              <i className="icofont icofont-edit"></i>
-                            </Link>{" "}
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                let item = row.row.original;
-                                deleteHandler(item.id, item.name);
-                              }}
-                              className="btn  btn-danger btn-sm"
-                            >
-                              <i className="icofont icofont-trash"></i>
-                            </button>
                           </>
                         )}
                       />

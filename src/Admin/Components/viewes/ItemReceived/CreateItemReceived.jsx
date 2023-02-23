@@ -81,8 +81,10 @@ export default function CreateItemReceived() {
           );
           setAllData({
             ...allData,
-            ["payable_amount"]: payable_amount,
-            ["due_amount"]: due_amount,
+            ["amount"]: itemOrder.amount,
+            ["payable_amount"]: payable_amount - itemOrder.discount,
+            ["due_amount"]: due_amount - itemOrder.discount,
+            ["discount"]: itemOrder.discount,
             ["vendor_name"]: itemOrder.vendor_name,
             ["item_order_id"]: itemOrder.id,
             ["vendor_id"]: itemOrder.vendor_id,
@@ -202,20 +204,21 @@ export default function CreateItemReceived() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         // Finaly Delete
+        let itemTotalPrice = 0;
         setItemOrderAbleList(
           itemOrderAbleList.filter((item, i) => {
             if (i === index) {
-              setAllData({
-                ...allData,
-                ["payable_amount"]:
-                  allData.payable_amount - item.itemTotalPrice,
-                ["due_amount"]: allData.payable_amount - item.itemTotalPrice,
-                ["paid_amount"]: 0,
-              });
+              itemTotalPrice += item.itemTotalPrice;
             }
             return i !== index;
           })
         );
+        setAllData({
+          ...allData,
+          ["payable_amount"]: allData.payable_amount - itemTotalPrice,
+          ["due_amount"]: allData.payable_amount - itemTotalPrice,
+          ["paid_amount"]: 0,
+        });
       } else {
         console.log("delete error");
       }
@@ -244,9 +247,9 @@ export default function CreateItemReceived() {
 
         setAllData({
           ...allData,
-          ["payable_amount"]: payable_amount,
+          ["payable_amount"]: payable_amount - allData.discount,
           ["paid_amount"]: 0,
-          ["due_amount"]: due_amount,
+          ["due_amount"]: due_amount - allData.discount,
         });
         return item;
       })
@@ -284,6 +287,7 @@ export default function CreateItemReceived() {
       formData.append(`item_qty[]`, item.itemQty);
     });
 
+    console.log(allData);
     formData.append("vendor_id", allData.vendor_id);
     formData.append("item_order_id", allData.item_order_id);
     formData.append("receive_no", allData.receive_no);
@@ -425,13 +429,25 @@ export default function CreateItemReceived() {
                     <table className="table table-bordered table-striped">
                       <thead>
                         <tr>
-                          <td className="text-right">Payable Amount :</td>
+                          <td className="text-right">Order Amount :</td>
+                          <td className="text-bold">{allData.amount}</td>
+                        </tr>
+                        <tr>
+                          <td className="text-right">Discount Amount :</td>
+                          <td className="text-bold">{allData.discount}</td>
+                        </tr>
+                        <tr>
+                          <td className="text-right">
+                            <b>Payable Amount</b> :
+                          </td>
                           <td className="text-bold">
                             {allData.payable_amount}
                           </td>
                         </tr>
                         <tr>
-                          <td className="text-right">Paid Amount :</td>
+                          <td className="text-right">
+                            <b>Paid Amount</b> :
+                          </td>
                           <td>
                             <input
                               type="number"
@@ -444,7 +460,9 @@ export default function CreateItemReceived() {
                           </td>
                         </tr>
                         <tr>
-                          <td className="text-right">Du Amount :</td>
+                          <td className="text-right">
+                            <b>Du Amount</b> :
+                          </td>
                           <td>{allData.due_amount}</td>
                         </tr>
                       </thead>

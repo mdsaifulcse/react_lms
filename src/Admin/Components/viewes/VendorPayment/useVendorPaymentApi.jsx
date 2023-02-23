@@ -26,10 +26,22 @@ export default function useVendorPaymentApi() {
 
   const allVendorPaymentsRequest = async ({ queryKey }) => {
     const paymentStatus = queryKey[1];
-    console.log(paymentStatus);
     const headers = await defaultHeadersForAdmin();
     const response = await axios(
       `${baseUrl}admin/vendor-payments?paymentStatus=${paymentStatus}`,
+      {
+        method: "GET",
+        headers,
+      }
+    );
+    return response;
+  };
+  const vendorPaymentByReceivedIdRequest = async ({ queryKey }) => {
+    const receivedId = queryKey[1];
+    console.log(receivedId);
+    const headers = await defaultHeadersForAdmin();
+    const response = await axios(
+      `${baseUrl}admin/vendorPaymentsByReceivedId/${receivedId}`,
       {
         method: "GET",
         headers,
@@ -88,6 +100,7 @@ export default function useVendorPaymentApi() {
 
   return {
     itemVendorPaymentNumRequest,
+    vendorPaymentByReceivedIdRequest,
     activeVendorsRequest,
     allVendorPaymentsRequest,
     createVendorPaymentRequest,

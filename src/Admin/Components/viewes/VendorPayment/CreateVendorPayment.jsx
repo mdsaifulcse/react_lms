@@ -153,9 +153,6 @@ export default function CreateVendorPayment() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-
-    console.log(allData);
-
     formData.append("vendor_id", allData.vendor_id);
     formData.append("item_receive_id", allData.item_receive_id);
     formData.append("receive_no", allData.receive_no);

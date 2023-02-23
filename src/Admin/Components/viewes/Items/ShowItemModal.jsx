@@ -179,7 +179,7 @@ export default function ShowItemModal({
                                 </td>
                               </tr>
                               <tr>
-                                <th scope="row">Status</th>
+                                <th scope="row">Publish Status</th>
                                 <td>
                                   {data.publish_status === 1 ? (
                                     <>
@@ -195,7 +195,7 @@ export default function ShowItemModal({
                                 </td>
                               </tr>
                               <tr>
-                                <th scope="row">Status</th>
+                                <th scope="row">Show Home</th>
                                 <td>
                                   {data.show_home === 1 ? (
                                     <>

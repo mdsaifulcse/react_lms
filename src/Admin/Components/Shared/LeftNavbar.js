@@ -57,10 +57,16 @@ export default function LeftNavbar() {
             </Link>
             <ul className="pcoded-submenu">
               <li className="">
+                <Link to="/admin/items/create"> Create</Link>
+              </li>
+              <li className="">
                 <Link to="/admin/items/list"> List</Link>
               </li>
               <li className="">
-                <Link to="/admin/items/create"> Create</Link>
+                <Link to="/admin/items/items-inventory-stock">
+                  {" "}
+                  Items Inventory Stock
+                </Link>
               </li>
             </ul>
           </li>
@@ -342,6 +348,26 @@ export default function LeftNavbar() {
                 <ul className="pcoded-submenu">
                   <li className="">
                     <NavLink to="/admin/vendors/list">
+                      <span className="pcoded-micon">
+                        <i className="icon-chart"></i>
+                      </span>
+                      <span className="pcoded-mtext">List</span>
+                      <span className="pcoded-mcaret"></span>
+                    </NavLink>
+                  </li>
+                </ul>
+              </li>
+              <li className=" pcoded-hasmenu">
+                <Link to="#!">
+                  <span className="pcoded-micon">
+                    <i className="icon-pie-chart"></i>
+                  </span>
+                  <span className="pcoded-mtext">Membership Plan</span>
+                  <span className="pcoded-mcaret"></span>
+                </Link>
+                <ul className="pcoded-submenu">
+                  <li className="">
+                    <NavLink to="/admin/membership-plans/list">
                       <span className="pcoded-micon">
                         <i className="icon-chart"></i>
                       </span>

@@ -1,18 +1,19 @@
 import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
-import useVendorApi from "./useVendorApi";
+import useMembershipPlanApi from "./useMembershipPlanApi";
 import Loading from "../../ui-component/Loading";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import MaterialReactTable from "material-react-table";
-import ShowVendorModal from "./ShowVendorModal";
+import ShowModal from "./ShowModal";
 import CreateEditModal from "./CreateEditModal";
 
-export default function VendorList() {
+export default function MembershipPlanist() {
   const { onError, onSuccess } = useToster();
-  const { allVendorsRequest, deleteVendorRequest } = useVendorApi();
+  const { allMembershipPlansRequest, deleteMembershipPlanRequest } =
+    useMembershipPlanApi();
   const [vendor, setVendor] = useState({});
   const [modalShow, setModalShow] = useState(false);
   const [createEditModal, setCreateEditModal] = useState(false);
@@ -24,7 +25,7 @@ export default function VendorList() {
     isLoading,
     isError,
     refetch: loadListData,
-  } = useQuery("allVendorsRequest", allVendorsRequest, {
+  } = useQuery("allMembershipPlansRequest", allMembershipPlansRequest, {
     //onSuccess: onSuccess,
     onError: onError,
     refetchOnWindowFocus: false,
@@ -37,8 +38,8 @@ export default function VendorList() {
   // Delete confirmation then delete -----------------
   // Create Api MutateAsync --------------
   const { mutateAsync } = useMutation(
-    "deleteVendorRequest",
-    deleteVendorRequest,
+    "deleteMembershipPlanRequest",
+    deleteMembershipPlanRequest,
     {
       onSuccess: onSuccess,
       onError: onError,
@@ -65,7 +66,7 @@ export default function VendorList() {
 
   let data = [];
   if (!isLoading && !isError) {
-    data = listdatas.data.result.vendors;
+    data = listdatas.data.result.membershipPlans;
   }
 
   // Datatable columns ------
@@ -78,25 +79,29 @@ export default function VendorList() {
         //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
       },
       {
-        accessorKey: "email", //simple recommended way to define a column
-        header: "Email",
+        accessorKey: "fee_amount", //simple recommended way to define a column
+        header: "Fee Amount",
       },
 
       {
-        accessorKey: "mobile", //simple recommended way to define a column
-        header: "Mobile",
+        accessorFn: (row) =>
+          row.valid_duration === 0 ? (
+            <>
+              <span className="badge badge-success">Forever</span>
+            </>
+          ) : (
+            <>
+              <span className="badge badge-info">
+                {row.valid_duration} Month
+              </span>
+            </>
+          ), //simple recommended way to define a column
+        id: "valid_duration",
+        header: "Valid Duration",
       },
       {
-        accessorKey: "contact_person", //simple recommended way to define a column
-        header: "Contact Person",
-      },
-      {
-        accessorKey: "contact_person_mobile", //simple recommended way to define a column
-        header: "Contact Person Mobile",
-      },
-      {
-        accessorKey: "office_address", //simple recommended way to define a column
-        header: "Office Address",
+        accessorKey: "sequence", //simple recommended way to define a column
+        header: "Sequence",
       },
 
       {
@@ -172,6 +177,12 @@ export default function VendorList() {
                         enableRowNumbers
                         positionActionsColumn="last"
                         enablePagination="true"
+                        displayColumnDefOptions={{
+                          "mrt-row-actions": {
+                            header: "Action", //change header text
+                            size: 200, //make actions column wider
+                          },
+                        }}
                         renderRowActions={(row, index) => (
                           <>
                             <button
@@ -217,12 +228,12 @@ export default function VendorList() {
               </div>
             </div>
           </div>
-          <ShowVendorModal
+          <ShowModal
             data={vendor} // it has come form state ----
             show={modalShow}
             onHide={() => setModalShow(false)}
-            headTitle={"Vendor Details"}
-            cardHeader="Vendor Info"
+            headTitle={"Membership Plan Details"}
+            cardHeader="Membership Plan Info"
           />
           <CreateEditModal
             data={vendor} // it has come form state ----
