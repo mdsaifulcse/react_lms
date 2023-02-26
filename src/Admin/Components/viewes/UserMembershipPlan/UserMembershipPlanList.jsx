@@ -1,7 +1,7 @@
 import PageHeader from "../../shared/PageHeader";
 import useToster from "../../../hooks/useToster";
 import { useQuery, useMutation } from "react-query";
-import useMembershipPlanApi from "./useMembershipPlanApi";
+import useUserMembershipPlanApi from "./useUserMembershipPlanApi";
 import Loading from "../../ui-component/Loading";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -10,14 +10,21 @@ import MaterialReactTable from "material-react-table";
 import ShowModal from "./ShowModal";
 import CreateEditModal from "./CreateEditModal";
 
-export default function MembershipPlanList() {
+export default function UserMembershipPlanList() {
   const { onError, onSuccess } = useToster();
-  const { allMembershipPlansRequest, deleteMembershipPlanRequest } =
-    useMembershipPlanApi();
+  const {
+    allGeneralUsersRequest,
+    activeMembershipPlansRequest,
+    allUserMembershipPlansRequest,
+    deleteUserMembershipPlanRequest,
+  } = useUserMembershipPlanApi();
   const [membershipPlan, setMembershipPlan] = useState({});
   const [modalShow, setModalShow] = useState(false);
   const [createEditModal, setCreateEditModal] = useState(false);
   const [createEditModalTitle, setCreateEditModalTitle] = useState("");
+  //  Dropdown Data --------
+  const [activeGeneralUser, setActiveGeneralUser] = useState("");
+  const [activePlan, setActivePlan] = useState("");
 
   // Get All list Data ---------
   const {
@@ -25,8 +32,38 @@ export default function MembershipPlanList() {
     isLoading,
     isError,
     refetch: loadListData,
-  } = useQuery("allMembershipPlansRequest", allMembershipPlansRequest, {
+  } = useQuery("allUserMembershipPlansRequest", allUserMembershipPlansRequest, {
     //onSuccess: onSuccess,
+    onError: onError,
+    refetchOnWindowFocus: false,
+  });
+
+  // Get General User Data ---------
+  const {
+    generalUserIsLoading,
+    generalUserIsError,
+    refetch: generalUserRefetch,
+  } = useQuery("allGeneralUsersRequest", allGeneralUsersRequest, {
+    onSuccess: async (response) => {
+      if (response.status === 200) {
+        await setActiveGeneralUser(response.data.result);
+      }
+    },
+    onError: onError,
+    refetchOnWindowFocus: false,
+  });
+  // Get Active Plan Data ---------
+  const {
+    activePlanIsLoading,
+    activePlanIsError,
+    refetch: activePlanRefetch,
+  } = useQuery("activeMembershipPlansRequest", activeMembershipPlansRequest, {
+    onSuccess: async (response) => {
+      if (response.status === 200) {
+        console.log(response.data.result);
+        await setActivePlan(response.data.result);
+      }
+    },
     onError: onError,
     refetchOnWindowFocus: false,
   });
@@ -38,8 +75,8 @@ export default function MembershipPlanList() {
   // Delete confirmation then delete -----------------
   // Create Api MutateAsync --------------
   const { mutateAsync } = useMutation(
-    "deleteMembershipPlanRequest",
-    deleteMembershipPlanRequest,
+    "deleteUserMembershipPlanRequest",
+    deleteUserMembershipPlanRequest,
     {
       onSuccess: onSuccess,
       onError: onError,
@@ -66,42 +103,21 @@ export default function MembershipPlanList() {
 
   let data = [];
   if (!isLoading && !isError) {
-    data = listdatas.data.result.membershipPlans;
+    data = listdatas.data.result.userPlans;
   }
 
   // Datatable columns ------
   const columns = useMemo(
     () => [
       {
-        accessorKey: "name", //simple recommended way to define a column
-        header: "Name",
+        accessorKey: "user_name", //simple recommended way to define a column
+        header: "User Name",
         //muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
         //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
       },
       {
-        accessorKey: "fee_amount", //simple recommended way to define a column
-        header: "Fee Amount",
-      },
-
-      {
-        accessorFn: (row) =>
-          row.valid_duration === 0 ? (
-            <>
-              <span className="badge badge-success">Forever</span>
-            </>
-          ) : (
-            <>
-              <span className="badge badge-info">
-                {row.valid_duration} Month
-              </span>
-            </>
-          ), //simple recommended way to define a column
-        id: "valid_duration",
-        header: "Valid Duration",
-      },
-      {
-        accessorKey: "sequence", //simple recommended way to define a column
-        header: "Sequence",
+        accessorKey: "membership_plan", //simple recommended way to define a column
+        header: "Plan Name",
       },
 
       {
@@ -140,13 +156,13 @@ export default function MembershipPlanList() {
         <Loading />
       ) : (
         <>
-          <PageHeader pageTitle={"Membership Plan"} actionPage={"Paln"} />
+          <PageHeader pageTitle={"User Plan"} actionPage={"User Plan"} />
 
           <div className="row">
             <div className="col-md-12">
               <div className="card">
                 <div className="card-header">
-                  <h5>All Plan List</h5>
+                  <h5>All User Plan List</h5>
                   <span></span>
                   <div className="card-header-right">
                     <i
@@ -244,6 +260,8 @@ export default function MembershipPlanList() {
             onHide={() => setCreateEditModal(false)}
             headTitle={createEditModalTitle}
             loadListData={loadListData}
+            activeGeneralUser={activeGeneralUser}
+            activePlan={activePlan}
           />
         </>
       )}

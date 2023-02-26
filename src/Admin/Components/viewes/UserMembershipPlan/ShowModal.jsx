@@ -49,63 +49,19 @@ export default function ShowVendorModal({
                   <div className="col-lg-12">
                     <div className="general-info">
                       <div className="row">
-                        <div className="col-lg-3 col-xl-3">
-                          <div className="card">
-                            <div className="card-header contact-user">
-                              {data.image ? (
-                                <>
-                                  <img
-                                    className="img-circle"
-                                    src={data.image}
-                                    alt={data.name}
-                                  />
-                                </>
-                              ) : (
-                                "No Photo"
-                              )}
-
-                              <h4>{data.name}</h4>
-                            </div>
-                          </div>
-                        </div>
                         {/* <!-- end of table col-lg-6 --> */}
                         <div className="col-lg-9 col-xl-9">
                           <table className="table">
                             <tbody>
                               <tr>
-                                <th scope="row">Name</th>
-                                <td>{data.name}</td>
+                                <th scope="row">User Name</th>
+                                <td>{data.user_name}</td>
                               </tr>
                               <tr>
-                                <th scope="row">Valid Duration</th>
-                                <td>
-                                  {data.valid_duration === 0 ? (
-                                    <>
-                                      <span className="badge badge-success">
-                                        Forever
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <span className="badge badge-info">
-                                        {data.valid_duration} Month
-                                      </span>
-                                    </>
-                                  )}
-                                </td>
+                                <th scope="row">Plan Name</th>
+                                <td>{data.membership_plan}</td>
                               </tr>
-                              <tr>
-                                <th scope="row">Fee Amount</th>
-                                <td>{data.fee_amount}</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Description</th>
-                                <td>{data.description}</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">Term Policy</th>
-                                <td>{data.term_policy}</td>
-                              </tr>
+
                               <tr>
                                 <th scope="row">Status</th>
                                 <td>

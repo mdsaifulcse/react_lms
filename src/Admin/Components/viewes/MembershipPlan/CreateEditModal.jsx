@@ -201,6 +201,7 @@ export default function CreateEditModal({
                                   onChange={handleChange}
                                   className="form-control"
                                   placeholder="Fee Amount"
+                                  required
                                 />
                               </div>
                               <div className="col-sm-6">

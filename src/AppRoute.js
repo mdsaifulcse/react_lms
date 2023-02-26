@@ -49,9 +49,11 @@ import CreateItemReceived from "./admin/components/viewes/ItemReceived/CreateIte
 import VendorPaymentList from "./admin/components/viewes/VendorPayment/VendorPaymentList";
 import CreateVendorPayment from "./admin/components/viewes/VendorPayment/CreateVendorPayment";
 
-//Vendoer Payment
+//Membership Plan
 import MembershipPlanList from "./admin/components/viewes/MembershipPlan/MembershipPlanList";
-import CreateEditModal from "./admin/components/viewes/MembershipPlan/CreateEditModal";
+//import CreateEditModal from "./admin/components/viewes/MembershipPlan/CreateEditModal";
+//User Membership Plan
+import UserMembershipPlanList from "./admin/components/viewes/UserMembershipPlan/UserMembershipPlanList";
 
 const AppRoute = () => {
   return (
@@ -147,10 +149,10 @@ const AppRoute = () => {
                 {/*-------------------------Membership Plan------------------ */}
                 <Route path="membership-plans/">
                   <Route path="list" element={<MembershipPlanList />} />
-                  <Route
-                    path="create/:membershipPlanId"
-                    element={<CreateEditModal />}
-                  />
+                </Route>
+                {/*-------------------------Membership Plan------------------ */}
+                <Route path="user-membership-plan/">
+                  <Route path="list" element={<UserMembershipPlanList />} />
                 </Route>
               </Route>
             </Route>
