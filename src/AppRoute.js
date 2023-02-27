@@ -51,9 +51,12 @@ import CreateVendorPayment from "./admin/components/viewes/VendorPayment/CreateV
 
 //Membership Plan
 import MembershipPlanList from "./admin/components/viewes/MembershipPlan/MembershipPlanList";
-//import CreateEditModal from "./admin/components/viewes/MembershipPlan/CreateEditModal";
 //User Membership Plan
 import UserMembershipPlanList from "./admin/components/viewes/UserMembershipPlan/UserMembershipPlanList";
+//User Membership Plan
+import ItemRentalList from "./admin/components/viewes/ItemRental/ItemRentalList";
+import CreateItemRental from "./admin/components/viewes/ItemRental/CreateItemRental";
+import EditItemRental from "./admin/components/viewes/ItemRental/EditItemRental";
 
 const AppRoute = () => {
   return (
@@ -123,6 +126,19 @@ const AppRoute = () => {
                   />
                   <Route path="create" element={<CreateItem />} />
                   <Route path="edit/:itemId" element={<EditItem />} />
+                </Route>
+                {/*----------------------------Item Rental--------------------- */}
+                <Route path="item-rental/">
+                  <Route path="list" element={<ItemRentalList />} />
+                  <Route
+                    path="items-inventory-stock"
+                    element={<ItemsInventoryStock />}
+                  />
+                  <Route path="create" element={<CreateItemRental />} />
+                  <Route
+                    path="edit/:itemRentalId"
+                    element={<EditItemRental />}
+                  />
                 </Route>
                 {/* ------------------------ Items-Orders ---------------- */}
                 <Route path="items-orders/">

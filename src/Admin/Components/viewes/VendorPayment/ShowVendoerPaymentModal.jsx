@@ -24,7 +24,6 @@ export default function ShowVendoerPaymentModal({
     {
       onSuccess: (response) => {
         setPaymentData(response.data.result);
-        console.log(response.data.result);
       },
       onError: onError,
       refetchOnWindowFocus: false,
@@ -49,14 +48,13 @@ export default function ShowVendoerPaymentModal({
 
   useEffect(() => {
     if (Object.keys(data).length > 0) {
-      console.log("123456789");
       vendoerPaymentRefetch();
     }
   }, [data]);
   return (
     <>
       {!paymentData ? (
-        <Loading />
+        ""
       ) : (
         <Modal
           show={show}

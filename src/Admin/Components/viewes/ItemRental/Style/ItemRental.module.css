@@ -1,0 +1,11 @@
+.inputSec,
+.dropdownSec {
+  border: 1px dashed #624e89;
+  padding: 12px;
+}
+.inputSec {
+  border-right: none;
+}
+.actionBtn {
+  display: inline-block;
+}

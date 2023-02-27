@@ -11,7 +11,6 @@ import ShowVendoerPaymentModal from "./ShowVendoerPaymentModal";
 import useUtility from "../../../hooks/useUtility";
 
 export default function VendorPaymentList() {
-  const { formatAMPM } = useUtility();
   const paymentStatus = new URLSearchParams(useLocation().search).get(
     "paymentStatus"
   );

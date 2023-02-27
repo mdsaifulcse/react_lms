@@ -1,6 +1,7 @@
 import React from "react";
 import Modal from "react-bootstrap/Modal";
 import { Link } from "react-router-dom";
+import useUtility from "../../../hooks/useUtility";
 
 export default function ShowVendorModal({
   data,
@@ -9,6 +10,7 @@ export default function ShowVendorModal({
   headTitle,
   cardHeader,
 }) {
+  const { formatAMPM } = useUtility();
   return (
     <>
       <Modal
@@ -60,6 +62,10 @@ export default function ShowVendorModal({
                               <tr>
                                 <th scope="row">Plan Name</th>
                                 <td>{data.membership_plan}</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Valid Till</th>
+                                <td>{data.valid_till}</td>
                               </tr>
 
                               <tr>

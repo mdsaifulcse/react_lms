@@ -43,6 +43,27 @@ export default function LeftNavbar() {
           Navigation
         </div>
         <ul className="pcoded-item pcoded-left-item">
+          {/*------------------ Item Rental Create, List ---------------------*/}
+          <li className="pcoded-hasmenu">
+            <Link to="#">
+              <span className="pcoded-micon">
+                <i className="ti-layout"></i>
+              </span>
+              <span className="pcoded-mtext" data-i18n="nav.page_layout.main">
+                Item Rental
+              </span>
+              <span className="pcoded-badge label label-warning">NEW</span>
+              <span className="pcoded-mcaret"></span>
+            </Link>
+            <ul className="pcoded-submenu">
+              <li className="">
+                <Link to="/admin/item-rental/create"> Create</Link>
+              </li>
+              <li className="">
+                <Link to="/admin/item-rental/list"> List</Link>
+              </li>
+            </ul>
+          </li>
           {/*------------------ Items Create, List ---------------------*/}
           <li className="pcoded-hasmenu">
             <Link to="#">
