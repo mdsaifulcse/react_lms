@@ -11,21 +11,21 @@ import MaterialReactTable from "material-react-table";
 import ShowItemOrderModal from "./ShowItemRentalModal";
 
 export default function ItemRentalList() {
-  // Get Query Parma
+  // Get Query Parma ---------------------
   const orderStatus = new URLSearchParams(useLocation().search).get(
     "orderStatus"
   );
 
   const { onError, onSuccess } = useToster();
-  const { allItemsOrdersRequest, deleteItemOrderRequest } = useItemRentalApi();
+  const { allItemRentalsRequest, deleteItemRentalRequest } = useItemRentalApi();
   const [itemsOrder, setItemsOrder] = useState({});
   const [modalShow, setModalShow] = useState(false);
 
   const {
-    data: itemsOrders,
+    data: itemRentals,
     isLoading,
     refetch,
-  } = useQuery(["allItemsOrdersRequest", orderStatus], allItemsOrdersRequest, {
+  } = useQuery(["allItemRentalsRequest", orderStatus], allItemRentalsRequest, {
     //onSuccess: onSuccess,
     onError: onError,
     refetchOnWindowFocus: true,
@@ -38,14 +38,14 @@ export default function ItemRentalList() {
   // Delete confirmation then delete -----------------
   // Create Api MutateAsync --------------
   const { mutateAsync } = useMutation(
-    "deleteItemOrderRequest",
-    deleteItemOrderRequest,
+    "deleteItemRentalRequest",
+    deleteItemRentalRequest,
     {
       onSuccess: onSuccess,
       onError: onError,
     }
   );
-  const deleteHandler = async (itemsOrderId, name) => {
+  const deleteHandler = async (itemsRentalId, name) => {
     Swal.fire({
       title: "Warning!",
       text: `Do you want to delete ${name}`,
@@ -56,7 +56,7 @@ export default function ItemRentalList() {
       reverseButtons: true,
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await mutateAsync(itemsOrderId);
+        await mutateAsync(itemsRentalId);
         await refetch();
       } else {
         console.log("delete error");
@@ -66,17 +66,32 @@ export default function ItemRentalList() {
 
   let data = [];
   if (!isLoading) {
-    data = itemsOrders.data.result.itemOrders;
+    data = itemRentals.data.result.itemRentals;
   }
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: "order_no", //simple recommended way to define a column
-        header: <span className="table-header">Order No.</span>,
+        accessorKey: "rental_no", //simple recommended way to define a column
+        header: <span className="table-header">Rental No.</span>,
         size: 150,
         //muiTableHeadCellProps: { sx: { color: "red" } }, //custom props
         //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
+      },
+      {
+        accessorFn: (row) =>
+          row.user ? (
+            <>
+              <span>{row.user.name}</span>
+            </>
+          ) : (
+            <>
+              <span>N/A</span>
+            </>
+          ),
+        id: "user", //id required if you use accessorFn instead of accessorKey
+        header: "User",
+        header: <span className="table-header">User</span>,
       },
       {
         accessorKey: "qty", //simple recommended way to define a column
@@ -86,49 +101,51 @@ export default function ItemRentalList() {
         //Cell: ({ cell }) => <strong>{cell.getValue()}</strong>, //optional custom cell render
       },
       {
-        accessorFn: (row) => row.amount, //alternate way
-        id: "amount", //id required if you use accessorFn instead of accessorKey
-        header: "Amount",
-        Header: <span className="table-header">Amount</span>, //optional custom markup
-      },
-      {
-        accessorKey: "tentative_date", //simple recommended way to define a column
-        header: <span className="table-header">Tentative Date Receive</span>,
-      },
-      {
-        accessorKey: "vendor_name", //simple recommended way to define a column
-        header: <span className="table-header">Vendor Name</span>,
+        accessorFn: (row) => {
+          let date = new Date(row.rental_date);
+          var year = date.getFullYear();
+          var month = date.getMonth() + 1;
+          var fullDate = date.getDate();
+          var hours = date.getHours();
+          var minutes = date.getMinutes();
+          var ampm = hours >= 12 ? "pm" : "am";
+          hours = hours % 12;
+          hours = hours ? hours : 12; // the hour '0' should be '12'
+          minutes = minutes < 10 ? "0" + minutes : minutes;
+          var strTime = hours + ":" + minutes + " " + ampm;
+          return [year + "-" + month + "-" + fullDate + " " + strTime];
+        }, //alternate way
+        id: "rental_date", //id required if you use accessorFn instead of accessorKey
+        header: "Rental Date",
+        Header: <span className="table-header">Rental Date</span>, //optional custom markup
       },
 
       {
-        accessorFn: (row) =>
-          row.status === 1 ? (
-            <>
-              <span className="badge badge-success">Active</span>
-            </>
-          ) : (
-            <>
-              <span className="badge badge-danger">Inactive</span>
-            </>
-          ), //alternate way
+        accessorFn: (row) => {
+          if (row.status === 0) {
+            return (
+              <>
+                <span className="btn btn-warning btn-sm">Rental</span>
+              </>
+            );
+          } else if (row.payment_status === 1) {
+            return (
+              <>
+                <span className="btn btn-success btn-sm">Return</span>
+              </>
+            );
+          } else if (row.payment_status === 2) {
+            return (
+              <>
+                <span className="btn btn-danger btn-sm">Overdue</span>
+              </>
+            );
+          }
+        },
+        //alternate way
         id: "status", //id required if you use accessorFn instead of accessorKey
         header: "Status",
-        Header: <span className="table-header">Status</span>, //optional custom markup
-      },
-      {
-        accessorFn: (row) =>
-          row.order_status === 1 ? (
-            <>
-              <span className="badge badge-success">Receive</span>
-            </>
-          ) : (
-            <>
-              <span className="badge badge-danger">Unreceived</span>
-            </>
-          ), //alternate way
-        id: "order_status", //id required if you use accessorFn instead of accessorKey
-        header: "Order Status",
-        Header: <span className="table-header">Order Status</span>, //optional custom markup
+        Header: <span className="table-header">Payment Status</span>, //optional custom markup
       },
     ],
     []
@@ -158,8 +175,8 @@ export default function ItemRentalList() {
                       className="icofont icofont-refresh"
                     ></i>
                     <Link
-                      to="/admin/items-orders/create"
-                      title="To Create New Items Order"
+                      to="/admin/item-rental/create"
+                      title="To Create New Items Rental"
                     >
                       New <i className="icofont icofont-plus"></i>
                     </Link>
@@ -186,45 +203,30 @@ export default function ItemRentalList() {
                         renderRowActions={(row, index) => (
                           <>
                             <button
+                              title="Show Detials"
                               onClick={(e) => {
                                 e.preventDefault();
-                                let itemsOrder = row.row.original;
-                                showModalHandler(itemsOrder);
+                                let itemsRental = row.row.original;
+                                showModalHandler(itemsRental);
                               }}
                               className={`btn  btn-info btn-sm ${styles.actionBtn}`}
                             >
                               <i className="icofont icofont-eye"></i>
                             </button>{" "}
-                            {row.row.original.order_status === 0 ? (
-                              <>
-                                <Link
-                                  to={`/admin/items-orders/edit/${row.row.original.id}`}
-                                  title="Edit Items Order"
-                                  className={`btn  btn-warning btn-sm ${styles.actionBtn}`}
-                                >
-                                  <i className="icofont icofont-edit"></i>
-                                </Link>{" "}
-                                {/*----------- Order Receive --------------*/}
-                                <Link
-                                  to={`/admin/item-received/create/${row.row.original.id}`}
-                                  title="Click Here To Receive Order Item"
-                                  className={`btn  btn-danger btn-sm ${styles.actionBtn}`}
-                                  target="_blank"
-                                >
-                                  <i className="icofont icofont-inbox"></i>
-                                </Link>{" "}
-                              </>
-                            ) : (
-                              ""
-                            )}
+                            <Link
+                              title="Edit Items Rental"
+                              to={`/admin/item-rental/edit/${row.row.original.id}`}
+                              className={`btn  btn-warning btn-sm ${styles.actionBtn}`}
+                            >
+                              <i className="icofont icofont-edit"></i>
+                            </Link>
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
-                                let itemsOrder = row.row.original;
-                                console.log(itemsOrder);
+                                let itemsRental = row.row.original;
                                 deleteHandler(
-                                  itemsOrder.id,
-                                  itemsOrder.order_no
+                                  itemsRental.id,
+                                  itemsRental.rental_no
                                 );
                               }}
                               className={`btn  btn-danger btn-sm ${styles.actionBtn}`}
@@ -244,8 +246,8 @@ export default function ItemRentalList() {
             data={itemsOrder}
             show={modalShow}
             onHide={() => setModalShow(false)}
-            modalTitle="Items Order Details"
-            cardHeader="Items Order Info"
+            modalTitle="Items Rental Details"
+            cardHeader="Items Rental Info"
           />
         </>
       )}

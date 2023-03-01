@@ -10,6 +10,7 @@ export default function ShowItemRentalModal({
   modalTitle,
   cardHeader,
 }) {
+  console.log(data);
   return (
     <>
       <Modal
@@ -29,20 +30,6 @@ export default function ShowItemRentalModal({
         </Modal.Header>
         <Modal.Body>
           <div className="card">
-            {/* <div className="card-header">
-              <h5 className="card-header-text">
-                {cardHeader} ({data.title})
-              </h5>
-              <Link to={`/admin/items/edit/${data.id}`} title="Edit Item">
-                <button
-                  id="edit-btn"
-                  type="button"
-                  className="btn btn-sm btn-primary waves-effect waves-light f-right"
-                >
-                  <i className="icofont icofont-edit"></i>
-                </button>
-              </Link>
-            </div> */}
             <div className="card-block">
               <div className="view-info">
                 <div className="row">
@@ -53,26 +40,44 @@ export default function ShowItemRentalModal({
                           <table className="table table-bordered table-striped">
                             <tbody>
                               <tr>
-                                <th>Order No.</th>
-                                <th>Vendor</th>
-                                <th>Tentative Receive Date</th>
+                                <th>Rental No.</th>
+                                <th>User</th>
+                                <th>Qty</th>
+                                <th>Rental Date</th>
                                 <th>Status</th>
                               </tr>
                               <tr>
-                                <td>{data.order_no}</td>
-                                <td>{data.vendor_name}</td>
-                                <td>{data.tentative_date}</td>
+                                <td>{data.rental_no}</td>
+                                <td>{data.user ? data.user.name : ""}</td>
+                                <td>{data.qty}</td>
+                                <td>{data.rental_date}</td>
                                 <td>
-                                  {data.status === 1 ? (
+                                  {data.status === 0 ? (
                                     <>
-                                      <span className="text-primary">
-                                        Active
+                                      <span className="text-warning">
+                                        Rental
                                       </span>
                                     </>
                                   ) : (
-                                    <span className="text-danger">
-                                      Inactive
-                                    </span>
+                                    ""
+                                  )}
+                                  {data.status === 1 ? (
+                                    <>
+                                      <span className="text-success">
+                                        Return
+                                      </span>
+                                    </>
+                                  ) : (
+                                    ""
+                                  )}
+                                  {data.status === 2 ? (
+                                    <>
+                                      <span className="text-danger">
+                                        Overdue
+                                      </span>
+                                    </>
+                                  ) : (
+                                    ""
                                   )}
                                 </td>
                               </tr>
@@ -84,19 +89,17 @@ export default function ShowItemRentalModal({
                                 <th className="text-center">SL</th>
                                 <th className="text-center">Name</th>
                                 <th className="text-center">Qty</th>
-                                <th className="text-center">Price</th>
-                                <th className="text-center">Item Price</th>
+                                <th className="text-center">Return Date</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {data.itemOrderDetails ? (
-                                data.itemOrderDetails.map((item, i) => (
+                              {data.itemRentalDetails ? (
+                                data.itemRentalDetails.map((item, i) => (
                                   <tr key={i} id={i} className="text-center">
                                     <td>{i + 1}</td>
-                                    <td>{item.name}</td>
-                                    <td>{item.itemQty}</td>
-                                    <td>{item.itemPrice}</td>
-                                    <td>{item.itemTotalPrice}</td>
+                                    <td>{item.item_title}</td>
+                                    <td>{item.item_qty}</td>
+                                    <td>{item.return_date}</td>
                                   </tr>
                                 ))
                               ) : (
@@ -113,40 +116,10 @@ export default function ShowItemRentalModal({
                       </div>
                       {/* <!-- end of row --> */}
                       <hr />
-                      <div className="row justify-content-end">
-                        <div className="col-md-4">
+                      <div className="row justify-content-start">
+                        <div className="col-md-6">
                           <b>Notes:</b>
                           <p>{data.note}</p>
-                        </div>
-                        <div className="col-md-4">
-                          <table className="table table-bordered table-striped">
-                            <thead>
-                              <tr>
-                                <td className="text-right">
-                                  <b>Sub Total</b> :
-                                </td>
-                                <td className="text-bold">
-                                  <b>{data.amount}</b>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td className="text-right">
-                                  <b>Discount</b> :
-                                </td>
-                                <td>
-                                  <b>{data.discount}</b>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td className="text-right">
-                                  <b>Total</b> :
-                                </td>
-                                <td>
-                                  <b>{data.total}</b>
-                                </td>
-                              </tr>
-                            </thead>
-                          </table>
                         </div>
                       </div>
                     </div>

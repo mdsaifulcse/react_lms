@@ -19,7 +19,7 @@ export default function CreateItemRental() {
   const {
     createItemRentalRequest,
     activeGenralsRequest,
-    itemOrderNoRequest,
+    itemRentalNoRequest,
     activeItemSearch,
   } = useItemRentalApi();
   // initioal value
@@ -54,8 +54,8 @@ export default function CreateItemRental() {
 
   // Get Item Rental no. ---------------
   const { refetch: itemOrderNoRefetch } = useQuery(
-    "itemOrderNoRequest",
-    itemOrderNoRequest,
+    "itemRentalNoRequest",
+    itemRentalNoRequest,
     {
       onSuccess: async (response) => {
         if (response.status === 200) {
@@ -70,7 +70,7 @@ export default function CreateItemRental() {
       refetchOnWindowFocus: false,
     }
   );
-  //Get Active Vendor Data-----------------------------
+  //Get Active General Data-----------------------------
   useQuery("activeGenralsRequest", activeGenralsRequest, {
     onSuccess: async (response) => {
       if (response.status === 200) {
@@ -159,7 +159,6 @@ export default function CreateItemRental() {
   }
 
   const addItemToOrderList = async () => {
-    console.log(addItemQtyPrice.itemReturnDate);
     if (addItemQtyPrice.searchQuery.length === 0) {
       return setAddError("Item is required");
     } else if (addItemQtyPrice.itemQty === 0) {
@@ -199,7 +198,7 @@ export default function CreateItemRental() {
   };
 
   // Create Api MutateAsync --------------
-  const { mutateAsync } = useMutation(
+  const { mutateAsync, isLoading: submitLoader } = useMutation(
     "createItemRentalRequest",
     createItemRentalRequest,
     {
@@ -237,9 +236,12 @@ export default function CreateItemRental() {
     formData.append("status", allData.status);
 
     await mutateAsync(formData);
-    await setAllData(initialFormData);
-    await setItemOrderAbleList([]);
-    await itemOrderNoRefetch();
+    if (!submitLoader) {
+      await setAllData(initialFormData);
+      await setItemOrderAbleList([]);
+      await itemOrderNoRefetch();
+    }
+
     //return navigate("/admin/item-rental/list", { replace: true });
   };
 
@@ -268,7 +270,7 @@ export default function CreateItemRental() {
               <form onSubmit={handleSubmit}>
                 {/* ------------------Top side-----------------------  */}
                 <div className="form-group row">
-                  <div className="col-sm-3">
+                  <div className="col-sm-2">
                     <div className="">
                       <label className=" col-form-label">Rental Id</label>
                       <input
@@ -299,7 +301,7 @@ export default function CreateItemRental() {
                       />
                     </div>
                   </div>
-                  <div className="col-sm-3">
+                  <div className="col-sm-2">
                     <label className="col-form-label">Rental Date</label>
                     <DatePicker
                       showIcon
@@ -313,7 +315,7 @@ export default function CreateItemRental() {
                       required
                     />
                   </div>
-                  <div className="col-sm-3">
+                  <div className="col-sm-2">
                     <div className="">
                       <label className=" col-form-label">Status</label>
                       <select
@@ -449,12 +451,21 @@ export default function CreateItemRental() {
 
                 <div className="row justify-content-left">
                   <label className="col-md-2 col-form-label">
-                    <button
-                      type="submit"
-                      className="btn btn-primary btn-md btn-block waves-effect text-center m-b-20"
-                    >
-                      Submit
-                    </button>
+                    {submitLoader ? (
+                      <button
+                        type="button"
+                        className="btn btn-default btn-md btn-block waves-effect text-center m-b-20"
+                      >
+                        Submit ...
+                      </button>
+                    ) : (
+                      <button
+                        type="submit"
+                        className="btn btn-primary btn-md btn-block waves-effect text-center m-b-20"
+                      >
+                        Submit
+                      </button>
+                    )}
                   </label>
                 </div>
               </form>

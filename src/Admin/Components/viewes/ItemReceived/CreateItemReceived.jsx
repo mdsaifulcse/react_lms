@@ -235,12 +235,12 @@ export default function CreateItemReceived() {
         if (i === parseInt(e.target.id)) {
           let changeQty = e.target.value;
           let itemTotalPrice = changeQty * item.itemPrice;
-          // Update single Item Object ------
+          // Update single Item Object -------------------
           item.itemQty = changeQty;
           item.itemTotalPrice = itemTotalPrice;
         }
 
-        // Update Amunt and total --------
+        // Update Amount and total --------
 
         payable_amount += item.itemTotalPrice;
         due_amount += item.itemTotalPrice;

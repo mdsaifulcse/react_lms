@@ -104,7 +104,7 @@ export default function VendorPaymentList() {
           hours = hours ? hours : 12; // the hour '0' should be '12'
           minutes = minutes < 10 ? "0" + minutes : minutes;
           var strTime = hours + ":" + minutes + " " + ampm;
-          return [year + "-" + month + "-" + fullDate + "-" + strTime];
+          return [year + "-" + month + "-" + fullDate + " " + strTime];
         }, //alternate way
         id: "payment_date", //id required if you use accessorFn instead of accessorKey
         header: "Payment Date",

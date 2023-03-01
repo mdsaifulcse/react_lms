@@ -21,7 +21,7 @@ export default function useItemRentalApi() {
     );
     return response;
   };
-  const itemOrderNoRequest = async () => {
+  const itemRentalNoRequest = async () => {
     const headers = await defaultHeadersForAdmin();
     const response = await axios(`${baseUrl}admin/item-rental-num`, {
       method: "GET",
@@ -64,10 +64,10 @@ export default function useItemRentalApi() {
   };
 
   const showItemRentalRequest = async ({ queryKey }) => {
-    const itemOrderId = queryKey[1];
+    const itemRentalId = queryKey[1];
     const headers = await defaultHeadersForAdmin();
     const response = await axios(
-      `${baseUrl}admin/item-rentals/${itemOrderId}`,
+      `${baseUrl}admin/item-rentals/${itemRentalId}`,
       {
         method: "GET",
         headers,
@@ -103,16 +103,8 @@ export default function useItemRentalApi() {
   };
 
   return {
-    // activeCountryListRequest,
-    // activeLanguageListRequest,
-    // activeAuthorListRequest,
-    // activePublisherListRequest,
-    // activeCategoriesRequest,
-    // activeSubCategoriesByCategoryRequest,
-    // activeThirdSubCategoriesBySubCategoryRequest,
-
     activeItemSearch,
-    itemOrderNoRequest,
+    itemRentalNoRequest,
     activeGenralsRequest,
     allItemRentalsRequest,
     createItemRentalRequest,

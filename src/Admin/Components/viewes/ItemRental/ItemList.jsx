@@ -1,5 +1,4 @@
 export default function ItemList({ itemOrderAbleList, deleteItemFromList }) {
-  console.log(itemOrderAbleList);
   return (
     <table className="table table-border">
       <thead>
@@ -36,7 +35,7 @@ export default function ItemList({ itemOrderAbleList, deleteItemFromList }) {
                   className="btn btn-sm btn-danger"
                   onClick={(e) => {
                     e.preventDefault();
-                    deleteItemFromList(i);
+                    deleteItemFromList(i, item.naem);
                   }}
                 >
                   <i className="icofont icofont-trash"></i>
